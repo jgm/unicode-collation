@@ -10,10 +10,15 @@ Haskell implementation of [unicode collation algorithm].
 
 ## Motivation
 
-Currently there's no way to do correct unicode collation
+Previously there was no way to do correct unicode collation
 (sorting) in Haskell without depending on the C library `icu`,
-and the barely maintained Haskell wrapper `text-icu`.  A pure
-Haskell solution is desirable.
+and the barely maintained Haskell wrapper `text-icu`.  This
+library offers a pure Haskell solution.
+
+## Performance
+
+In one benchmark it takes 11 ms to sort 10,000 strings with
+this library, versus 2 ms for `text-icu`.
 
 ## Current status
 
