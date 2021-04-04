@@ -110,7 +110,7 @@ test-suite unit
   hs-source-dirs:      test
   main-is:             unit.hs
   build-depends:       unicode-collation
-                     , bytestring >= 0.10.12.0
+                     , bytestring
                      , containers
                      , tasty
                      , tasty-hunit
