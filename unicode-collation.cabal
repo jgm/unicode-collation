@@ -64,6 +64,7 @@ common common-options
                        -Wpartial-fields
 
   default-language:    Haskell2010
+  other-extensions:    CPP, TemplateHaskell
 
 library
   import:              common-options
