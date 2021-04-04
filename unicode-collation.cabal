@@ -127,6 +127,7 @@ test-suite doctests
   main-is:             doctests.hs
   build-depends:       unicode-collation
                      , doctest >= 0.8
+                     , th-lift-instances
   ghc-options:         -threaded
                        -rtsopts
                        -with-rtsopts=-N
