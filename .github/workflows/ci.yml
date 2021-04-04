@@ -1,112 +1,156 @@
-name: CI
+name: CI tests
 
-# Trigger the workflow on push or pull request, but only for the main branch
 on:
-  pull_request:
   push:
-    branches: [main]
+    branches:
+    - '*'
+    paths-ignore:
+    - '*.md'
+  pull_request:
+    paths-ignore:
+    - '*.md'
 
 jobs:
-  cabal:
-    name: ${{ matrix.os }} / ghc ${{ matrix.ghc }}
-    runs-on: ${{ matrix.os }}
+  linux:
+
+    runs-on: ubuntu-18.04
     strategy:
+      fail-fast: true
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-        cabal: ["3.2"]
-        ghc:
-          - "8.0.2"
-          - "8.2.2"
-          - "8.4.4"
-          - "8.6.5"
-          - "8.8.3"
-          - "8.10.3"
-        exclude:
-          - os: macOS-latest
-            ghc: 8.0.2
-          - os: macOS-latest
-            ghc: 8.2.2
-          - os: macOS-latest
-            ghc: 8.4.4
-          - os: macOS-latest
-            ghc: 8.6.5
-          - os: macOS-latest
-            ghc: 8.8.3
-          - os: windows-latest
-            ghc: 8.0.2
-          - os: windows-latest
-            ghc: 8.2.2
-          - os: windows-latest
-            ghc: 8.4.4
-          - os: windows-latest
-            ghc: 8.6.5
-          - os: windows-latest
-            ghc: 8.8.3
+        versions:
+          - ghc: '8.0.2'
+            cabal: '2.2'
+            prefix: 'new-'
+            cabalopts: ''
+            testopts: ''
+          - ghc: '8.2.2'
+            cabal: '2.4'
+            prefix: 'v2-'
+            cabalopts: ''
+            testopts: ''
+          - ghc: '8.4.4'
+            cabal: '2.4'
+            prefix: 'v2-'
+            cabalopts: ''
+            testopts: ''
+          - ghc: '8.6.5'
+            cabal: '3.2'
+            prefix: ''
+            cabalopts: ''
+            testopts: '--test-option=--hide-successes'
+          - ghc: '8.8.4'
+            cabal: '3.2'
+            prefix: ''
+            cabalopts: ''
+            testopts: '--test-option=--hide-successes'
+          - ghc: '8.10.2'
+            cabal: '3.2'
+            prefix: ''
+            cabalopts: ''
+            testopts: '--test-option=--hide-successes'
+    steps:
+    - uses: actions/checkout@v2
+
+    # need to install older cabal/ghc versions from ppa repository
+
+    - name: Install recent cabal/ghc
+      uses: haskell/actions/setup@v1
+      with:
+        ghc-version: ${{ matrix.versions.ghc }}
+        cabal-version: ${{ matrix.versions.cabal }}
+
+    # declare/restore cached things
+    # caching doesn't work for scheduled runs yet
+    # https://github.com/actions/cache/issues/63
+
+    - name: Cache cabal global package db
+      id:   cabal-global
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cabal
+        key: ${{ runner.os }}-${{ matrix.versions.ghc }}-${{ matrix.versions.cabal }}-cabal-global-${{ hashFiles('cabal.project') }}
+
+    - name: Install dependencies
+      run: |
+          cabal ${{ matrix.versions.prefix }}update
+          cabal ${{ matrix.versions.prefix }}build ${{ matrix.versions.cabalopts }} --dependencies-only --enable-tests --disable-optimization
+
+    - name: Build and test
+      run: |
+          cabal ${{ matrix.versions.prefix }}build ${{ matrix.versions.cabalopts }} --enable-tests --disable-optimization 2>&1 | tee build.log
+          # fail if warnings in local build
+          ! grep -q ": *[Ww]arning:" build.log || exit 1
+          cabal ${{ matrix.versions.prefix }}test ${{ matrix.versions.cabalopts }} --disable-optimization ${{ matrix.versions.testopts }}
+
+  windows:
+
+    runs-on: windows-2019
 
     steps:
     - uses: actions/checkout@v2
-      if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.ref == 'refs/heads/master'
 
-    - uses: actions/setup-haskell@v1.1.3
-      id: setup-haskell-cabal
-      name: Setup Haskell
+    # We should have ghc 8.10, cabal, stack pre-installed
+    # - uses: haskell/actions/setup@v1
+    #   with:
+    #     enable-stack: true
+    #     stack-version: 'latest'
+
+    # declare/restore cached things
+    # caching doesn't work for scheduled runs yet
+    # https://github.com/actions/cache/issues/63
+
+    - name: Cache stack global package db
+      id:   stack-global-package-db
+      uses: actions/cache@v2
       with:
-        ghc-version: ${{ matrix.ghc }}
-        cabal-version: ${{ matrix.cabal }}
+        path: |
+          C:\Users\runneradmin\AppData\Roaming\stack\
+        key: ${{ runner.os }}-appdata-roaming-stack-${{ hashFiles('stack.yaml') }}
 
-    - name: Freeze
+    - name: Install dependencies
       run: |
-        cabal freeze
-
-    - uses: actions/cache@v1
-      name: Cache ~/.cabal/store
-      with:
-        path: ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
-        key: ${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles('cabal.project.freeze') }}
-
-    - name: Build dependencies
+          stack update
+          stack test --dependencies-only --fast
+    - name: Build and test
+      shell: cmd
       run: |
-        cabal configure --enable-tests --enable-benchmarks --test-show-details=direct
-        cabal build --dependencies-only all
+          stack test --fast --test-arguments=--hide-successes
 
-    - name: Build
-      run: |
-        cabal build all 2>&1 | tee build.log
-        # fail if warnings in local build
-        ! grep -q ": *[Ww]arning:" build.log || exit 1
+  macos:
 
-    - name: Test
-      run: |
-        cabal test all
-
-  stack:
-    name: stack / ghc ${{ matrix.ghc }}
-    runs-on: ubuntu-latest
+    runs-on: macOS-10.15
     strategy:
+      fail-fast: true
       matrix:
-        stack: ["2.3.1"]
-        ghc: ["8.8.3"]
+        versions:
+          - ghc: '8.8.4'
+            cabal: '3.2'
 
     steps:
     - uses: actions/checkout@v2
-      if: github.event.action == 'opened' || github.event.action == 'synchronize' || github.event.ref == 'refs/heads/master'
 
-    - uses: actions/setup-haskell@v1.1.3
-      name: Setup Haskell Stack
+    - name: Install recent cabal/ghc
+      uses: haskell/actions/setup@v1
       with:
-        ghc-version: ${{ matrix.ghc }}
-        stack-version: ${{ matrix.stack }}
+        ghc-version: ${{ matrix.versions.ghc }}
+        cabal-version: ${{ matrix.versions.cabal }}
 
-    - uses: actions/cache@v1
-      name: Cache ~/.stack
+    - name: Cache cabal global package db
+      id:   cabal-global
+      uses: actions/cache@v2
       with:
-        path: ~/.stack
-        key: ${{ runner.os }}-${{ matrix.ghc }}-stack
+        path: |
+          ~/.cabal
+        key: ${{ runner.os }}-${{ matrix.versions.ghc }}-${{ matrix.versions.cabal }}-cabal-global-${{ hashFiles('cabal.project') }}
 
-    - name: Build
+    - name: Install dependencies
       run: |
-        stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
-
-    - name: Test
+          cabal v2-update
+          cabal v2-build --dependencies-only --enable-tests --disable-optimization
+    - name: Build and test
       run: |
-        stack test --system-ghc
+          cabal v2-build --enable-tests --disable-optimization 2>&1 | tee build.log
+          # fail if warnings in local build
+          ! grep -q ": *[Ww]arning:" build.log || exit 1
+          cabal v2-test --disable-optimization
