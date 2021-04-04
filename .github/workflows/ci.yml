@@ -19,7 +19,7 @@ jobs:
       matrix:
         versions:
           - ghc: '8.0.2'
-            cabal: '2.2'
+            cabal: '2.4'
             prefix: 'new-'
             cabalopts: '--write-ghc-environment-files=always'
             testopts: ''
