@@ -19,6 +19,11 @@ import UnicodeCollation.Types
 import Data.Text (Text)
 import Data.Char (isAlphaNum)
 import qualified Data.Text as T
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
+
 -- import Debug.Trace
 
 -- NOTE: The reason for the indirection through binary

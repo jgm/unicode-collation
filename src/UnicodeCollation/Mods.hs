@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
 module UnicodeCollation.Mods
@@ -26,6 +27,10 @@ import System.Directory (getDirectoryContents)
 import System.FilePath (takeExtension, (</>))
 import Language.Haskell.TH.Syntax (Quasi(..))
 import qualified Data.Text.Normalize as N
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
 -- import Debug.Trace
 
 parseTailoring :: String -> Text -> Either ParseError Tailoring

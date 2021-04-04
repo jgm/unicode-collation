@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
@@ -11,6 +12,10 @@ import System.Environment (getArgs)
 import Data.Maybe
 import Control.Monad
 import System.Exit
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
 
 main :: IO ()
 main = do

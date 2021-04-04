@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -17,6 +18,11 @@ import qualified Data.Text.Read as TR
 import Data.Char
 import Data.Maybe
 import qualified Data.ByteString.Char8 as B8
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
+
 
 main :: IO ()
 main = do
