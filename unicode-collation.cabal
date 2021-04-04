@@ -45,6 +45,11 @@ source-repository head
   type:                git
   location:            https://github.com/jgm/unicode-collation.git
 
+flag doctests
+  Description:         Run doctests as part of test suite.
+                       Use with: @--write-ghc-environment-files=always@.
+  Default:             False
+
 common common-options
   build-depends:       base >= 4.9 && < 4.15
 
@@ -130,6 +135,10 @@ test-suite doctests
   ghc-options:         -threaded
                        -rtsopts
                        -with-rtsopts=-N
+  if flag(doctests)
+     buildable:        True
+  else
+     buildable:        False
 
 benchmark benchmark
   import:              common-options
