@@ -1,5 +1,5 @@
 test:
-	stack test --test-arguments=--hide-successes
+	stack test --test-arguments=--hide-successes --flag unicode-collation:doctests
 
 bench:
 	stack bench
