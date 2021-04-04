@@ -154,3 +154,44 @@ jobs:
           # fail if warnings in local build
           ! grep -q ": *[Ww]arning:" build.log || exit 1
           cabal v2-test --disable-optimization
+
+  benchmark:
+
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: true
+      matrix:
+        versions:
+          - ghc: '8.10.2'
+            cabal: '3.2'
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install icu
+      run: sudo apt-get install libicu-dev
+
+    - name: Install recent cabal/ghc
+      uses: haskell/actions/setup@v1
+      with:
+        ghc-version: ${{ matrix.versions.ghc }}
+        cabal-version: ${{ matrix.versions.cabal }}
+
+    - name: Cache cabal global package db
+      id:   cabal-global
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cabal
+        key: benchmark-${{ runner.os }}-${{ matrix.versions.ghc }}-${{ matrix.versions.cabal }}-cabal-global-${{ hashFiles('cabal.project') }}
+
+    - name: Install dependencies
+      run: |
+          cabal update
+          cabal build --dependencies-only --enable-optimization=1 --enable-benchmarks --disable-tests
+
+    - name: Build and test
+      run: |
+          cabal build --enable-optimization=1 --enable-benchmarks --disable-tests 2>&1 | tee build.log
+          # fail if warnings in local build
+          ! grep -q ": *[Ww]arning:" build.log || exit 1
+          cabal bench --enable-optimization=1 --benchmark-options='+RTS -T -RTS'
