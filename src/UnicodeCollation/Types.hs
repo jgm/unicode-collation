@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveLift #-}
@@ -31,6 +32,10 @@ import Instances.TH.Lift ()
 import qualified UnicodeCollation.Trie as Trie
 import Text.Printf
 import Data.List (intercalate)
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
 
 data CollationOptions =
   CollationOptions

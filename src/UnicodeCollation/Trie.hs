@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -19,6 +20,10 @@ import Data.Binary (Binary(..))
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
 import Control.Applicative ((<|>))
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
 
 data Trie a = Trie (Maybe a) (M.IntMap (Trie a))
   deriving (Show, Eq, Ord, Lift, Functor, Foldable, Traversable)
