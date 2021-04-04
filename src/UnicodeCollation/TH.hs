@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -45,9 +46,15 @@ mkLookupTable colnames = do
   let toColPair (lang, mbcolname) = do
         cn <- [| (lang, mbcolname) |]
         return $
+#if MIN_VERSION_template_haskell(2,16,0)
           TupE [ Just cn
                , Just (VarE (mkCollationName lang mbcolname))
                ]
+#else
+          TupE [ cn
+               , VarE (mkCollationName lang mbcolname)
+               ]
+#endif
   colpairs <- mapM toColPair colnames
   return [ SigD (mkName "tailorings")
            (AppT
