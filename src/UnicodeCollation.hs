@@ -54,7 +54,8 @@ import qualified Data.Binary as Binary
 collationOptions :: CollationOptions
 collationOptions =
   CollationOptions
-  { optVariableWeighting = Shifted
+  { optVariableWeighting = NonIgnorable
+  , optFrenchAccents     = False
   , optCollation         = rootCollation
   }
 
@@ -108,7 +109,7 @@ mkCollator opts =
 
 toSortKey :: CollationOptions -> Collation -> Text -> SortKey
 toSortKey opts collation =
-  mkSortKey (optVariableWeighting opts)
+  mkSortKey opts
   . handleVariable (optVariableWeighting opts)
   . getCollationElements collation
   . map ord
@@ -152,12 +153,14 @@ doVariable useL4 afterVariable (e:es)
   | otherwise
     = e : doVariable useL4 False es
 
-mkSortKey :: VariableWeighting -> [CollationElement] -> SortKey
-mkSortKey weighting elts =
+mkSortKey :: CollationOptions -> [CollationElement] -> SortKey
+mkSortKey opts elts =
   SortKey (filter (/= 0) $ map collationL1 elts)
-          (filter (/= 0) $ map collationL2 elts)
+          (filter (/= 0) . (if optFrenchAccents opts
+                               then reverse
+                               else id) $ map collationL2 elts)
           (filter (/= 0) $ map collationL3 elts)
-          ((if weighting == ShiftTrimmed
+          ((if optVariableWeighting opts == ShiftTrimmed
                then trimTrailingFFFFs
                else id) . filter (/= 0) $ map collationL4 elts)
 

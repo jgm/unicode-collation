@@ -39,8 +39,12 @@ import Data.Semigroup (Semigroup(..))
 
 data CollationOptions =
   CollationOptions
-  { optVariableWeighting  :: VariableWeighting
-  , optCollation          :: Collation
+  { optVariableWeighting  :: VariableWeighting  -- ^ Method for handling
+      -- variable elements (see <http://www.unicode.org/reports/tr10/>,
+      -- Tables 11 and 12).
+  , optFrenchAccents      :: Bool -- ^ If True, secondary weights are scanned
+      -- in reverse order, so that "coté" is sorted before "cote".
+  , optCollation          :: Collation  -- ^ The collation to use.
   } deriving (Show, Eq, Ord)
 
 -- | See <http://www.unicode.org/reports/tr10/#Variable_Weighting>.

@@ -77,6 +77,16 @@ tests conformanceTree = testGroup "Tests"
         collateWith "se" "ö" "z" @?= GT
     , testCase "tr ö z" $
         collateWith "tr" "ö" "z" @?= LT
+    , testCase "fr-CA sorted list" $
+        sortBy
+          (collate (mkCollator collationOptions{ optCollation =
+                                                   localizedCollation "fr-CA",
+                                                 optFrenchAccents = True }))
+        ["déjà","Meme", "deja", "même", "dejà", "bpef", "bœg", "Boef", "Mémé",
+         "bœf", "boef", "bnef", "pêche", "pèché", "pêché", "pêche", "pêché"]
+         @?=
+        ["bnef", "boef", "Boef", "bœf", "bœg", "bpef", "deja", "dejà", "déjà",
+         "Meme", "même", "Mémé", "pêche", "pêche", "pèché", "pêché", "pêché"]
     ]
   ]
 
