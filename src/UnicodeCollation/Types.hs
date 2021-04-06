@@ -43,7 +43,8 @@ data CollationOptions =
       -- variable elements (see <http://www.unicode.org/reports/tr10/>,
       -- Tables 11 and 12).
   , optFrenchAccents      :: Bool -- ^ If True, secondary weights are scanned
-      -- in reverse order, so that "coté" is sorted before "cote".
+      -- in reverse order, so we get the sorting
+      -- "cote côte coté côté" instead of "cote coté côte côté"
   , optNormalize          :: Bool -- ^ If True, strings are normalized
       -- to NFD before collation elements are constructed.  If the input
       -- is already normalized, this option can be set to False for
