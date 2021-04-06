@@ -32,7 +32,7 @@ this library, versus 2 ms for `text-icu`.
 
 - Locale-specific tailorings are supported, but in a limited
   way.  We do not yet support collation reording `[reorder..]`
-  or `[last..]` or `[suppressContractions..]`.
+  or `[suppressContractions..]`.
 
 ## Data files
 
