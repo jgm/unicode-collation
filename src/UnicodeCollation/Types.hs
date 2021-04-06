@@ -44,6 +44,10 @@ data CollationOptions =
       -- Tables 11 and 12).
   , optFrenchAccents      :: Bool -- ^ If True, secondary weights are scanned
       -- in reverse order, so that "coté" is sorted before "cote".
+  , optNormalize          :: Bool -- ^ If True, strings are normalized
+      -- to NFD before collation elements are constructed.  If the input
+      -- is already normalized, this option can be set to False for
+      -- better performance.
   , optCollation          :: Collation  -- ^ The collation to use.
   } deriving (Show, Eq, Ord)
 

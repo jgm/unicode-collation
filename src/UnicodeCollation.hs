@@ -56,6 +56,7 @@ collationOptions =
   CollationOptions
   { optVariableWeighting = NonIgnorable
   , optFrenchAccents     = False
+  , optNormalize         = True
   , optCollation         = rootCollation
   }
 
@@ -114,7 +115,9 @@ toSortKey opts collation =
   . getCollationElements collation
   . map ord
   . T.unpack
-  . N.normalize N.NFD
+  . if optNormalize opts
+       then N.normalize N.NFD
+       else id
 
 handleVariable :: VariableWeighting -> [CollationElement] -> [CollationElement]
 handleVariable NonIgnorable = map (\elt -> elt{ collationL4 = 0 })
