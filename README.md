@@ -1,6 +1,7 @@
 # unicode-collation
 
-[![GitHub CI](https://github.com/jgm/unicode-collation/workflows/CI/badge.svg)](https://github.com/jgm/unicode-collation/actions)
+[![GitHub
+CI](https://github.com/jgm/unicode-collation/workflows/CI%20tests/badge.svg)](https://github.com/jgm/unicode-collation/actions)
 [![Hackage](https://img.shields.io/hackage/v/unicode-collation.svg?logo=haskell)](https://hackage.haskell.org/package/unicode-collation)
 [![BSD-2-Clause license](https://img.shields.io/badge/license-BSD--2--Clause-blue.svg)](LICENSE)
 
