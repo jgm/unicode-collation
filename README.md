@@ -16,23 +16,21 @@ Previously there was no way to do correct unicode collation
 and the barely maintained Haskell wrapper `text-icu`.  This
 library offers a pure Haskell solution.
 
+## Conformance
+
+The library passes UCA conformance tests (except for tests
+involving unmatched surrogates and a few Tibetan characters,
+which seem to be changed in unexpected ways by Text.pack or
+normalization).
+
+Locale-specific tailorings are supported, but in a limited
+way.  We do not yet support collation reording `[reorder..]`
+or `[suppressContractions..]`.
+
 ## Performance
 
-In one benchmark it takes 11 ms to sort 10,000 strings with
+In one benchmark it takes 9 ms to sort 10,000 strings with
 this library, versus 2 ms for `text-icu`.
-
-## Current status
-
-- Passes UCA conformance tests (except for tests involving
-  unmatched surrogates and a few Tibetan characters, which
-  seem to be changed in unexpected ways by Text.pack or
-  normalization).
-
-- Performance is about 4 times slower than with `text-icu`.
-
-- Locale-specific tailorings are supported, but in a limited
-  way.  We do not yet support collation reording `[reorder..]`
-  or `[suppressContractions..]`.
 
 ## Data files
 

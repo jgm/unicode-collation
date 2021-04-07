@@ -23,59 +23,65 @@ import Control.Applicative ((<|>))
 import Data.Semigroup (Semigroup(..))
 #endif
 
-data Trie a = Trie (Maybe a) (M.IntMap (Trie a))
+data Trie a = Trie (Maybe a) (Maybe (M.IntMap (Trie a)))
   deriving (Show, Eq, Ord, Lift, Functor, Foldable, Traversable)
 
 instance Semigroup (Trie a) where
    trie1 <> trie2 = foldr (uncurry insert) trie1 (unfoldTrie trie2)
 
 instance Monoid (Trie a) where
-   mempty = Trie Nothing mempty
+   mempty = Trie Nothing Nothing
    mappend = (<>)
 
 instance Binary a => Binary (Trie a) where
-   put (Trie mbv m) = put (mbv, m)
+   put (Trie mbv mbm) = put (mbv, mbm)
    get = do
-     (mbv,m) <- get
-     return $ Trie mbv m
+     (mbv,mbm) <- get
+     return $ Trie mbv mbm
 
 empty :: Trie a
-empty = Trie Nothing mempty
+empty = Trie Nothing Nothing
 
 unfoldTrie :: Trie a -> [([Int], a)]
 unfoldTrie  = map (first reverse) . go []
  where
-  go xs (Trie (Just v) m) =
+  go xs (Trie (Just v) (Just m)) =
     (xs, v) : concatMap (gopair xs) (M.toList m)
-  go xs (Trie Nothing m) =
+  go xs (Trie (Just v) Nothing) = [(xs, v)]
+  go xs (Trie Nothing (Just m)) =
     concatMap (gopair xs) (M.toList m)
+  go _ (Trie Nothing Nothing) = []
   gopair xs (i, trie) = go (i:xs) trie
 
 insert :: [Int] -> a -> Trie a -> Trie a
-insert [] x (Trie _ m) = Trie (Just x) m
-insert (c:cs) x (Trie mbv m) =
+insert [] x (Trie _ mbm) = Trie (Just x) mbm
+insert (c:cs) x (Trie mbv (Just m)) =
   case M.lookup c m of
-    Nothing   -> Trie mbv (M.insert c (insert cs x empty) m)
-    Just trie -> Trie mbv (M.insert c (insert cs x trie) m)
+    Nothing   -> Trie mbv (Just (M.insert c (insert cs x empty) m))
+    Just trie -> Trie mbv (Just (M.insert c (insert cs x trie) m))
+insert (c:cs) x (Trie mbv Nothing) =
+  Trie mbv (Just (M.insert c (insert cs x empty) mempty))
 
 alter :: (Maybe a -> Maybe a) -> [Int] -> Trie a -> Trie a
-alter f [] (Trie mbv m) = Trie (f mbv) m
-alter f (c:cs) (Trie mbv m) =
+alter f [] (Trie mbv mbm) = Trie (f mbv) mbm
+alter f (c:cs) (Trie mbv (Just m)) =
   case M.lookup c m of
-    Nothing   -> Trie mbv (M.insert c (alter f cs empty) m)
-    Just trie -> Trie mbv (M.insert c (alter f cs trie) m)
+    Nothing   -> Trie mbv (Just (M.insert c (alter f cs empty) m))
+    Just trie -> Trie mbv (Just (M.insert c (alter f cs trie) m))
+alter f (c:cs) (Trie mbv Nothing) =
+  Trie mbv (Just (M.insert c (alter f cs empty) mempty))
 
 matchLongestPrefix :: Trie a -> [Int] -> Maybe (a, [Int], Trie a)
 matchLongestPrefix = go Nothing
  where
-   go _ (Trie (Just x) m) [] = Just (x, [], Trie Nothing m)
+   go _ (Trie (Just x) mbm) [] = Just (x, [], Trie Nothing mbm)
    go best (Trie Nothing  _) [] = best
-   go best (Trie mbv m) (c:cs) =
-     case M.lookup c m of
+   go best (Trie mbv mbm) (c:cs) =
+     case mbm >>= M.lookup c of
        Nothing ->
          case mbv of
            Nothing -> best
-           Just x  -> Just (x, c:cs, Trie Nothing m)
+           Just x  -> Just (x, c:cs, Trie Nothing mbm)
        Just trie -> go ((case mbv of
                            Nothing -> Nothing
                            Just x  -> Just (x, c:cs, trie)) <|> best) trie cs
