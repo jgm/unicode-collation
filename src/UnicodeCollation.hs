@@ -113,8 +113,7 @@ toSortKey opts collation =
   mkSortKey opts
   . handleVariable (optVariableWeighting opts)
   . getCollationElements collation
-  . map ord
-  . T.unpack
+  . T.foldr ((:) . ord) []
   . if optNormalize opts
        then N.normalize N.NFD
        else id
