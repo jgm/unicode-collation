@@ -17,7 +17,6 @@ import Data.Bifunctor (first)
 import Data.Binary (Binary(..))
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
-import Control.Applicative ((<|>))
 #if MIN_VERSION_base(4,11,0)
 #else
 import Data.Semigroup (Semigroup(..))
@@ -82,7 +81,7 @@ matchLongestPrefix = go Nothing
          case mbv of
            Nothing -> best
            Just x  -> Just (x, c:cs, Trie Nothing mbm)
-       Just trie -> go ((case mbv of
-                           Nothing -> Nothing
-                           Just x  -> Just (x, c:cs, trie)) <|> best) trie cs
+       Just trie -> go (case mbv of
+                          Nothing -> best
+                          Just x  -> Just (x, c:cs, trie)) trie cs
 
