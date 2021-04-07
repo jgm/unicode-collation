@@ -29,7 +29,7 @@ way.  We do not yet support `[reorder..]` or
 
 ## Performance
 
-In one benchmark it takes 9 ms to sort 10,000 strings with
+In one benchmark it takes 8.5 ms to sort 10,000 strings with
 this library, versus 2 ms for `text-icu`.
 
 ## Data files

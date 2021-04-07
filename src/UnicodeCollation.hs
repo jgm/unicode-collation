@@ -119,7 +119,7 @@ toSortKey opts collation =
        else id
 
 handleVariable :: VariableWeighting -> [CollationElement] -> [CollationElement]
-handleVariable NonIgnorable = map (\elt -> elt{ collationL4 = 0 })
+handleVariable NonIgnorable = id
 handleVariable Blanked = doVariable False False
 handleVariable Shifted = doVariable True False
 handleVariable ShiftTrimmed = handleVariable Shifted
