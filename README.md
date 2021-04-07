@@ -24,8 +24,8 @@ which seem to be changed in unexpected ways by Text.pack or
 normalization).
 
 Locale-specific tailorings are supported, but in a limited
-way.  We do not yet support collation reording `[reorder..]`
-or `[suppressContractions..]`.
+way.  We do not yet support `[reorder..]` or
+`[suppressContractions..]`.
 
 ## Performance
 
