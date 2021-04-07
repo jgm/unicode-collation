@@ -157,13 +157,7 @@ doVariable useL4 afterVariable (e:es)
 
 mkSortKey :: CollationOptions -> [CollationElement] -> SortKey
 mkSortKey opts elts = SortKey $
-    l1s ++ (0:l2s) ++
-    if null l3s && null l4s
-       then []
-       else (0:l3s) ++
-            if null l4s
-               then []
-               else 0:l4s
+    l1s ++ (0:l2s) ++ (0:l3s) ++ if null l4s then [] else (0:l4s)
   where
     l1s = filter (/=0) $ map collationL1 elts
     l2s = (if optFrenchAccents opts
