@@ -30,10 +30,10 @@ way.  We do not yet support `[reorder..]` or
 ## Performance
 
 ```
-  sort a list of 10000 random Texts: OK (2.26s)
-    8.4 ms ± 442 μs,  27 MB allocated, 901 KB copied
-  sort same list with text-icu:      OK (2.14s)
-    2.1 ms ± 132 μs, 7.1 MB allocated, 148 KB copied
+  sort a list of 10000 random Texts: OK (2.21s)
+    8.2 ms ± 637 μs,  27 MB allocated, 903 KB copied
+  sort same list with text-icu:      OK (2.10s)
+    2.0 ms ± 114 μs, 7.1 MB allocated, 148 KB copied
 ```
 
 ## Data files
