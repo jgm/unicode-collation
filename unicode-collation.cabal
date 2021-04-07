@@ -29,7 +29,8 @@ category:            Text
 build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
-extra-source-files:  data/allkeys_CLDR.txt
+extra-source-files:  stack.yaml
+                     data/allkeys_CLDR.txt
                      data/allkeys.txt
                      data/collation/*.xml
                      data/DerivedCombiningClass.txt
