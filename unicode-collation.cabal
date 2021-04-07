@@ -58,7 +58,6 @@ common common-options
                        -Widentities
                        -Wincomplete-uni-patterns
                        -Wincomplete-record-updates
-                       -Wunused-packages
                        +RTS -A8m -RTS
                        -j4
   if impl(ghc >= 8.0)
