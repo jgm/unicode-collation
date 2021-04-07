@@ -179,18 +179,10 @@ parseConformanceTestLine lineno bs =
          else Just (lineno, T.pack $ map chr codepoints)
 
 prettySortKey :: SortKey -> String
-prettySortKey sk = T.unpack $
-  "[" <>
-   T.strip
-    (T.unwords
-      [tohexes (sortL1 sk), "|",
-       tohexes (sortL2 sk), "|",
-       tohexes (sortL3 sk), "|",
-       tohexes (sortL4 sk), "|"])
-  <> "]"
+prettySortKey (SortKey ws) = tohexes ws
  where
-  tohexes = T.unwords . map tohex
-  tohex = T.pack . printf "%04X"
+  tohexes = unwords . map tohex
+  tohex = printf "%04X"
 
 {-
 icuCollate :: Text -> Text -> Ordering

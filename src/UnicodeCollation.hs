@@ -156,15 +156,23 @@ doVariable useL4 afterVariable (e:es)
     = e : doVariable useL4 False es
 
 mkSortKey :: CollationOptions -> [CollationElement] -> SortKey
-mkSortKey opts elts =
-  SortKey (filter (/= 0) $ map collationL1 elts)
-          (filter (/= 0) . (if optFrenchAccents opts
-                               then reverse
-                               else id) $ map collationL2 elts)
-          (filter (/= 0) $ map collationL3 elts)
-          ((if optVariableWeighting opts == ShiftTrimmed
-               then trimTrailingFFFFs
-               else id) . filter (/= 0) $ map collationL4 elts)
+mkSortKey opts elts = SortKey $
+    l1s ++ (0:l2s) ++
+    if null l3s && null l4s
+       then []
+       else (0:l3s) ++
+            if null l4s
+               then []
+               else 0:l4s
+  where
+    l1s = filter (/=0) $ map collationL1 elts
+    l2s = (if optFrenchAccents opts
+              then reverse
+              else id) $ filter (/=0) $ map collationL2 elts
+    l3s = filter (/=0) $ map collationL3 elts
+    l4s = (case optVariableWeighting opts of
+             ShiftTrimmed -> trimTrailingFFFFs
+             _             -> id) $ filter (/=0) $ map collationL4 elts
 
 trimTrailingFFFFs :: [Word16] -> [Word16]
 trimTrailingFFFFs = reverse . dropWhile (== 0xFFFF) . reverse

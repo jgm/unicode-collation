@@ -29,8 +29,12 @@ way.  We do not yet support `[reorder..]` or
 
 ## Performance
 
-In one benchmark it takes 8.5 ms to sort 10,000 strings with
-this library, versus 2 ms for `text-icu`.
+```
+  sort a list of 10000 random Texts: OK (2.26s)
+    8.4 ms ± 442 μs,  27 MB allocated, 901 KB copied
+  sort same list with text-icu:      OK (2.14s)
+    2.1 ms ± 132 μs, 7.1 MB allocated, 148 KB copied
+```
 
 ## Data files
 

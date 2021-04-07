@@ -180,19 +180,11 @@ showWordList ws =
     "[" ++ intercalate ","
             (map (printf "0x%04X" . (fromIntegral :: Word16 -> Int)) ws) ++ "]"
 
-data SortKey =
-  SortKey { sortL1   :: [Word16]
-          , sortL2   :: [Word16]
-          , sortL3   :: [Word16]
-          , sortL4   :: [Word16]
-          } deriving (Eq, Ord)
+newtype SortKey = SortKey { unSortKey :: [Word16] }
+  deriving (Eq, Ord)
 
 instance Show SortKey where
- show sk = printf "SortKey %s %s %s %s"
-             (showWordList $ sortL1 sk)
-             (showWordList $ sortL2 sk)
-             (showWordList $ sortL3 sk)
-             (showWordList $ sortL4 sk)
+ show (SortKey ws) = "SortKey " ++ showWordList ws
 
 -- Note that & b < q <<< Q is teh same as & b < q, & q <<< Q
 -- Another syntactic shortcut is:
