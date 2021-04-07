@@ -9,7 +9,6 @@ module UnicodeCollation.Mods
   )
 where
 import Data.Maybe
-import Control.Monad (mplus)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -20,7 +19,7 @@ import UnicodeCollation.Elements (getCollationElements)
 import Text.Parsec
 import Text.Parsec.Text
 import Data.Char (chr, isSpace, ord, isLetter)
-import Control.Monad (void)
+import Control.Monad (mplus, void)
 import Text.HTML.TagSoup (Tag(..))
 import Text.HTML.TagSoup.Tree (parseTree, universeTree, TagTree(..))
 import System.Directory (getDirectoryContents)
@@ -67,7 +66,7 @@ pCollationMods = do
   beforeLevel <- option Nothing $ try $ do
                     void $ lexeme $ char '['
                     void $ lexeme $ string "before"
-                    d <- lexeme $ digit
+                    d <- lexeme digit
                     void $ lexeme $ char ']'
                     return $
                       case d of
@@ -121,7 +120,7 @@ pBracketed :: Parser ()
 pBracketed = do
   void $ lexeme $ char '['
   void $ many $ satisfy (\c -> c /= '[' && c /= ']')
-  optional $ lexeme $ pBracketed
+  optional $ lexeme pBracketed
   void $ lexeme $ char ']'
 
 pComment :: Parser ()
@@ -263,14 +262,11 @@ applyCollationMod collation cmod =
   incrementLevel n L4 eltA _eltB =
     eltA{ collationL4 = fromIntegral $ fromIntegral (collationL4 eltA) + n }
 
-  levelOf (CollationElement _ l1 l2 l3 _) =
-    if l1 > 0
-       then L1
-       else if l2 > 0
-               then L2
-               else if l3 > 0
-                       then L3
-                       else L4
+  levelOf (CollationElement _ l1 l2 l3 _)
+    | l1 > 0    = L1
+    | l2 > 0    = L2
+    | l3 > 0    = L3
+    | otherwise = L4
 
   completelyIgnorable = CollationElement False 0 0 0 0xFFFF -- is this right ?
 

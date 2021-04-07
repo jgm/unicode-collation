@@ -15,8 +15,7 @@ import qualified Data.IntSet as IntSet
 import qualified Data.IntMap as M
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
 import Data.ByteString.Lex.Integral (readHexadecimal)
-import Data.List (foldl', permutations, sortBy)
-import Data.Ord
+import Data.List (foldl', permutations, sortOn)
 import qualified Data.Binary as Binary
 import UnicodeCollation.CombiningClass (genCombiningClassMap)
 import Data.Maybe
@@ -58,7 +57,7 @@ getCollationElements collation = go
                 Just (elts, is, subcollation)
                  | null unblockedNonStarters -> elts ++ go is
                  | otherwise ->
-                     case sortBy (comparing remainderLength) matches of
+                     case sortOn remainderLength matches of
                        ((newelts, rs, _):_)
                               -> newelts ++ go (rs ++
                                          drop (length unblockedNonStarters) is)

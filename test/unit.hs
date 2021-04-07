@@ -112,17 +112,17 @@ conformanceTestsFor weighting fp = do
 
 conformanceTestWith :: Collator -> Int -> Text -> Text -> TestTree
 conformanceTestWith collator lineNo !txt1 !txt2 =
-  let showHexes = unwords . map (\c -> if c > 0xFFFF
-                                          then printf "%05X" c
-                                          else printf "%04X" c) .
-                              map ord . T.unpack
+  let showHexes = unwords . map ((\c -> if c > 0xFFFF
+                                           then printf "%05X" c
+                                           else printf "%04X" c) . ord)
+                          . T.unpack
    in testCase ("[line " ++ show lineNo ++ "] " ++
                 showHexes txt1 ++ " <= " ++ showHexes txt2) $
         assertBool ("Calculated sort keys:\n" ++
                     showHexes txt1 ++ " " ++
-                    (prettySortKey $ sortKey collator txt1) ++ "\n" ++
+                    prettySortKey (sortKey collator txt1) ++ "\n" ++
                     showHexes txt2 ++ " " ++
-                    (prettySortKey $ sortKey collator txt2))
+                    prettySortKey (sortKey collator txt2))
                    (collate collator txt1 txt2 /= GT)
 
 collateWithTailoring :: Tailoring -> Text -> Text -> Ordering

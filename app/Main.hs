@@ -32,20 +32,20 @@ main = do
     putStrLn "          --list  List supported collations"
     putStrLn ""
     putStrLn "Sorts lines from stdin using the specified collation."
-    putStrLn $ "COLLATION is a BCP47 language code, followed optionally"
-    putStrLn $ "by / and a collation name.  Examples:"
-    putStrLn "$ unicode-collate # Sort lines from stdin using root collation"
-    putStrLn "$ unicode-collate es # Use standard Spanish collation"
-    putStrLn "$ unicode-collate es/traditional # Use traditional Spanish"
-    putStrLn "$ unicode-collate fr-CA # Use Canadian French collation"
-    exitWith $ ExitSuccess
+    putStrLn "COLLATION is a BCP47 language code, followed optionally"
+    putStrLn "by / and a collation name.  Examples:"
+    putStrLn "unicode-collate # Sort lines from stdin using root collation"
+    putStrLn "unicode-collate es # Use standard Spanish collation"
+    putStrLn "unicode-collate es/traditional # Use traditional Spanish"
+    putStrLn "unicode-collate fr-CA # Use Canadian French collation"
+    exitSuccess
 
   let printCollation (lang, mbcoll) =
         T.putStrLn (maybe lang (\coll -> lang <> "/" <> coll) mbcoll)
 
-  when (any (=="--list") args) $ do
+  when ("--list" `elem` args) $ do
     mapM_ printCollation $ M.keys tailorings
-    exitWith $ ExitSuccess
+    exitSuccess
 
   spec <- maybe mempty T.pack . listToMaybe <$> getArgs
   let myCollator = collate $

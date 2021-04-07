@@ -1,9 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveTraversable #-}
-{-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE DeriveLift #-}
 module UnicodeCollation.Trie
   ( Trie
@@ -16,6 +13,7 @@ module UnicodeCollation.Trie
   where
 
 import qualified Data.IntMap as M
+import Data.Bifunctor (first)
 import Data.Binary (Binary(..))
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
@@ -45,7 +43,7 @@ empty :: Trie a
 empty = Trie Nothing mempty
 
 unfoldTrie :: Trie a -> [([Int], a)]
-unfoldTrie  = map (\(is,a) -> (reverse is,a)) . go []
+unfoldTrie  = map (first reverse) . go []
  where
   go xs (Trie (Just v) m) =
     (xs, v) : concatMap (gopair xs) (M.toList m)

@@ -42,6 +42,6 @@ parseLine t =
        in case TR.decimal $ T.drop 2 $ T.dropWhile (/=';') rest' of
             Left _ -> Nothing
             Right (0, _) -> Nothing -- don't include 0 values
-            Right ((category :: Int), _)
+            Right (category :: Int, _)
                    -> Just $ map (,category) (enumFromTo lower upper)
 
