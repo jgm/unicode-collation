@@ -5,8 +5,9 @@ module UnicodeCollation.Lang
   , renderLang
   )
 where
-import Control.Monad (void, mzero)
-import Data.Char (isAlphaNum, isAscii, isLetter, isLower, isUpper)
+import Control.Monad (mzero)
+import Data.Char (isAlphaNum, isAscii, isAsciiLower, isAsciiUpper,
+                  isLower, isUpper, isDigit)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Text.Parsec as P
@@ -16,7 +17,7 @@ data Lang = Lang{ langLanguage   :: Text
                 , langScript     :: Maybe Text
                 , langRegion     :: Maybe Text
                 , langVariants   :: [Text]
-                , langExtensions :: [(Char, [(Text , Maybe Text)])]
+                , langExtensions :: [(Text, [(Text , Maybe Text)])]
                 , langPrivateUse :: [Text]
                 } deriving (Eq, Ord, Show)
 
@@ -31,16 +32,17 @@ renderLang lang =
      <> renderPrivateUse (langPrivateUse lang)
  where
   renderExtension (c, ks) =
-    "-" <> T.singleton c <> mconcat (map renderKeyword ks)
+    "-" <> c <> mconcat (map renderKeyword ks)
   renderKeyword (k, Nothing) = "-" <> k
   renderKeyword (k, Just v) = "-" <> k <> "-" <> v
+  renderPrivateUse [] = ""
   renderPrivateUse ts =
     "-x" <> mconcat (map (T.cons '-') ts)
 
 -- | Parse a BCP 47 string as a Lang.
 parseLang :: Text -> Either Text Lang
 parseLang lang =
-  case P.parse pLangTag "lang" lang of
+  case P.parse pLangTag "lang" (T.split (\c -> c == '-' || c == '_') lang) of
        Right r -> Right r
        Left e  -> Left $ T.pack $ show e
   where
@@ -50,12 +52,12 @@ parseLang lang =
     --                 *("-" variant)
     --                 *("-" extension)
     pLangTag = do
-      language <- pLanguage
-      script <- P.option Nothing $ Just <$> pScript
-      region <- P.option Nothing $ Just <$> pRegion
-      variants <- P.many pVariant
-      extensions <- P.many pExtension
-      privateUse <- pPrivateUse
+      language <- pLanguage P.<?> "language"
+      script <- P.option Nothing (Just <$> pScript P.<?> "script")
+      region <- P.option Nothing (Just <$> pRegion P.<?> "region")
+      variants <- P.many pVariant P.<?> "variant"
+      extensions <- P.many pExtension P.<?> "extension"
+      privateUse <- P.option [] (pPrivateUse P.<?> "private use")
       P.eof
       return Lang{   langLanguage = language
                    , langScript = script
@@ -63,51 +65,60 @@ parseLang lang =
                    , langVariants = variants
                    , langExtensions = extensions
                    , langPrivateUse = privateUse }
+
     -- language      = 2*3ALPHA            ; shortest ISO 639 code
     --                 ["-" extlang]       ; sometimes followed by
     --                                     ; extended language subtags
     --               / 4ALPHA              ; or reserved for future use
     --               / 5*8ALPHA            ; or registered language subtag
-    pLanguage = do
-      cs <- P.many1 asciiLetter
-      let lcs = length cs
-      let baselang = T.toLower $ T.pack cs
-      case lcs of
-        n | n < 2     -> fail "language too short"
-          | n < 4     -> ((baselang <>) <$> pExtlang) P.<|> pure baselang
-          | n < 9     -> pure baselang
-          | otherwise -> fail "language too long"
+    pLanguage = (do
+      baselang <- tok (\t -> T.all isAsciiLower t && lengthBetween 2 3 t)
+      extlang <- P.option Nothing $ Just <$> pExtlang
+      case extlang of
+        Nothing  -> pure baselang
+        Just ext -> pure $ baselang <> "-" <> ext)
+      P.<|> tok (\t -> T.all isAsciiLower t && lengthBetween 4 8 t)
+
+    tok :: (Text -> Bool) -> P.Parsec [Text] () Text
+    tok f = P.tokenPrim T.unpack (\pos t _ ->
+                                   P.incSourceColumn pos (T.length t))
+                      (\t -> if f t then Just t else Nothing)
+    lengthBetween lo hi t = let len = T.length t in len >= lo && len <= hi
 
     -- extlang       = 3ALPHA              ; selected ISO 639 codes
     --                 *2("-" 3ALPHA)      ; permanently reserved
-    pExtlang = P.try $ do
-      _ <- separ
-      cs <- T.pack <$> P.count 3 asciiLetterLower
-      others <- P.many (P.try (separ *>
-                                (T.pack <$> P.count 3 asciiLetterLower)))
-      pure $ "-" <> T.intercalate "-" (cs:others)
+    pExtlang = T.intercalate "-" <$> countBetween 1 3
+                 (tok (\t -> T.all isAsciiLower t && T.length t == 3))
+
+    countBetween (low :: Int) (hi :: Int) p = P.try $ countBetween' low hi p 1
+    countBetween' low hi p (n :: Int) = (do
+     res <- p
+     if n >= hi
+        then return [res]
+        else (res:) <$> countBetween' low hi p (n + 1))
+      P.<|> (if n > low then return [] else mzero)
 
     -- script        = 4ALPHA              ; ISO 15924 code
-    pScript = P.try $ do
-      separ
-      x <- asciiLetterUpper
-      xs <- P.count 3 asciiLetterLower
-      return $ T.pack (x:xs)
+    pScript = tok (\t -> isTitleCase t && T.length t == 4)
+
+    isTitleCase t = case T.uncons t of
+                      Nothing -> False
+                      Just (c,rest) -> isUpper c && T.all isLower rest
 
     -- region        = 2ALPHA              ; ISO 3166-1 code
     --               / 3DIGIT              ; UN M.49 code
-    pRegion = P.try $ do
-      separ
-      cs <- P.count 2 asciiLetterUpper P.<|> P.count 3 P.digit
-      return $ T.pack cs
+    pRegion =
+      tok (\t -> T.all isAsciiUpper t && T.length t == 2)
+       P.<|> tok (\t -> T.all isDigit t && T.length t == 3)
 
     -- variant       = 5*8alphanum         ; registered variants
     --              / (DIGIT 3alphanum)
-    pVariant = P.try $ do
-      separ
-      ds <- countRange 5 8 asciiAlphaNum P.<|>
-             ((++) <$> (P.count 1 P.digit) <*> (P.count 3 asciiAlphaNum))
-      return $ T.pack ds
+    pVariant =
+      tok  (\t -> T.all isAsciiAlphaNum t && lengthBetween 5 8 t)
+        P.<|> tok (\t -> T.all isAsciiAlphaNum t && T.length t == 4 &&
+                             isDigit (T.head t))
+
+    isAsciiAlphaNum c = isAscii c && isAlphaNum c
 
     -- extension     = singleton 1*("-" (2*8alphanum))
     -- RFC6087:
@@ -130,39 +141,23 @@ parseLang lang =
     --     characters following a 'key'.  'Type' subtags are specific to
     --     a particular 'key' and the order of the 'type' subtags MAY be
     --     significant to the interpretation of the 'keyword'.
-    pExtension = P.try $ do
-      separ
-      c <- P.alphaNum
-      attrs <- P.many (separ *> countRange 3 8 asciiAlphaNum)
-      keywords <- P.many (separ *> pKeyword)
-      return (c, map (\attr -> (T.pack attr, Nothing)) attrs ++ keywords)
+    pExtension = do
+      c <- tok (\t -> T.length t == 1 && T.all isAsciiAlphaNum t)
+      attrs <- P.many
+             (tok (\t -> T.all isAsciiAlphaNum t && lengthBetween 3 8 t))
+      keywords <- P.many pKeyword
+      return (c, map (\attr -> (attr, Nothing)) attrs ++ keywords)
 
-    pKeyword = P.try $ do
-      key <- P.count 2 asciiLetterLower
-      types <- P.many (P.try (separ *> countRange 3 8 asciiAlphaNum))
-      return (T.pack key,
-              case types of
-                     [] -> Nothing
-                     _  -> Just (T.intercalate "-" $ map T.pack types))
+    pKeyword = do
+      key <- tok (\t -> T.length t == 2 && T.all isAsciiLower t)
+      types <- P.many (tok (\t -> lengthBetween 3 8 t &&
+                                        T.all isAsciiAlphaNum t))
+      return (key, case types of
+                          [] -> Nothing
+                          _  -> Just (T.intercalate "-" types))
 
     -- privateuse    = "x" 1*("-" (1*8alphanum))
-    pPrivateUse = P.try $ do
-      separ
-      void $ P.char 'x'
-      P.many1 (separ *> (T.pack <$> countRange 1 8 asciiAlphaNum))
-
-    asciiLetter      = P.satisfy (\c -> isAscii c && isLetter c)
-    asciiLetterLower = P.satisfy (\c -> isAscii c && isLetter c && isLower c)
-    asciiLetterUpper = P.satisfy (\c -> isAscii c && isLetter c && isUpper c)
-    asciiAlphaNum    = P.satisfy (\c -> isAscii c && isAlphaNum c)
-    separ = () <$ (P.char '-' P.<|> P.char '_')
-
-    countRange (low :: Int) (hi :: Int) p = P.try $ countRange' low hi p 1
-    countRange' low hi p (n :: Int) = (do
-      res <- p
-      if n >= hi
-         then return [res]
-         else (res:) <$> countRange' low hi p (n + 1))
-      P.<|> (if n > low then return [] else mzero)
-
+    pPrivateUse = do
+      _ <- tok (== "x")
+      P.many1 (tok (\t -> lengthBetween 1 8 t && T.all isAsciiAlphaNum t))
 
