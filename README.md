@@ -51,3 +51,12 @@ The package includes an executable component, `unicode-collate`,
 which may be used for testing and for collating in scripts.
 For usage instructions, `unicode-collate --help`.
 
+## References
+
+- Unicode Technical Standard #35:
+  Unicode Locale Data Markup Language (LDML):
+  <http://www.unicode.org/reports/tr35/>
+- Unicode Technical Standard #10:
+  Unicode Collation Algorithm:
+  <https://www.unicode.org/reports/tr10>
+
