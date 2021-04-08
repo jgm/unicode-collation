@@ -6,7 +6,8 @@ Copyright: (c) 2021 John MacFarlane
 SPDX-License-Identifier: BSD-2-Clause
 Maintainer: John MacFarlane <jgm@berkeley.edu>
 
-Haskell implementation of the Unicode Collation Algorithm.
+Haskell implementation of the Unicode Collation Algorithm,
+described in <https://www.unicode.org/reports/tr10>.
 
 Basic usage example:
 
