@@ -6,6 +6,7 @@ module Main (main) where
 import UnicodeCollation
 import UnicodeCollation.Types
 import UnicodeCollation.Tailorings
+import UnicodeCollation.Lang
 import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -83,7 +84,35 @@ tests conformanceTree = testGroup "Tests"
         ["bnef", "boef", "Boef", "bœf", "bœg", "bpef", "deja", "dejà", "déjà",
          "Meme", "même", "Mémé", "pêche", "pêche", "pèché", "pêché", "pêché"]
     ]
+  , testGroup "BCP 47 Lang parsing"
+       (map langParseTest langPairs)
+  , testGroup "BCP 47 Lang round-trip"
+       (map langRoundTripTest langPairs)
   ]
+
+lang :: Lang
+lang = Lang mempty mempty mempty mempty mempty mempty
+
+langPairs :: [(Text, Lang)]
+langPairs = [ ("en", lang{langLanguage = "en"})
+            , ("en-US", lang{langLanguage = "en", langRegion = Just "US"})
+            , ("sr_Latn_RS", lang{langLanguage = "sr", langScript = Just "Latn",
+                                   langRegion = Just "RS"})
+            , ("es-419", lang{langLanguage = "es", langRegion = Just "419"})
+            , ("de-CH-1996", lang{langLanguage = "de", langRegion = Just "CH",
+                                  langVariants = ["1996"]})
+            , ("en-u-kr-latin-digit", lang{langLanguage = "en",
+                     langExtensions = [("u", [("kr", Just "latin-digit")])]})
+            ]
+
+langParseTest :: (Text, Lang) -> TestTree
+langParseTest (t, l) =
+  testCase (T.unpack t) $ parseLang t @?= Right l
+
+langRoundTripTest :: (Text, Lang) -> TestTree
+langRoundTripTest (_,l) =
+  let l' = renderLang l
+   in testCase (T.unpack l') $ renderLang <$> parseLang l' @?= Right l'
 
 conformanceTests :: IO TestTree
 conformanceTests = do
