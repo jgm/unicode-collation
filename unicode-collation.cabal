@@ -76,6 +76,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     UnicodeCollation
                        UnicodeCollation.Types
+                       UnicodeCollation.Lang
                        UnicodeCollation.Elements
                        UnicodeCollation.Tailorings
   other-modules:       UnicodeCollation.Trie
