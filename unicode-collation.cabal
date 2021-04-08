@@ -12,7 +12,7 @@ description:         This library provides a pure Haskell implementation of
                      As one might expect, this library is slower than
                      @text-icu@, but not to a degree that should matter for
                      for most purposes. (On one test machine, it takes
-                     11ms to sort 10,000 random Texts,
+                     8.4ms to sort 10,000 random Texts,
                      as opposed to 2ms with @text-icu@.)
                      .
                      A command-line program is also provided for testing
