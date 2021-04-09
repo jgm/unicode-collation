@@ -30,16 +30,34 @@ using a string literal, as in the above examples.  Note, however,
 that you won't get any feedback if the string doesn't parse correctly
 as BCP 47; instead, you'll just get the default (root) collator.
 
-For better safety (and compile-term errors and warnings), use the quasi-quoter:
+For better safety (and compile-term errors and warnings), use the
+quasi-quoter:
 
--- >>> :set -XQuasiQuotation
--- >>> let esTradCollator = [collator|es-u-co-trad|]
--- >>> let esCollator = [collator|es|]
--- >>> let esTradCollator = collatorFor "es-u-co-trad"
--- >>> collate esCollator "Co" "Ch"
--- GT
--- >>> collate esTradCollator "Co" "Ch"
--- LT
+>>> :set -XQuasiQuotes
+>>> let esTradCollator = [collator|es-u-co-trad|]
+>>> let esCollator = [collator|es|]
+>>> collate esCollator "Co" "Ch"
+GT
+>>> collate esTradCollator "Co" "Ch"
+LT
+
+Note that the unicode extension syntax for BCP47 can be used to specify
+a particular collation (here, Spanish "traditional" instead of the
+default ordering).
+
+If you won't know the language time until run time, use 'parseLang'
+to parse it to a 'Lang' rather than using 'fromString', so you can
+catch parse errors.
+
+>>> let langtag = "en-US"
+>>> :{
+let myCollator = case parseLang langtag of
+                   Left e     -> error e
+                   Right lang -> collatorFor lang
+ in collate myCollator "a" "b"
+:}
+LT
+
 -}
 
 module UnicodeCollation
@@ -61,14 +79,3 @@ import UnicodeCollation.Types
 import UnicodeCollation.Lang
 import UnicodeCollation.Collator
 import UnicodeCollation.Tailorings
-import UnicodeCollation.TH (genCollation)
-import UnicodeCollation.Collation (getCollationElements)
-import Data.Word (Word16)
-import qualified Data.Text.Normalize as N
-import qualified Data.Text as T
-import Data.Text (Text)
-import Data.Ord (comparing)
-import Data.Char (ord)
-import Data.Maybe (fromMaybe)
-import qualified Data.Binary as Binary
-

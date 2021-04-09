@@ -7,4 +7,7 @@ bench:
 ghci:
 	stack ghci unicode-collation:lib unicode-collation:test:unit --ghc-options=-XOverloadedStrings
 
-.PHONY: test bench ghci
+clean:
+	stack clean
+
+.PHONY: test bench ghci clean
