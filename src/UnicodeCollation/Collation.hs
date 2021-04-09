@@ -2,7 +2,8 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 module UnicodeCollation.Collation
- ( insertElements
+ ( unfoldCollation
+ , insertElements
  , alterElements
  , findLast
  , findFirst
@@ -27,6 +28,10 @@ import UnicodeCollation.CombiningClass (genCombiningClassMap)
 import Data.Maybe
 import Data.List (minimumBy, maximumBy)
 -- import Debug.Trace
+
+-- | Unfold a 'Collation' into an association list.
+unfoldCollation :: Collation -> [([Int], [CollationElement])]
+unfoldCollation (Collation trie) = Trie.unfoldTrie trie
 
 -- | Insert collation elements for the given code points (if tehre is
 -- more than one code point, it is a contraction).
