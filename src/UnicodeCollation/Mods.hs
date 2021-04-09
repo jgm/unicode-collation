@@ -21,7 +21,6 @@ import UnicodeCollation.Collation (getCollationElements, alterElements,
                                    insertElements, findLast, findFirst,
                                    hasCategory, unfoldCollation)
 import Text.Parsec
-import Text.Parsec.Text
 import Data.Char (chr, isSpace, ord)
 import Control.Monad (void)
 import Text.HTML.TagSoup (Tag(..))
@@ -38,7 +37,12 @@ import Data.Semigroup (Semigroup(..))
 
 parseTailoring :: String -> Text -> Either ParseError Tailoring
 parseTailoring fp =
-  parse (Tailoring . concat <$> (pSkippable *> many pCollationMods <* eof)) fp
+  runParser
+    (Tailoring . concat <$> (pSkippable *> many pCollationMods <* eof))
+    []
+    fp
+
+type Parser = Parsec Text [CollationMod]
 
 lexeme :: Parser a -> Parser a
 lexeme p =  p <* pSkippable
