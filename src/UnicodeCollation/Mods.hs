@@ -19,7 +19,7 @@ import UnicodeCollation.Types
 import UnicodeCollation.Lang
 import UnicodeCollation.Collation (getCollationElements, alterElements,
                                    insertElements, findLast, findFirst,
-                                   hasCategory)
+                                   hasCategory, unfoldCollation)
 import Text.Parsec
 import Text.Parsec.Text
 import Data.Char (chr, isSpace, ord)
@@ -221,8 +221,10 @@ applyCollationMod collation cmod =
         (Just a', Just b') ->
           insertElements b' (getCollationElements collation a') collation
         _ -> collation
-    SuppressContractions is ->
-      undefined -- TODO
+    SuppressContractions cps ->
+      -- we want to remove all contractions beginning with a code point in cps
+      foldr (alterElements (const Nothing)) collation
+            [is | is@(i:_:_) <- collationKeys, i `elem` cps]
 
  where
 
@@ -233,6 +235,8 @@ applyCollationMod collation cmod =
   getTarget (TargetLast Regular) = fst <$> findFirst (>= firstHani) collation
   getTarget (TargetLast Implicit) = fst <$> findLast (<= lastImplicit) collation
   getTarget (TargetLast cat) = fst <$> findLast (`hasCategory` cat) collation
+
+  collationKeys = map fst $ unfoldCollation collation
 
   firstHani = [CollationElement False 0xFB40 0 0 0]
 
