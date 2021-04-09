@@ -16,8 +16,8 @@ import Data.Binary as Binary ( encode )
 import UnicodeCollation.Elements (parseCollation)
 import UnicodeCollation.Mods (parseCollationXMLs, parseTailoring)
 import UnicodeCollation.Types
+import UnicodeCollation.Lang
 import Data.Text (Text)
-import Data.Char (isAlphaNum)
 import qualified Data.Text as T
 #if MIN_VERSION_base(4,11,0)
 #else
@@ -46,42 +46,31 @@ genTailorings fp = do
   lookupTable <- mkLookupTable $ map fst ts
   return $ lookupTable ++ tailoringDecs
 
-mkLookupTable :: [(Text, Maybe Text)] -> Q [Dec]
+mkLookupTable :: [Lang] -> Q [Dec]
 mkLookupTable colnames = do
-  let toColPair (lang, mbcolname) = do
-        cn <- [| (lang, mbcolname) |]
+  let toColPair lang = do
+        cn <- [| lang |]
         return $
 #if MIN_VERSION_template_haskell(2,16,0)
           TupE [ Just cn
-               , Just (VarE (mkCollationName lang mbcolname))
+               , Just (VarE (mkCollationName lang))
                ]
 #else
           TupE [ cn
-               , VarE (mkCollationName lang mbcolname)
+               , VarE (mkCollationName lang)
                ]
 #endif
   colpairs <- mapM toColPair colnames
-  return [ SigD (mkName "tailorings")
-           (AppT
-            (AppT
-             (ConT (mkName "Map"))
-             (AppT
-               (AppT
-                 (TupleT 2)
-                 (ConT (mkName "Text")))
-               (AppT (ConT (mkName "Maybe"))
-                     (ConT (mkName "Text")))))
-            (ConT (mkName "Tailoring")))
+  ttype <- [t| [(Lang, Tailoring)] |]
+  return [ SigD (mkName "tailorings") ttype
          , FunD (mkName "tailorings")
              [Clause [] (NormalB
-                          (AppE
-                            (VarE (mkName "fromList"))
-                            (ListE colpairs))) []]
+                          (ListE colpairs)) []]
          ]
 
-mkTailoringDec :: ((Text, Maybe Text), Tailoring) -> Q [Dec]
-mkTailoringDec ((lang, mbcolname), mods) = do
-  let name = mkCollationName lang mbcolname
+mkTailoringDec :: (Lang, Tailoring) -> Q [Dec]
+mkTailoringDec (lang, mods) = do
+  let name = mkCollationName lang
   let binaryRep = Binary.encode mods
   return [ SigD name (ConT (mkName "Tailoring"))
          , FunD name [Clause [] (NormalB
@@ -90,12 +79,11 @@ mkTailoringDec ((lang, mbcolname), mods) = do
                                     (LitE (StringL (BL.unpack binaryRep))))) []]
          ]
 
-mkCollationName :: Text -> Maybe Text -> Name
-mkCollationName lang mbcolname = mkName . T.unpack $
-  "tailoring_" <> cleanName lang <> maybe "" (("_" <>) . cleanName) mbcolname
+mkCollationName :: Lang -> Name
+mkCollationName lang =
+  mkName . T.unpack $ "tailoring_" <> cleanName (renderLang lang)
  where
-  cleanName = T.map (\c -> if isAlphaNum c then c else '_')
-
+  cleanName = T.map (\c -> if c == '-' then '_' else c)
 
 genTailoring :: Text -> Q Exp
 genTailoring t =

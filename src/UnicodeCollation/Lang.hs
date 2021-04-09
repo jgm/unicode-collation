@@ -1,17 +1,26 @@
+{-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 module UnicodeCollation.Lang
   ( Lang(..)
   , parseLang
   , renderLang
+  , lookupLang
   )
 where
+import Data.Maybe (listToMaybe)
 import Control.Monad (mzero)
+import Data.Ord (Down(..))
+import Data.List (sortOn)
 import Data.Char (isAlphaNum, isAscii, isAsciiLower, isAsciiUpper,
                   isLower, isUpper, isDigit)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Text.Parsec as P
+import Data.Binary (Binary(..))
+import Data.String
+import Language.Haskell.TH.Syntax (Lift(..))
+import Instances.TH.Lift ()
 
 -- | Represents BCP 47 language code.
 data Lang = Lang{ langLanguage   :: Text
@@ -20,7 +29,35 @@ data Lang = Lang{ langLanguage   :: Text
                 , langVariants   :: [Text]
                 , langExtensions :: [(Text, [(Text , Maybe Text)])]
                 , langPrivateUse :: [Text]
-                } deriving (Eq, Ord, Show)
+                } deriving (Eq, Ord, Show, Lift)
+
+instance IsString Lang where
+ fromString =
+   either (const $ Lang "und" Nothing Nothing [] [] []) id . parseLang . T.pack
+
+instance Binary Lang where
+ put (Lang a b c d e f) = put (a,b,c,d,e,f)
+ get = do
+     (a,b,c,d,e,f) <- get
+     return $ Lang a b c d e f
+
+-- | Find best match for a 'Lang' in an association list.
+lookupLang :: Lang -> [(Lang, a)] -> Maybe a
+lookupLang lang =
+    fmap snd
+  . listToMaybe
+  . sortOn (Down . scoreMatch)
+  . filter (\(l,_) -> langLanguage l == langLanguage lang)
+ where
+  scoreMatch :: (Lang, a) -> Int
+  scoreMatch (l,_) =
+    (if langScript l == langScript lang then 20 else 0) +
+    (if langRegion l == langRegion lang then 10 else 0) +
+    (if langVariants l == langVariants lang then 5 else 0) +
+    (if lookup "u" (langExtensions l) ==
+        lookup "u" (langExtensions lang) then 2 else 0) +
+    (if (lookup "u" (langExtensions l) >>= lookup "co") ==
+        (lookup "u" (langExtensions lang) >>= lookup "co") then 1 else 0)
 
 -- | Render a Lang in BCP 47.
 renderLang :: Lang -> Text
@@ -32,20 +69,18 @@ renderLang lang =
      <> mconcat (map renderExtension (langExtensions lang))
      <> renderPrivateUse (langPrivateUse lang)
  where
-  renderExtension (c, ks) =
-    "-" <> c <> mconcat (map renderKeyword ks)
+  renderExtension (c, ks) = "-" <> c <> mconcat (map renderKeyword ks)
   renderKeyword (k, Nothing) = "-" <> k
   renderKeyword (k, Just v) = "-" <> k <> "-" <> v
   renderPrivateUse [] = ""
-  renderPrivateUse ts =
-    "-x" <> mconcat (map (T.cons '-') ts)
+  renderPrivateUse ts = "-x" <> mconcat (map (T.cons '-') ts)
 
 -- | Parse a BCP 47 string as a Lang.
-parseLang :: Text -> Either Text Lang
+parseLang :: Text -> Either String Lang
 parseLang lang =
   case P.parse pLangTag "lang" (T.split (\c -> c == '-' || c == '_') lang) of
        Right r -> Right r
-       Left e  -> Left $ T.pack $ show e
+       Left e  -> Left $ show e
   where
     -- langtag       = language
     --                ["-" script]

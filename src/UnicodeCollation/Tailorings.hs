@@ -7,9 +7,6 @@ import UnicodeCollation.Types
 import UnicodeCollation.TH
 import Language.Haskell.TH.Quote (QuasiQuoter(..))
 import UnicodeCollation.Mods (applyCollationMod)
-import Data.Text (Text)
-import Data.Map (Map, fromList)
-import qualified Data.Map as M
 import Data.List (foldl')
 import Data.Binary (decode)
 import qualified Data.Text as T
@@ -33,8 +30,3 @@ withTailoring :: Collation -> Tailoring -> Collation
 withTailoring collation (Tailoring mods) =
   foldl' applyCollationMod collation mods
 
--- | Look up a 'Tailoring'.  The first element of the tuple
--- is the language (BCP 47), the second is the collation name
--- (or @Nothing@ for the language's default collation).
-lookupTailoring :: (Text, Maybe Text) -> Maybe Tailoring
-lookupTailoring (lang, mbcol) = M.lookup (lang, mbcol) tailorings

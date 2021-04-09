@@ -13,31 +13,38 @@ Basic usage example:
 
 >>> import Data.List (sortBy)
 >>> :set -XOverloadedStrings
->>> let collator = mkCollator collationOptions
 >>> let unsortedList = ["\119990bc","abC","\120146bc","Abc","ab\231","\228bc"]
->>> sortBy (collate collator) unsortedList
+>>> let enCollator = collatorFor "en-US"
+>>> sortBy (collate enCollator) unsortedList
 ["abC","\119990bc","\120146bc","Abc","ab\231","\228bc"]
->>> let se = localizedCollation "se"
->>> let seCollator = mkCollator collationOptions{ optCollation = se }
->>> collate collator "\246" "z"
+>>> let seCollator = collatorFor "se"
+>>> collate enCollator "\246" "z"
 LT
 >>> collate seCollator "\246" "z"
 GT
+>>> let esCollator = collatorFor "es"
+>>> let esTradCollator = collatorFor "es-u-co-trad"
+>>> collate esCollator "Co" "Ch"
+GT
+>>> collate esTradCollator "Co" "Ch"
+LT
 -}
 
 module UnicodeCollation
-       ( mkCollator
+       ( collatorFor
+       , mkCollator
        , collationOptions
-       , localizedCollation
        , rootCollation
        , ducetCollation
        , CollationOptions(..)
        , Collator(..)
        , Collation
        , VariableWeighting(..)
+       , module UnicodeCollation.Lang
        )
 where
 import UnicodeCollation.Types
+import UnicodeCollation.Lang
 import UnicodeCollation.Tailorings
 import UnicodeCollation.TH (genCollation)
 import UnicodeCollation.Elements (getCollationElements)
@@ -48,7 +55,6 @@ import Data.Text (Text)
 import Data.Ord (comparing)
 import Data.Char (ord)
 import Data.Maybe (fromMaybe)
-import Control.Monad (mplus)
 import qualified Data.Binary as Binary
 
 -- | Default 'CollationOptions'.
@@ -72,33 +78,29 @@ rootCollation = Binary.decode $(genCollation "data/allkeys_CLDR.txt")
 ducetCollation :: Collation
 ducetCollation = Binary.decode $(genCollation "data/allkeys.txt")
 
--- | Retrieve a collation with language-specific tailorings.
--- If no collations are defined for the language tag, fall back
--- to the bare language tag (without variants or scripts), and
--- then to the root collation.  If no collations are defined
--- with the given collation name, fall back to the default collation
--- for the language.
-localizedCollation :: Text  -- ^ BCP 47 language tag, optionally followed by a
-                            -- slash and a collation name.  Examples:
-                            -- @"fr"@, @"fr-CA"@, @"bs-Cyrl"@,
-                            -- @"es/traditional"@, @"zh/stroke"@.
-                   -> Collation
-localizedCollation spec =
-  rootCollation `withTailoring` tailoring
- where
-  tailoring = fromMaybe mempty $
-    lookupTailoring (lang, mbcollation) `mplus`
-    lookupTailoring (baselang, mbcollation) `mplus`
-    lookupTailoring (lang, Nothing) `mplus`
-    lookupTailoring (lang, Nothing)
-  (lang, rest) = T.break (=='/') $ T.map underscoreToHyphen spec
-  baselang = T.takeWhile (/='-') lang
-  underscoreToHyphen '_' = '-'
-  underscoreToHyphen c   = c
-  mbcollation = if T.null rest
-                   then Nothing
-                   else Just $ T.drop 1 rest
-
+-- | Returns a collator based on a BCP 47 language tag.
+-- If no exact match is found, we try the following fallbacks
+-- in order: (1) remove extensions, (2) remove variants,
+-- (3) remove region, (4) remove script, (5) fall back to
+-- root collation.
+collatorFor :: Lang -> Collator
+collatorFor lang = mkCollator opts
+  where
+    opts = collationOptions{
+             optFrenchAccents =
+               case lookup "u" (langExtensions lang) >>= lookup "kb" of
+                 Just Nothing       -> True
+                                       -- true is default attribute value
+                 Just (Just "true") -> True
+                 _                  -> False,
+             optVariableWeighting =
+               case lookup "u" (langExtensions lang) >>= lookup "ka" of
+                 Just Nothing           -> NonIgnorable
+                 Just (Just "noignore") -> NonIgnorable
+                 Just (Just "shifted")  -> Shifted
+                 _                      -> NonIgnorable,
+             optCollation = rootCollation `withTailoring` tailoring }
+    tailoring = fromMaybe mempty $ lookupLang lang tailorings
 
 -- | Returns a collator constructed using the collation and
 -- variable weighting specified in the options.
@@ -107,13 +109,13 @@ mkCollator opts =
   Collator { collate = comparing sortKey'
            , sortKey = sortKey' }
  where
-  sortKey' = toSortKey opts (optCollation opts)
+  sortKey' = toSortKey opts
 
-toSortKey :: CollationOptions -> Collation -> Text -> SortKey
-toSortKey opts collation =
-  mkSortKey opts
+toSortKey :: CollationOptions -> Text -> SortKey
+toSortKey opts =
+    mkSortKey opts
   . handleVariable (optVariableWeighting opts)
-  . getCollationElements collation
+  . getCollationElements (optCollation opts)
   . T.foldr ((:) . ord) []
   . if optNormalize opts
        then N.normalize N.NFD

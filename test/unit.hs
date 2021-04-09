@@ -6,7 +6,6 @@ module Main (main) where
 import UnicodeCollation
 import UnicodeCollation.Types
 import UnicodeCollation.Tailorings
-import UnicodeCollation.Lang
 import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -66,18 +65,15 @@ tests conformanceTree = testGroup "Tests"
     ]
   , testGroup "Localized collations"
     [ testCase "root cha cza" $
-        collateWith "" "cha" "cza" @?= LT
-    , testCase "es_traditional cha cza" $
-        collateWith "es/traditional" "cha" "cza" @?= GT
+        collateWith "und" "cha" "cza" @?= LT
+    , testCase "es traditional cha cza" $
+        collateWith "es-u-co-trad" "cha" "cza" @?= GT
     , testCase "se ö z" $
         collateWith "se" "ö" "z" @?= GT
     , testCase "tr ö z" $
         collateWith "tr" "ö" "z" @?= LT
     , testCase "fr-CA sorted list" $
-        sortBy
-          (collate (mkCollator collationOptions{ optCollation =
-                                                   localizedCollation "fr-CA",
-                                                 optFrenchAccents = True }))
+        sortBy (collate (collatorFor "fr-CA-u-kb-true"))
         ["déjà","Meme", "deja", "même", "dejà", "bpef", "bœg", "Boef", "Mémé",
          "bœf", "boef", "bnef", "pêche", "pèché", "pêché", "pêche", "pêché"]
          @?=
@@ -90,18 +86,21 @@ tests conformanceTree = testGroup "Tests"
        (map langRoundTripTest langPairs)
   ]
 
-lang :: Lang
-lang = Lang mempty mempty mempty mempty mempty mempty
+emptyLang :: Lang
+emptyLang = Lang mempty mempty mempty mempty mempty mempty
 
 langPairs :: [(Text, Lang)]
-langPairs = [ ("en", lang{langLanguage = "en"})
-            , ("en-US", lang{langLanguage = "en", langRegion = Just "US"})
-            , ("sr_Latn_RS", lang{langLanguage = "sr", langScript = Just "Latn",
+langPairs = [ ("en", emptyLang{langLanguage = "en"})
+            , ("en-US", emptyLang{langLanguage = "en", langRegion = Just "US"})
+            , ("sr_Latn_RS", emptyLang{langLanguage = "sr",
+                                   langScript = Just "Latn",
                                    langRegion = Just "RS"})
-            , ("es-419", lang{langLanguage = "es", langRegion = Just "419"})
-            , ("de-CH-1996", lang{langLanguage = "de", langRegion = Just "CH",
-                                  langVariants = ["1996"]})
-            , ("en-u-kr-latin-digit", lang{langLanguage = "en",
+            , ("es-419", emptyLang{langLanguage = "es",
+                                   langRegion = Just "419"})
+            , ("de-CH-1996", emptyLang{langLanguage = "de",
+                                       langRegion = Just "CH",
+                                       langVariants = ["1996"]})
+            , ("en-u-kr-latin-digit", emptyLang{langLanguage = "en",
                      langExtensions = [("u", [("kr", Just "latin-digit")])]})
             ]
 
@@ -156,8 +155,9 @@ collateWithTailoring tlrng =
 
 collateWith :: Text -> Text -> Text -> Ordering
 collateWith spec =
-  collate (mkCollator collationOptions{ optCollation =
-                            localizedCollation spec })
+  case parseLang spec of
+    Left e -> error e
+    Right lang -> collate (collatorFor lang)
 
 variableOrderingCase :: (VariableWeighting , [Text]) -> TestTree
 variableOrderingCase (w , expected) =

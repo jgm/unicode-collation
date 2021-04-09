@@ -52,9 +52,14 @@ data CollationOptions =
   , optCollation          :: Collation  -- ^ The collation to use.
   } deriving (Show, Eq, Ord)
 
--- | See <http://www.unicode.org/reports/tr10/#Variable_Weighting>.
+-- | 'VariableWeighting' affects how punctuation is treated.
+-- See <http://www.unicode.org/reports/tr10/#Variable_Weighting>.
 data VariableWeighting =
-  NonIgnorable | Blanked | Shifted | ShiftTrimmed
+    NonIgnorable   -- ^ Don't ignore punctuation (Deluge < deluge-)
+  | Blanked -- ^ Completely ignore punctuation (Deluge = deluge-)
+  | Shifted -- ^ Consider punctuation at lower priority
+           -- (de-luge < delu-ge < deluge < deluge- < Deluge)
+  | ShiftTrimmed -- ^ Variant of Shifted (deluge < de-luge < delu-ge)
   deriving (Show, Eq, Ord)
 
 data Collator = Collator { collate :: Text -> Text -> Ordering

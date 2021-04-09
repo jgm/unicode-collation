@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 module UnicodeCollation.Mods
   ( parseTailoring
@@ -15,11 +16,12 @@ import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Read as TR
 import qualified Data.ByteString as B
 import UnicodeCollation.Types
+import UnicodeCollation.Lang
 import UnicodeCollation.Elements (getCollationElements)
 import Text.Parsec
 import Text.Parsec.Text
-import Data.Char (chr, isSpace, ord, isLetter)
-import Control.Monad (mplus, void)
+import Data.Char (chr, isSpace, ord)
+import Control.Monad (void)
 import Text.HTML.TagSoup (Tag(..))
 import Text.HTML.TagSoup.Tree (parseTree, universeTree, TagTree(..))
 import System.Directory (getDirectoryContents)
@@ -270,18 +272,22 @@ applyCollationMod collation cmod =
 
   completelyIgnorable = CollationElement False 0 0 0 0xFFFF -- is this right ?
 
-parseCollationXML :: Text -> [((Text, Maybe Text), Text)]
+parseCollationXML :: Text -> [(Lang, Text)]
 parseCollationXML t =
-  ((lang, Nothing), defaultCollation) :
-  [((lang, Just collname), txt)
+  (lang, defaultCollation) :
+  [(lang{ langExtensions = [("u",[("co", Just collname)])] }, txt)
     | (collname, txt) <- collations ]
   where
-   lang = language <> maybe "" ("-" <>) territory <>
-                      maybe "" ("-" <>) script <>
-                      maybe "" ("-" <>) variant
+   lang = Lang{ langLanguage = language
+              , langRegion = territory
+              , langScript = script
+              , langVariants = maybeToList variant
+              , langExtensions = []
+              , langPrivateUse = [] }
    univ = universeTree $ parseTree t
    language = fromMaybe "UNKNOWN" $
-               listToMaybe [l | TagBranch "language" [("type", l)] _ <- univ]
+               listToMaybe [toLangAlias l |
+                              TagBranch "language" [("type", l)] _ <- univ]
    territory = listToMaybe [x | TagBranch "territory" [("type", x)] _ <- univ]
    script = listToMaybe [x | TagBranch "script" [("type", x)] _ <- univ]
    variant = listToMaybe [x | TagBranch "variant" [("type", x)] _ <- univ]
@@ -290,12 +296,20 @@ parseCollationXML t =
    defaultCollation = fromMaybe "" $ listToMaybe
        [extractText xs | TagBranch "collation" [("type", ty)] xs <- univ
                        , ty == defaultCollationName]
-   collations = [(ty, extractText xs)
+   collations = [(toAlias ty, extractText xs)
                   | TagBranch "collation" [("type", ty)] xs <- univ]
    extractText xs = mconcat [txt | TagLeaf (TagText txt) <- universeTree xs]
+   -- we need aliases because of the char limit in BCP47:
+   toAlias "phonebook" = "phonebk"
+   toAlias "traditional" = "trad"
+   toAlias "dictionary" = "dict"
+   toAlias "gb2312han" = "gb2312"
+   toAlias x = x
+   toLangAlias "root" = "und"
+   toLangAlias x = x
 
 
-parseCollationXMLs :: FilePath -> IO [((Text, Maybe Text), Tailoring)]
+parseCollationXMLs :: FilePath -> IO [(Lang, Tailoring)]
 parseCollationXMLs dir = do
   fs <- map (dir </>) . filter ((== ".xml") . takeExtension)
          <$> getDirectoryContents dir
@@ -307,34 +321,26 @@ parseCollationXMLs dir = do
            then return txt
            else do
              let (target, rest) = T.break (==']') (T.drop 8 y)
-             let (lang, rest') = T.break (=='-') $
-                                  case T.stripPrefix "und" target of
-                                    Nothing -> target
-                                    Just tt -> "root" <> tt
-             let baselang = T.takeWhile isLetter lang
-             let coll =
-                   case T.stripPrefix "-u-co-" rest' of
-                     Nothing -> Nothing
-                     Just "trad" -> Just "traditional"
-                     Just "phonebk" -> Just "phonebook"
-                     Just z -> Just z
-             interp <-
-               case lookup (lang, coll) rawmap `mplus`
-                    lookup (baselang, coll) rawmap of
-                  Nothing -> do
-                      qReport False $ "Could not import " <> show target
-                      return ""
-                  Just t -> return t
-             ((x <> interp) <>) <$> handleImports (T.drop 1 rest)
+             case parseLang target of
+               Left err -> do
+                 qReport False $
+                   "Could not import " <> T.unpack target <> ":\n" <> err
+                 handleImports (T.drop 1 rest)
+               Right lang -> do
+                 interp <-
+                   case lookupLang lang rawmap of
+                      Nothing -> do
+                          qReport False $ "Could not import " <> show target
+                          return ""
+                      Just t -> return t
+                 ((x <> interp) <>) <$> handleImports (T.drop 1 rest)
 
-  let toCollationMods ((lang,mbcol), txt) =
+  let toCollationMods (lang, txt) =
         do txt' <- handleImports txt
-           let colname = maybe lang ((lang <> "/") <>) mbcol
-           case parseTailoring (T.unpack colname) txt' of
+           case parseTailoring (T.unpack (renderLang lang)) txt' of
               Left e    -> do
-                qReport False $ "Unable to parse " <> T.unpack colname <> ":"
-                qReport True $ show e
+                qReport False $ show e
                 return Nothing
-              Right mds -> return $ Just ((lang,mbcol), mds)
+              Right mds -> return $ Just (lang, mds)
   catMaybes <$> mapM toCollationMods rawmap
 
