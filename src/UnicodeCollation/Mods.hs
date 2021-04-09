@@ -17,7 +17,9 @@ import qualified Data.Text.Read as TR
 import qualified Data.ByteString as B
 import UnicodeCollation.Types
 import UnicodeCollation.Lang
-import UnicodeCollation.Elements (getCollationElements)
+import UnicodeCollation.Collation (getCollationElements, alterElements,
+                                   insertElements, findLast, findFirst,
+                                   hasCategory)
 import Text.Parsec
 import Text.Parsec.Text
 import Data.Char (chr, isSpace, ord)

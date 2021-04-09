@@ -14,12 +14,6 @@ module UnicodeCollation.Types
   , Target(..)
   , Category(..)
   , Level(..)
-  , insertElements
-  , alterElements
-  , findLast
-  , findFirst
-  , hasCategory
-  , matchLongestPrefix
   )
 where
 
@@ -90,91 +84,6 @@ instance Binary CollationElement where
 
 newtype Collation = Collation { unCollation :: Trie.Trie [CollationElement] }
   deriving (Show, Eq, Ord, Lift, Semigroup, Monoid)
-
--- | Insert collation elements for the given code points (if tehre is
--- more than one code point, it is a contraction).
-insertElements :: [Int] -> [CollationElement] -> Collation -> Collation
-insertElements codepoints els (Collation trie) =
-  Collation $ Trie.insert codepoints els trie
-
--- | Change the collation elements defined for the specified code point(s).
-alterElements :: (Maybe [CollationElement] -> Maybe [CollationElement])
-              -> [Int] -> Collation -> Collation
-alterElements f codepoints (Collation trie) =
-  Collation $ Trie.alter f codepoints trie
-
--- | Find the longest matching prefix of a list of code points
--- in the collation table. This may be a single code point or
--- several (if contractions are defined).  Return the
--- collation elements for the matched code points, the code points
--- matched, and a "subcollation" which can be searched for further
--- matches. (This is needed because of "discontiguous matches";
--- see <http://www.unicode.org/reports/tr10/#Input_Matching>.)
-matchLongestPrefix :: Collation
-                   -> [Int]
-                   -> Maybe ([CollationElement], [Int], Collation)
-matchLongestPrefix (Collation trie) codepoints =
-  case Trie.matchLongestPrefix trie codepoints of
-    Nothing -> Nothing
-    Just (els, is, trie') -> Just (els, is, Collation trie')
-
--- | Find the first element in a 'Collation' that meets a condition.
--- Return the code points and the elements.
-findFirst :: ([CollationElement] -> Bool)
-          -> Collation
-          -> Maybe ([Int], [CollationElement])
-findFirst f (Collation trie) =
-  case minimumBy comp $ Trie.unfoldTrie trie of
-    (is,elts) | f elts -> Just (is,elts)
-    _ -> Nothing
- where
-  comp (_,x) (_,y) =  -- note Left a < Right a
-    compare (if f x then Left x else Right x)
-            (if f y then Left y else Right y)
-
--- | Find the last element in a 'Collation' that meets a condition.
--- Return the code points and the elements.
-findLast :: ([CollationElement] -> Bool)
-         -> Collation
-         -> Maybe ([Int], [CollationElement])
-findLast f (Collation trie) =
-  case maximumBy comp $ Trie.unfoldTrie trie of
-    (is,elts) | f elts -> Just (is,elts)
-    _ -> Nothing
- where
-  comp (_,x) (_,y) =  -- note Left a < Right a
-    compare (if f x then Right x else Left x)
-            (if f y then Right y else Left y)
-
--- | Test a list of collation elements to see if they belong
--- to the specified 'Category'.
-hasCategory :: [CollationElement] -> Category -> Bool
-hasCategory [] TertiaryIgnorable = True
-hasCategory [] SecondaryIgnorable = True
-hasCategory [] PrimaryIgnorable = True
-hasCategory [] _ = False
-hasCategory (CollationElement v p s t _:_) cat =
-  case cat of
-    TertiaryIgnorable  -> p == 0 && s== 0 && t == 0
-    SecondaryIgnorable -> p == 0 && s == 0
-    PrimaryIgnorable   -> p == 0
-    Variable           -> v
-                           -- docs say: if alternate = non-ignorable
-                           --                 p != ignore
-                           --           if alternate = shifted
-                           --                 p,s,t = ignore
-    Regular            -> not v && p /= 0
-                           -- docs say: [last regular] is not actually the last
-                           -- normal CE with a primary weight ... [last regular]
-                           -- is set to the first Hani CE, the artificial
-                           -- script boundary CE at the beginning of this range.
-                           -- We handle this specially in Mods.
-    Implicit           -> p /= 0
-                           --  this is meant for items that are given
-                           --  values implicitly, not in table. Handle in Mods.
-    Trailing           -> p /= 0  -- TODO ??
-                           -- "used for trailing syllable components"
-
 
 instance Binary Collation where
    put (Collation m) = put m

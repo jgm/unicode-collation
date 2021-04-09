@@ -77,7 +77,7 @@ library
   exposed-modules:     UnicodeCollation
                        UnicodeCollation.Types
                        UnicodeCollation.Lang
-                       UnicodeCollation.Elements
+                       UnicodeCollation.Collation
                        UnicodeCollation.Tailorings
   other-modules:       UnicodeCollation.Trie
                        UnicodeCollation.TH

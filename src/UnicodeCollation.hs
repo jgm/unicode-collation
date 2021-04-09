@@ -47,7 +47,7 @@ import UnicodeCollation.Types
 import UnicodeCollation.Lang
 import UnicodeCollation.Tailorings
 import UnicodeCollation.TH (genCollation)
-import UnicodeCollation.Elements (getCollationElements)
+import UnicodeCollation.Collation (getCollationElements)
 import Data.Word (Word16)
 import qualified Data.Text.Normalize as N
 import qualified Data.Text as T

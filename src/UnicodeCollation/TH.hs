@@ -13,7 +13,7 @@ import Language.Haskell.TH.Syntax (qAddDependentFile)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Binary as Binary ( encode )
-import UnicodeCollation.Elements (parseCollation)
+import UnicodeCollation.Collation (parseCollation)
 import UnicodeCollation.Mods (parseCollationXMLs, parseTailoring)
 import UnicodeCollation.Types
 import UnicodeCollation.Lang
