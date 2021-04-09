@@ -57,11 +57,11 @@ tests conformanceTree = testGroup "Tests"
       ]
   , testGroup "Tailoring"
     [ testCase "Inline tailoring quasiquoter 1" $
-        collateWithTailoring [qTailoring|&N<ñ<<<Ñ|] "ñ" "N" @?= GT
+        collateWithTailoring [tailor|&N<ñ<<<Ñ|] "ñ" "N" @?= GT
     , testCase "Inline tailoring quasiquoter 2" $
-        collateWithTailoring [qTailoring|&m<n<k|] "cake" "cane" @?= GT
+        collateWithTailoring [tailor|&m<n<k|] "cake" "cane" @?= GT
     , testCase "Inline tailoring quasiquoter 3" $
-        collateWithTailoring [qTailoring|&m<k<n|] "cake" "cane" @?= LT
+        collateWithTailoring [tailor|&m<k<n|] "cake" "cane" @?= LT
     ]
   , testGroup "Localized collations"
     [ testCase "root cha cza" $
@@ -138,15 +138,15 @@ conformanceTests = do
 conformanceTestsFor :: VariableWeighting -> FilePath -> IO TestTree
 conformanceTestsFor weighting fp = do
   xs <- parseConformanceTest fp
-  let collator = mkCollator collationOptions{
+  let coll = mkCollator collationOptions{
                          optVariableWeighting = weighting,
                          optCollation = ducetCollation }
   return $ testGroup ("Conformance tests " ++ show weighting ++ " " ++ fp)
-         $ zipWith3 (conformanceTestWith collator) (map fst xs)
+         $ zipWith3 (conformanceTestWith coll) (map fst xs)
                      (map snd xs) (tail (map snd xs))
 
 conformanceTestWith :: Collator -> Int -> Text -> Text -> TestTree
-conformanceTestWith collator lineNo !txt1 !txt2 =
+conformanceTestWith coll lineNo !txt1 !txt2 =
   let showHexes = unwords . map ((\c -> if c > 0xFFFF
                                            then printf "%05X" c
                                            else printf "%04X" c) . ord)
@@ -155,10 +155,10 @@ conformanceTestWith collator lineNo !txt1 !txt2 =
                 showHexes txt1 ++ " <= " ++ showHexes txt2) $
         assertBool ("Calculated sort keys:\n" ++
                     showHexes txt1 ++ " " ++
-                    prettySortKey (sortKey collator txt1) ++ "\n" ++
+                    prettySortKey (sortKey coll txt1) ++ "\n" ++
                     showHexes txt2 ++ " " ++
-                    prettySortKey (sortKey collator txt2))
-                   (collate collator txt1 txt2 /= GT)
+                    prettySortKey (sortKey coll txt2))
+                   (collate coll txt1 txt2 /= GT)
 
 collateWithTailoring :: Tailoring -> Text -> Text -> Ordering
 collateWithTailoring tlrng =

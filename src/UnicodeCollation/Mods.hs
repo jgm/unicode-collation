@@ -221,7 +221,6 @@ isSpecial _ = False
 
 -}
 
-
 applyCollationMod :: Collation -> CollationMod -> Collation
 applyCollationMod collation cmod =
   case cmod of
@@ -363,7 +362,7 @@ parseCollationXMLs dir = do
                       Nothing -> do
                           qReport False $ "Could not import " <> show target
                           return ""
-                      Just t -> return t
+                      Just (_,t) -> return t
                  ((x <> interp) <>) <$> handleImports (T.drop 1 rest)
 
   let toCollationMods (lang, txt) =

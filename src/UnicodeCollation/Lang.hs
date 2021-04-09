@@ -42,10 +42,9 @@ instance Binary Lang where
      return $ Lang a b c d e f
 
 -- | Find best match for a 'Lang' in an association list.
-lookupLang :: Lang -> [(Lang, a)] -> Maybe a
+lookupLang :: Lang -> [(Lang, a)] -> Maybe (Lang, a)
 lookupLang lang =
-    fmap snd
-  . listToMaybe
+    listToMaybe
   . sortOn (Down . scoreMatch)
   . filter (\(l,_) -> langLanguage l == langLanguage lang)
  where

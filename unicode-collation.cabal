@@ -78,6 +78,7 @@ library
                        UnicodeCollation.Types
                        UnicodeCollation.Lang
                        UnicodeCollation.Collation
+                       UnicodeCollation.Collator
                        UnicodeCollation.Tailorings
   other-modules:       UnicodeCollation.Trie
                        UnicodeCollation.TH
