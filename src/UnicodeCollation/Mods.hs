@@ -219,6 +219,8 @@ applyCollationMod collation cmod =
         (Just a', Just b') ->
           insertElements b' (getCollationElements collation a') collation
         _ -> collation
+    SuppressContractions is ->
+      undefined -- TODO
 
  where
 
