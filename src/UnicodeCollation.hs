@@ -79,28 +79,44 @@ ducetCollation :: Collation
 ducetCollation = Binary.decode $(genCollation "data/allkeys.txt")
 
 -- | Returns a collator based on a BCP 47 language tag.
--- If no exact match is found, we try the following fallbacks
--- in order: (1) remove extensions, (2) remove variants,
--- (3) remove region, (4) remove script, (5) fall back to
--- root collation.
+-- If no exact match is found, we try to find the best match
+-- (falling back to the root collation if nothing else succeeds).
+-- If something other than the default collation for a language
+-- is desired, the @co@ keyword of the unicode extensions can be
+-- used (e.g. @es-u-co-trad@ for traditional Spanish).
+-- The language tag affects not just the collation but the collator
+-- options.  The 'optFrenchAccents' option will be set if the
+-- unicode extensions have a @kb@ keyword (e.g. @fr-FR-u-kb-true@).
+-- The 'optVariableWeight' option will be set if the
+-- unicode extensions have a @ka@ keyword (e.g. @fr-FR-u-kb-ka-shifted@
+-- or @en-u-ka-noignore@).
+-- The 'optNormalize' option will be set if the unicode extensions
+-- have a @kk@ keyword (e.g. @fr-u-kk-false@).
 collatorFor :: Lang -> Collator
 collatorFor lang = mkCollator opts
   where
     opts = collationOptions{
              optFrenchAccents =
-               case lookup "u" (langExtensions lang) >>= lookup "kb" of
+               case lookup "u" exts >>= lookup "kb" of
                  Just Nothing       -> True
                                        -- true is default attribute value
                  Just (Just "true") -> True
                  _                  -> False,
              optVariableWeighting =
-               case lookup "u" (langExtensions lang) >>= lookup "ka" of
+               case lookup "u" exts >>= lookup "ka" of
                  Just Nothing           -> NonIgnorable
                  Just (Just "noignore") -> NonIgnorable
                  Just (Just "shifted")  -> Shifted
                  _                      -> NonIgnorable,
+             optNormalize =
+               case lookup "u" exts >>= lookup "kk" of
+                 Just Nothing           -> True
+                 Just (Just "true")     -> True
+                 Just (Just "false")    -> False
+                 _                      -> True,
              optCollation = rootCollation `withTailoring` tailoring }
     tailoring = fromMaybe mempty $ lookupLang lang tailorings
+    exts = langExtensions lang
 
 -- | Returns a collator constructed using the collation and
 -- variable weighting specified in the options.
