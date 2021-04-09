@@ -79,6 +79,18 @@ tests conformanceTree = testGroup "Tests"
          @?=
         ["bnef", "boef", "Boef", "bœf", "bœg", "bpef", "deja", "dejà", "déjà",
          "Meme", "même", "Mémé", "pêche", "pêche", "pèché", "pêché", "pêché"]
+    , testCase "fr with French accents" $
+        collateWith "fr-u-kb-true" "coté" "côte" @?= GT
+    , testCase "fr without French accents" $
+        collateWith "fr-u-kb-false" "coté" "côte" @?= LT
+    , testCase "fr kb defaults to true" $
+        collateWith "fr-u-kb" "coté" "côte" @?= GT
+    , testCase "fr without kb defaults to false" $
+        collateWith "fr" "coté" "côte" @?= LT
+    , testCase "en with shifted" $
+        collateWith "en-u-ka-shifted" "de-luge" "de Luge" @?= LT
+    , testCase "en with nonignorable" $
+        collateWith "en-u-ka-noignore" "de-luge" "de Luge" @?= GT
     ]
   , testGroup "BCP 47 Lang parsing"
        (map langParseTest langPairs)
