@@ -26,7 +26,7 @@ import Data.List (foldl', permutations, sortOn)
 import qualified Data.Binary as Binary
 import UnicodeCollation.CombiningClass (genCombiningClassMap)
 import Data.Maybe
-import Data.List (minimumBy, maximumBy)
+import Data.Foldable (minimumBy, maximumBy)
 -- import Debug.Trace
 
 -- | Unfold a 'Collation' into an association list.

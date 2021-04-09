@@ -19,7 +19,6 @@ where
 
 import Data.Word (Word16, Word8)
 import Data.Binary (Binary(get, put))
-import Data.Foldable (minimumBy, maximumBy)
 import Data.Text (Text)
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()

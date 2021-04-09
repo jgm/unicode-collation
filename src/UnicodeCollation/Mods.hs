@@ -38,7 +38,9 @@ import Data.Semigroup (Semigroup(..))
 parseTailoring :: String -> Text -> Either ParseError Tailoring
 parseTailoring fp =
   runParser
-    (Tailoring . concat <$> (pSkippable *> many pCollationMods <* eof))
+    (do xs <- concat <$> (pSkippable *> many pCollationMods <* eof)
+        ys <- getState  -- e.g. suppressContractions
+        return $ Tailoring (xs ++ ys))
     []
     fp
 
@@ -127,9 +129,26 @@ pSkippable = skipMany $
 pBracketed :: Parser ()
 pBracketed = do
   void $ lexeme $ char '['
-  void $ many $ satisfy (\c -> c /= '[' && c /= ']')
-  optional $ lexeme pBracketed
+  t <- T.strip . T.pack <$> many (satisfy (\c -> c /= '[' && c /= ']'))
+  case t of
+    "suppressContractions" -> do
+      void $ lexeme $ char '['
+      cs <- many (pEscaped <|> satisfy (/=']'))
+      let cps = processRanges cs
+      void $ lexeme $ char ']'
+      updateState (SuppressContractions cps :)
+    "optimize" -> do  -- no-op for us
+      void $ lexeme $ char '['
+      skipMany (satisfy (/=']'))
+      void $ lexeme $ char ']'
+    _ -> return ()
   void $ lexeme $ char ']'
+
+processRanges :: [Char] -> [Int]
+processRanges [] = []
+processRanges (c:'-':d:rest) =
+  enumFromTo (ord c) (ord d) ++ processRanges rest
+processRanges (c:cs) = ord c : processRanges cs
 
 pComment :: Parser ()
 pComment = char '#' *> skipMany (satisfy (/= '\n'))

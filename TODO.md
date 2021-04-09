@@ -2,11 +2,7 @@
 
 We still don't support
 
-[suppressContractions [Nn]]
-
-or
-
-[reorder Cyrl]
+e.g. [reorder Cyrl]
 
 # Weird test failures with tibetan
 
