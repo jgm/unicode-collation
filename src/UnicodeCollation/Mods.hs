@@ -20,6 +20,7 @@ import UnicodeCollation.Lang
 import UnicodeCollation.Collation (getCollationElements, alterElements,
                                    insertElements, findLast, findFirst,
                                    hasCategory, unfoldCollation)
+import Data.List (sort)
 import Text.Parsec
 import Data.Char (chr, isSpace, ord)
 import Control.Monad (void)
@@ -327,6 +328,7 @@ parseCollationXML t =
                 | TagBranch "collation" attrs xs <- univ
                 , ("type", ty) <- attrs
                 , lookup "alt" attrs == Nothing
+                , lookup "draft" attrs /= Just "unconfirmed"
                 ]
    defaultCollation =  fromMaybe "" $
                          lookup (toAlias defaultCollationName) collations
@@ -345,7 +347,7 @@ parseCollationXMLs :: FilePath -> IO [(Lang, Tailoring)]
 parseCollationXMLs dir = do
   fs <- map (dir </>) . filter ((== ".xml") . takeExtension)
          <$> getDirectoryContents dir
-  rawmap <- concat <$>
+  rawmap <- sort . concat <$>
             mapM (fmap (parseCollationXML . TE.decodeUtf8) . B.readFile) fs
   let handleImports txt = do
         let (x,y) =  T.breakOn "[import " txt
