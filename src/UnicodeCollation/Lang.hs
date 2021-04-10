@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -21,6 +22,10 @@ import Data.Binary (Binary(..))
 import Data.String
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
 
 -- | Represents a BCP47 language tag.
 data Lang = Lang{ langLanguage   :: Text
