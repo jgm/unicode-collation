@@ -32,7 +32,7 @@ data Lang = Lang{ langLanguage   :: Text
                 , langScript     :: Maybe Text
                 , langRegion     :: Maybe Text
                 , langVariants   :: [Text]
-                , langExtensions :: [(Text, [(Text , Maybe Text)])]
+                , langExtensions :: [(Text, [(Text , Text)])]
                 , langPrivateUse :: [Text]
                 } deriving (Eq, Ord, Show, Lift)
 
@@ -74,8 +74,7 @@ renderLang lang =
      <> renderPrivateUse (langPrivateUse lang)
  where
   renderExtension (c, ks) = "-" <> c <> mconcat (map renderKeyword ks)
-  renderKeyword (k, Nothing) = "-" <> k
-  renderKeyword (k, Just v) = "-" <> k <> "-" <> v
+  renderKeyword (k, v) = "-" <> k <> if T.null v then "" else ("-" <> v)
   renderPrivateUse [] = ""
   renderPrivateUse ts = "-x" <> mconcat (map (T.cons '-') ts)
 
@@ -186,15 +185,13 @@ parseLang lang =
       attrs <- P.many
              (tok (\t -> T.all isAsciiAlphaNum t && lengthBetween 3 8 t))
       keywords <- P.many pKeyword
-      return (c, map (\attr -> (attr, Nothing)) attrs ++ keywords)
+      return (c, map (\attr -> (attr, "")) attrs ++ keywords)
 
     pKeyword = do
       key <- tok (\t -> T.length t == 2 && T.all isAsciiLower t)
       types <- P.many (tok (\t -> lengthBetween 3 8 t &&
                                         T.all isAsciiAlphaNum t))
-      return (key, case types of
-                          [] -> Nothing
-                          _  -> Just (T.intercalate "-" types))
+      return (key, (T.intercalate "-" types))
 
     -- privateuse    = "x" 1*("-" (1*8alphanum))
     pPrivateUse = do

@@ -111,7 +111,7 @@ langPairs = [ ("en", emptyLang{langLanguage = "en"})
                                        langRegion = Just "CH",
                                        langVariants = ["1996"]})
             , ("en-u-kr-latin-digit", emptyLang{langLanguage = "en",
-                     langExtensions = [("u", [("kr", Just "latin-digit")])]})
+                     langExtensions = [("u", [("kr", "latin-digit")])]})
             ]
 
 langParseTest :: (Text, Lang) -> TestTree

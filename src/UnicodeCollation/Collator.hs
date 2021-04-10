@@ -78,22 +78,22 @@ collatorFor lang = mkCollator opts
     opts = collationOptions{
              optFrenchAccents =
                case lookup "u" exts >>= lookup "kb" of
-                 Just Nothing       -> True
+                 Just ""       -> True
                                        -- true is default attribute value
-                 Just (Just "true") -> True
-                 _                  -> False,
+                 Just "true"   -> True
+                 _             -> False,
              optVariableWeighting =
                case lookup "u" exts >>= lookup "ka" of
-                 Just Nothing           -> NonIgnorable
-                 Just (Just "noignore") -> NonIgnorable
-                 Just (Just "shifted")  -> Shifted
-                 _                      -> NonIgnorable,
+                 Just ""         -> NonIgnorable
+                 Just "noignore" -> NonIgnorable
+                 Just "shifted"  -> Shifted
+                 _               -> NonIgnorable,
              optNormalize =
                case lookup "u" exts >>= lookup "kk" of
-                 Just Nothing           -> True
-                 Just (Just "true")     -> True
-                 Just (Just "false")    -> False
-                 _                      -> True,
+                 Just ""         -> True
+                 Just "true"     -> True
+                 Just "false"    -> False
+                 _               -> True,
              optCollation = rootCollation `withTailoring` tailoring }
     tailoring = maybe mempty snd $ lookupLang lang tailorings
     exts = langExtensions lang

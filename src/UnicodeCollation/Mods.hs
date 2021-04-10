@@ -306,7 +306,7 @@ applyCollationMod collation cmod =
 parseCollationXML :: Text -> [(Lang, Text)]
 parseCollationXML t =
   (lang, defaultCollation) :
-  [(lang{ langExtensions = [("u",[("co", Just collname)])] }, txt)
+  [(lang{ langExtensions = [("u",[("co", collname)])] }, txt)
     | (collname, txt) <- collations ]
   where
    lang = Lang{ langLanguage = language
