@@ -80,7 +80,7 @@ These options be combined:
 >>> collate complexCollator "\x00FE" "u"
 LT
 
-If you won't know the language time until run time, use 'parseLang'
+If you won't know the language until run time, use 'parseLang'
 to parse it to a 'Lang' rather than using 'fromString', so you can
 catch parse errors.
 
