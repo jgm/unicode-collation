@@ -12,7 +12,7 @@ Haskell implementation of [unicode collation algorithm].
 ## Motivation
 
 Previously there was no way to do correct unicode collation
-(sorting) in Haskell without depending on the C library `icu`,
+(sorting) in Haskell without depending on the C library `icu`
 and the barely maintained Haskell wrapper `text-icu`.  This
 library offers a pure Haskell solution.
 
@@ -24,8 +24,7 @@ which seem to be changed in unexpected ways by Text.pack or
 normalization).
 
 Locale-specific tailorings are supported, but in a limited
-way.  We do not yet support `[reorder..]` or
-`[suppressContractions..]`.
+way.  We do not yet support `[reorder..]`.
 
 ## Performance
 
