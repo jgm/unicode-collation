@@ -28,7 +28,8 @@ GT
 Because 'Lang' has an 'IsString' instance, you can just specify it
 using a string literal, as in the above examples.  Note, however,
 that you won't get any feedback if the string doesn't parse correctly
-as BCP 47; instead, you'll just get the default (root) collator.
+as BCP 47, or if no collation is defined for the specified language;
+instead, you'll just get the default (root) collator.
 
 For better safety (and compile-term errors and warnings), use the
 quasi-quoter:
@@ -50,9 +51,9 @@ The extension syntax can also be used to set other collator options:
 is sometimes used in French:
 
 >>> let frCollator = [collator|fr|]
->>> let frCollatorB = [collator|fr-u-kb|]
 >>> collate frCollator "côte" "coté"
 GT
+>>> let frCollatorB = [collator|fr-u-kb|]
 >>> collate frCollatorB "côte" "coté"
 LT
 
@@ -60,9 +61,9 @@ LT
 which affect how punctuation and whitespace are treated:
 
 >>> let shiftedCollator = [collator|en-u-ka-shifted|]
->>> let nonignorableCollator = [collator|en-u-ka-noignore|]
 >>> collate shiftedCollator "de-luge" "de Luge"
 LT
+>>> let nonignorableCollator = [collator|en-u-ka-noignore|]
 >>> collate nonignorableCollator "de-luge" "de Luge"
 GT
 
@@ -75,7 +76,7 @@ decomposition).
 
 These options be combined:
 
->>> let complexCollator = [collator|de-DE-u-co-eor-kb-false-ka-shifted-kk|]
+>>> let complexCollator = [collator|de-DE-u-co-eor-kb-false-ka-shifted|]
 >>> collate complexCollator "\x00FE" "u"
 LT
 

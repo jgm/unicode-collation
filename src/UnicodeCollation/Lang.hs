@@ -22,7 +22,7 @@ import Data.String
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
 
--- | Represents BCP 47 language code.
+-- | Represents a BCP47 language tag.
 data Lang = Lang{ langLanguage   :: Text
                 , langScript     :: Maybe Text
                 , langRegion     :: Maybe Text
@@ -58,7 +58,7 @@ lookupLang lang =
     (if (lookup "u" (langExtensions l) >>= lookup "co") ==
         (lookup "u" (langExtensions lang) >>= lookup "co") then 1 else 0)
 
--- | Render a Lang in BCP 47.
+-- | Render a 'Lang' in BCP47 form.
 renderLang :: Lang -> Text
 renderLang lang =
     langLanguage lang
@@ -74,7 +74,7 @@ renderLang lang =
   renderPrivateUse [] = ""
   renderPrivateUse ts = "-x" <> mconcat (map (T.cons '-') ts)
 
--- | Parse a BCP 47 string as a Lang.
+-- | Parse a BCP47 language tag as a 'Lang'.
 parseLang :: Text -> Either String Lang
 parseLang lang =
   case P.parse pLangTag "lang" (T.split (\c -> c == '-' || c == '_') lang) of

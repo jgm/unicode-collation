@@ -27,9 +27,9 @@ rootCollation = decode $(genCollation "data/allkeys_CLDR.txt")
 ducetCollation :: Collation
 ducetCollation = decode $(genCollation "data/allkeys.txt")
 
--- | Enable the @QuasiQuotes@ language extension and then
--- create a tailoring at compile time: e.g., @[tailor|&b < a < d]@.
--- For the synatx, see <https://unicode.org/reports/tr35/tr35-collation.html>.
+-- | Create a tailoring at compile time: e.g., @[tailor|&b < a < d]@.
+-- Requires the @QuasiQuotes@ extension.
+-- For the syntax, see <https://unicode.org/reports/tr35/tr35-collation.html>.
 tailor :: QuasiQuoter
 tailor = QuasiQuoter
   { quoteExp = genTailoring . T.pack
