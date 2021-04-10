@@ -76,6 +76,8 @@ decomposition).
 These options be combined:
 
 >>> let complexCollator = [collator|de-DE-u-co-eor-kb-false-ka-shifted-kk|]
+>>> collate complexCollator "\x00FE" "u"
+LT
 
 If you won't know the language time until run time, use 'parseLang'
 to parse it to a 'Lang' rather than using 'fromString', so you can
