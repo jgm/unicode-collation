@@ -3,7 +3,6 @@
 module Main (main) where
 
 import UnicodeCollation
-import UnicodeCollation.Tailorings (tailorings)
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import Data.List (sortBy)

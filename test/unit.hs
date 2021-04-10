@@ -5,7 +5,6 @@
 module Main (main) where
 import UnicodeCollation
 import UnicodeCollation.Types
-import UnicodeCollation.Tailorings
 import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit

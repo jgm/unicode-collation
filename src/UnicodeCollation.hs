@@ -6,8 +6,8 @@ Copyright: (c) 2021 John MacFarlane
 SPDX-License-Identifier: BSD-2-Clause
 Maintainer: John MacFarlane <jgm@berkeley.edu>
 
-Haskell implementation of the Unicode Collation Algorithm,
-described in <https://www.unicode.org/reports/tr10>.
+Haskell implementation of the
+<https://www.unicode.org/reports/tr10 Unicode Collation Algorithm>.
 
 The simplest way to use the library is to create a localized
 collator using 'collatorFor', which takes as an argument a
@@ -45,6 +45,38 @@ Note that the unicode extension syntax for BCP47 can be used to specify
 a particular collation (here, Spanish "traditional" instead of the
 default ordering).
 
+The extension syntax can also be used to set other collator options:
+@kb@ can be used to specify the "backwards" accent sorting that
+is sometimes used in French:
+
+>>> let frCollator = [collator|fr|]
+>>> let frCollatorB = [collator|fr-u-kb|]
+>>> collate frCollator "côte" "coté"
+GT
+>>> collate frCollatorB "côte" "coté"
+LT
+
+@ka@ can be used to specify the variable weighting options
+which affect how punctuation and whitespace are treated:
+
+>>> let shiftedCollator = [collator|en-u-ka-shifted|]
+>>> let nonignorableCollator = [collator|en-u-ka-noignore|]
+>>> collate shiftedCollator "de-luge" "de Luge"
+LT
+>>> collate nonignorableCollator "de-luge" "de Luge"
+GT
+
+@kk@ can be used to turn off the normalization step (which
+is required by the algorithm but can be omitted for better
+performance if the input is already in NFD form (canonical
+decomposition).
+
+>>> let noNormalizeCollator = [collator|en-u-kk-false|]
+
+These options be combined:
+
+>>> let complexCollator = [collator|de-DE-u-co-eor-kb-false-ka-shifted-kk|]
+
 If you won't know the language time until run time, use 'parseLang'
 to parse it to a 'Lang' rather than using 'fromString', so you can
 catch parse errors.
@@ -58,16 +90,20 @@ let myCollator = case parseLang langtag of
 :}
 LT
 
+It is also possible to create a collator using the lower-level
+interface of 'mkCollator'.
 -}
 
 module UnicodeCollation
        ( collatorFor
        , collator
-       , tailor
        , mkCollator
        , collationOptions
        , rootCollation
        , ducetCollation
+       , tailor
+       , tailorings
+       , withTailoring
        , CollationOptions(..)
        , Collator(..)
        , Collation
