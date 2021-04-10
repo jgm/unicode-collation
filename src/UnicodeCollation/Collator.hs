@@ -65,12 +65,13 @@ collationOptions =
 -- used (e.g. @es-u-co-trad@ for traditional Spanish).
 -- The language tag affects not just the collation but the collator
 -- options.  The 'optFrenchAccents' option will be set if the
--- unicode extensions have a @kb@ keyword (e.g. @fr-FR-u-kb-true@).
+-- unicode extensions (after @-u-@) include the @kb@ keyword
+-- (e.g. @fr-FR-u-kb-true@).
 -- The 'optVariableWeight' option will be set if the
--- unicode extensions have a @ka@ keyword (e.g. @fr-FR-u-kb-ka-shifted@
+-- unicode extensions include the @ka@ keyword (e.g. @fr-FR-u-kb-ka-shifted@
 -- or @en-u-ka-noignore@).
 -- The 'optNormalize' option will be set if the unicode extensions
--- have a @kk@ keyword (e.g. @fr-u-kk-false@).
+-- include the @kk@ keyword (e.g. @fr-u-kk-false@).
 collatorFor :: Lang -> Collator
 collatorFor lang = mkCollator opts
   where
