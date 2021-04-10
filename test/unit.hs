@@ -4,7 +4,6 @@
 {-# LANGUAGE QuasiQuotes #-}
 module Main (main) where
 import UnicodeCollation
-import UnicodeCollation.Types
 import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit

@@ -75,15 +75,15 @@ library
   import:              common-options
   hs-source-dirs:      src
   exposed-modules:     UnicodeCollation
-                       UnicodeCollation.Types
                        UnicodeCollation.Lang
+                       UnicodeCollation.Tailorings
+                       UnicodeCollation.Types
                        UnicodeCollation.Collation
                        UnicodeCollation.Collator
-                       UnicodeCollation.Tailorings
   other-modules:       UnicodeCollation.Trie
                        UnicodeCollation.TH
-                       UnicodeCollation.Mods
                        UnicodeCollation.CombiningClass
+                       UnicodeCollation.Mods
   build-depends:       unicode-transforms
                      , bytestring
                      , bytestring-lexing

@@ -99,7 +99,7 @@ newtype SortKey = SortKey { unSortKey :: [Word16] }
 instance Show SortKey where
  show (SortKey ws) = "SortKey " ++ showWordList ws
 
--- Note that & b < q <<< Q is teh same as & b < q, & q <<< Q
+-- Note that & b < q <<< Q is the same as & b < q, & q <<< Q
 -- Another syntactic shortcut is:
 -- & a <* bcd-gp-s => & a < b < c < d < e < f < g < p < q < r < s
 -- & a =* bB => & a = b = B (without that, we have a contraction)

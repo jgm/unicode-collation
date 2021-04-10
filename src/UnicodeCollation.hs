@@ -110,6 +110,8 @@ module UnicodeCollation
        , CollationOptions(..)
        , Collator(..)
        , Collation
+       , SortKey(..)
+       , Tailoring
        , VariableWeighting(..)
        , module UnicodeCollation.Lang
        )
