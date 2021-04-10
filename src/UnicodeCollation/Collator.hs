@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 module UnicodeCollation.Collator
@@ -19,6 +20,10 @@ import Data.Text (Text)
 import Data.Ord (comparing)
 import Data.Char (ord)
 import Language.Haskell.TH.Quote (QuasiQuoter(..))
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
 
 -- | Create a collator at compile time based on a BCP47 language
 -- tag: e.g., @[collator|es-u-co-trad]@.  Requires the @QuasiQuotes@ extension.
