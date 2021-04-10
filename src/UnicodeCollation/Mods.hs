@@ -323,11 +323,13 @@ parseCollationXML t =
    variant = listToMaybe [x | TagBranch "variant" [("type", x)] _ <- univ]
    defaultCollationName = fromMaybe "standard" $
        listToMaybe [extractText xs | TagBranch "defaultCollation" _ xs <- univ]
-   defaultCollation = fromMaybe "" $ listToMaybe
-       [extractText xs | TagBranch "collation" [("type", ty)] xs <- univ
-                       , ty == defaultCollationName]
-   collations = [(toAlias ty, extractText xs)
-                  | TagBranch "collation" [("type", ty)] xs <- univ]
+   collations = [ (toAlias ty, extractText xs)
+                | TagBranch "collation" attrs xs <- univ
+                , ("type", ty) <- attrs
+                , lookup "alt" attrs == Nothing
+                ]
+   defaultCollation =  fromMaybe "" $
+                         lookup (toAlias defaultCollationName) collations
    extractText xs = mconcat [txt | TagLeaf (TagText txt) <- universeTree xs]
    -- we need aliases because of the char limit in BCP47:
    toAlias "phonebook" = "phonebk"
