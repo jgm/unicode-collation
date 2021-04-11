@@ -26,10 +26,10 @@ main = do
     putStrLn ""
     putStrLn "Sorts lines from stdin using the specified collation."
     putStrLn "COLLATION is a BCP47 language code. Examples:"
-    putStrLn "unicode-collate # Sort lines from stdin using root collation"
-    putStrLn "unicode-collate es # Use standard Spanish collation"
-    putStrLn "unicode-collate es-u-co-traditional # Use traditional Spanish"
-    putStrLn "unicode-collate fr-CA # Use Canadian French collation"
+    putStrLn "unicode-collate               # Sort lines from stdin using root collation"
+    putStrLn "unicode-collate es            # Use standard Spanish collation"
+    putStrLn "unicode-collate es-u-co-trad  # Use traditional Spanish"
+    putStrLn "unicode-collate fr-CA         # Use Canadian French collation"
     exitSuccess
 
   when ("--list" `elem` args) $ do
