@@ -111,18 +111,18 @@ GT
 -}
 
 module UnicodeCollation
-       ( collatorFor
-       , collator
+       ( Collator
        , collate
-       , sortKey
+       , collatorFor
+       , collator
        , rootCollator
        , ducetCollator
-       , setVariableWeighting
+       , SortKey(..)
+       , sortKey
        , VariableWeighting(..)
+       , setVariableWeighting
        , setNormalization
        , setFrenchAccents
-       , Collator
-       , SortKey(..)
        , Tailoring
        , withTailoring
        , tailor

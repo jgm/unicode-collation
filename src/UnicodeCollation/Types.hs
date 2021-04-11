@@ -94,7 +94,7 @@ showWordList ws =
     "[" ++ intercalate ","
             (map (printf "0x%04X" . (fromIntegral :: Word16 -> Int)) ws) ++ "]"
 
-newtype SortKey = SortKey { unSortKey :: [Word16] }
+newtype SortKey = SortKey [Word16]
   deriving (Eq, Ord)
 
 instance Show SortKey where

@@ -8,15 +8,6 @@ description:         This library provides a pure Haskell implementation of
                      as fully-featured or as performant as @text-icu@, but
                      it avoids a dependency on a large C library.
                      Locale-specific tailorings are also provided.
-                     .
-                     As one might expect, this library is slower than
-                     @text-icu@, but not to a degree that should matter for
-                     for most purposes. (On one test machine, it takes
-                     8.4ms to sort 10,000 random Texts,
-                     as opposed to 2ms with @text-icu@.)
-                     .
-                     A command-line program is also provided for testing
-                     and use in scripts.
 
 homepage:            https://github.com/jgm/unicode-collation
 bug-reports:         https://github.com/jgm/unicode-collation/issues

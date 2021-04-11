@@ -14,8 +14,7 @@ main :: IO ()
 main = do
   let icuCollator = ICU.collator ICU.Root
   let icuCollate = ICU.collate icuCollator
-  let ourCollator = mkCollator collationOptions
-  let ourCollate = collate ourCollator
+  let ourCollate = collate rootCollator
   (randomTexts :: [Text]) <- generate (infiniteListOf arbitrary)
   let tenThousand = take 10000 randomTexts
   defaultMain
