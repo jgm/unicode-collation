@@ -111,7 +111,11 @@ parseLang lang =
     --               / 4ALPHA              ; or reserved for future use
     --               / 5*8ALPHA            ; or registered language subtag
     pLanguage = (do
-      baselang <- tok (\t -> T.all isAsciiLower t && lengthBetween 2 3 t)
+      baselang <- tok (\t -> T.all isAsciiLower t && lengthBetween 2 3 t) P.<|>
+                  -- the spec wants lang to be lowercase, but we're more
+                  -- forgiving and also allow uppercase:
+                  (T.toLower
+                   <$> tok (\t -> T.all isAsciiUpper t && lengthBetween 2 3 t))
       extlang <- P.option Nothing $ Just <$> pExtlang
       case extlang of
         Nothing  -> pure baselang
