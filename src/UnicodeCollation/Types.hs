@@ -55,8 +55,9 @@ data VariableWeighting =
   | ShiftTrimmed -- ^ Variant of Shifted (deluge < de-luge < delu-ge)
   deriving (Show, Eq, Ord)
 
-data Collator = Collator { collate :: Text -> Text -> Ordering
-                         , sortKey :: Text -> SortKey }
+data Collator = Collator { collate         :: Text -> Text -> Ordering
+                         , sortKey         :: Text -> SortKey
+                         , collatorOptions :: CollationOptions }
 
 data CollationElement =
   CollationElement

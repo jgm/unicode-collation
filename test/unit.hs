@@ -136,9 +136,7 @@ conformanceTests = do
 conformanceTestsFor :: VariableWeighting -> FilePath -> IO TestTree
 conformanceTestsFor weighting fp = do
   xs <- parseConformanceTest fp
-  let coll = mkCollator collationOptions{
-                         optVariableWeighting = weighting,
-                         optCollation = ducetCollation }
+  let coll = setVariableWeighting weighting ducetCollator
   return $ testGroup ("Conformance tests " ++ show weighting ++ " " ++ fp)
          $ zipWith3 (conformanceTestWith coll) (map fst xs)
                      (map snd xs) (tail (map snd xs))
@@ -160,8 +158,7 @@ conformanceTestWith coll lineNo !txt1 !txt2 =
 
 collateWithTailoring :: Tailoring -> Text -> Text -> Ordering
 collateWithTailoring tlrng =
-  collate (mkCollator collationOptions{ optCollation =
-                                         rootCollation `withTailoring` tlrng })
+  collate (rootCollator `withTailoring` tlrng)
 
 collateWith :: Text -> Text -> Text -> Ordering
 collateWith spec =
@@ -172,8 +169,7 @@ collateWith spec =
 variableOrderingCase :: (VariableWeighting , [Text]) -> TestTree
 variableOrderingCase (w , expected) =
   testCase (show w) $
-     sortBy (collate (mkCollator collationOptions{
-                        optVariableWeighting = w }))
+     sortBy (collate (setVariableWeighting w rootCollator))
            -- from Table 12
            [ "de luge"
            , "de Luge"
@@ -192,7 +188,7 @@ ourCollate =
   collate ourCollator
 
 ourCollator :: Collator
-ourCollator = mkCollator collationOptions{ optVariableWeighting = Shifted }
+ourCollator = setVariableWeighting Shifted $ rootCollator
 
 parseConformanceTest :: FilePath -> IO [(Int, Text)]
 parseConformanceTest fp = do
@@ -233,9 +229,6 @@ icuCollator = ICU.collatorWith ICU.Root
 
 agreesWithICU :: TextPairInRange -> Bool
 agreesWithICU (TextPairInRange a b) = ourCollate a b == icuCollate a b
-
-ducetCollator :: Collator
-ducetCollator = mkCollator collationOptions{ optCollation = ducetCollation }
 
 toHex :: Text -> [String]
 toHex = map (printf "%04X") . T.unpack

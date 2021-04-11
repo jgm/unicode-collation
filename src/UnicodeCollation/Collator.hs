@@ -6,6 +6,7 @@ module UnicodeCollation.Collator
   , collationOptions
   , collatorFor
   , mkCollator
+  , withTailoring
   )
 where
 
@@ -94,16 +95,25 @@ collatorFor lang = mkCollator opts
                  Just "true"     -> True
                  Just "false"    -> False
                  _               -> True,
-             optCollation = rootCollation `withTailoring` tailoring }
+             optCollation = rootCollation `tailorCollation` tailoring }
     tailoring = maybe mempty snd $ lookupLang lang tailorings
     exts = langExtensions lang
+
+-- | Apply a 'Tailoring' to a 'Collator.
+withTailoring :: Collator -> Tailoring -> Collator
+withTailoring coll tailoring =
+  let oldCollation = optCollation (collatorOptions coll)
+   in mkCollator (collatorOptions coll){
+                   optCollation = tailorCollation oldCollation tailoring }
 
 -- | Returns a collator constructed using the collation and
 -- variable weighting specified in the options.
 mkCollator :: CollationOptions -> Collator
 mkCollator opts =
   Collator { collate = comparing sortKey'
-           , sortKey = sortKey' }
+           , sortKey = sortKey'
+           , collatorOptions = opts
+           }
  where
   sortKey' = toSortKey opts
 

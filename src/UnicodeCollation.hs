@@ -31,8 +31,12 @@ that you won't get any feedback if the string doesn't parse correctly
 as BCP 47, or if no collation is defined for the specified language;
 instead, you'll just get the default (root) collator.
 
-For better safety (and compile-term errors and warnings), use the
-quasi-quoter:
+If you won't know the language until run time, use 'parseLang'
+to parse it to a 'Lang' rather than using 'fromString', so you can
+catch parse errors.
+
+If you know the language at compile-time, use the quasi-quoter
+and you'll get compile-time errors and warnings:
 
 >>> :set -XQuasiQuotes
 >>> let esTradCollator = [collator|es-u-co-trad|]
@@ -80,39 +84,49 @@ These options be combined:
 >>> collate complexCollator "\x00FE" "u"
 LT
 
-If you won't know the language until run time, use 'parseLang'
-to parse it to a 'Lang' rather than using 'fromString', so you can
-catch parse errors.
+Options can also be set using the functions 'setVariableWeighting',
+'setNormalization', and 'setFrenchAccents':
 
->>> let langtag = "en-US"
->>> :{
-let myCollator = case parseLang langtag of
-                   Left e     -> error e
-                   Right lang -> collatorFor lang
- in collate myCollator "a" "b"
-:}
+>>> let frCollatorC = setFrenchAccents True [collator|fr|]
+>>> collate frCollatorB "côte" "coté"
 LT
 
-It is also possible to create a collator using the lower-level
-interface of 'mkCollator'.
+A collation can be "tailored": a tailoring modifies the
+collation table in a way that suits a specific locale.
+
+The tailorings provided at <http://unicode.org/Public/cdr/38.1/>
+are included in 'tailorings'; to find the one that best matches
+a 'Lang', use the function 'lookupLang'.  But you can also create
+custom tailorings using the syntax described in
+<http://www.unicode.org/reports/tr35/>, using the 'tailor'
+quasi-quoter:
+
+>>> :set -XQuasiQuotes
+>>> let crazyCollator = rootCollator `withTailoring` [tailor|&ex < d|]
+>>> collate crazyCollator "direct" "extract"
+GT
+>>> collate crazyCollator "figure" "extract"
+GT
+
 -}
 
 module UnicodeCollation
        ( collatorFor
        , collator
-       , mkCollator
-       , collationOptions
-       , rootCollation
-       , ducetCollation
-       , tailor
-       , tailorings
-       , withTailoring
-       , CollationOptions(..)
-       , Collator(..)
-       , Collation
+       , collate
+       , sortKey
+       , rootCollator
+       , ducetCollator
+       , setVariableWeighting
+       , VariableWeighting(..)
+       , setNormalization
+       , setFrenchAccents
+       , Collator
        , SortKey(..)
        , Tailoring
-       , VariableWeighting(..)
+       , withTailoring
+       , tailor
+       , tailorings
        , module UnicodeCollation.Lang
        )
 where
@@ -120,3 +134,22 @@ import UnicodeCollation.Types
 import UnicodeCollation.Lang
 import UnicodeCollation.Collator
 import UnicodeCollation.Tailorings
+
+rootCollator :: Collator
+rootCollator = mkCollator collationOptions{ optCollation = rootCollation }
+
+ducetCollator :: Collator
+ducetCollator = mkCollator collationOptions{ optCollation = ducetCollation }
+
+setVariableWeighting :: VariableWeighting -> Collator -> Collator
+setVariableWeighting w coll =
+  mkCollator (collatorOptions coll){ optVariableWeighting = w }
+
+setNormalization :: Bool -> Collator -> Collator
+setNormalization normalize coll =
+  mkCollator (collatorOptions coll){ optNormalize = normalize }
+
+setFrenchAccents :: Bool -> Collator -> Collator
+setFrenchAccents frAccents coll =
+  mkCollator (collatorOptions coll){ optFrenchAccents = frAccents }
+

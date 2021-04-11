@@ -1,6 +1,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 module UnicodeCollation.Tailorings
+ ( tailorCollation
+ , rootCollation
+ , ducetCollation
+ , tailor
+ , tailorings )
 where
 
 import UnicodeCollation.Types
@@ -12,8 +17,8 @@ import Language.Haskell.TH.Quote (QuasiQuoter(..))
 import qualified Data.Text as T
 
 -- | Apply a 'Tailoring' to a 'Collation'.
-withTailoring :: Collation -> Tailoring -> Collation
-withTailoring collation (Tailoring mods) =
+tailorCollation :: Collation -> Tailoring -> Collation
+tailorCollation collation (Tailoring mods) =
   foldl' applyCollationMod collation mods
 
 -- | The root collation defined in allkeys_CLDR.txt is the collation
