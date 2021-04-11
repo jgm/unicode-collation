@@ -9,6 +9,7 @@ import System.Environment (getArgs)
 import Data.Maybe
 import Control.Monad
 import System.Exit
+import System.IO
 
 main :: IO ()
 main = do
@@ -39,7 +40,11 @@ main = do
     exitSuccess
 
   spec <- maybe "root" T.pack . listToMaybe <$> getArgs
-  lang <- either error return $ parseLang spec
+  lang <- either handleError return $ parseLang spec
   let myCollator = collatorFor lang
   T.getContents >>= mapM_ T.putStrLn . sortBy (collate myCollator) . T.lines
 
+handleError :: String -> IO a
+handleError msg = do
+  hPutStrLn stderr msg
+  exitWith $ ExitFailure 1
