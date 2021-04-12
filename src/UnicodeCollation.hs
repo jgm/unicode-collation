@@ -6,8 +6,9 @@ Copyright: (c) 2021 John MacFarlane
 SPDX-License-Identifier: BSD-2-Clause
 Maintainer: John MacFarlane <jgm@berkeley.edu>
 
-Haskell implementation of the
-<https://www.unicode.org/reports/tr10 Unicode Collation Algorithm>.
+This library provides a pure Haskell implementation of the
+<https://www.unicode.org/reports/tr10 Unicode Collation Algorithm>,
+allowing proper sorting of Unicode strings.
 
 The simplest way to use the library is to create a localized
 collator using 'collatorFor', which takes as an argument a
@@ -19,6 +20,12 @@ collator using 'collatorFor', which takes as an argument a
 >>> let enCollator = collatorFor "en-US"
 >>> sortBy (collate enCollator) unsortedList
 ["abC","\119990bc","\120146bc","Abc","ab\231","\228bc"]
+
+Note the difference from a default sort:
+
+>>> sort unsortedList
+["Abc","abC","ab\231","\228bc","\119990bc","\120146bc"]
+
 >>> let seCollator = collatorFor "se"
 >>> collate enCollator "\246" "z"
 LT
