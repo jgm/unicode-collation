@@ -101,6 +101,10 @@ emptyLang = Lang mempty mempty mempty mempty mempty mempty
 
 langPairs :: [(Text, Lang)]
 langPairs = [ ("en", emptyLang{langLanguage = "en"})
+            , ("en with garbage following",
+                     emptyLang{langLanguage = "en"})
+            , ("en--with garbage following", -- CSL allows this
+                     emptyLang{langLanguage = "en"})
             , ("en-US", emptyLang{langLanguage = "en", langRegion = Just "US"})
             , ("sr_Latn_RS", emptyLang{langLanguage = "sr",
                                    langScript = Just "Latn",

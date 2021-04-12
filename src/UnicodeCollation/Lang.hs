@@ -14,7 +14,7 @@ import Control.Monad (mzero)
 import Data.Ord (Down(..))
 import Data.List (sortOn)
 import Data.Char (isAlphaNum, isAscii, isAsciiLower, isAsciiUpper,
-                  isLower, isUpper, isDigit)
+                  isLower, isUpper, isDigit, isSpace)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Text.Parsec as P
@@ -81,7 +81,8 @@ renderLang lang =
 -- | Parse a BCP47 language tag as a 'Lang'.
 parseLang :: Text -> Either String Lang
 parseLang lang =
-  case P.parse pLangTag "lang" (T.split (\c -> c == '-' || c == '_') lang) of
+  case P.parse pLangTag "lang" (T.split (\c -> c == '-' || c == '_')
+                                 $ T.takeWhile (not . isSpace) lang) of
        Right r -> Right r
        Left e  -> Left $ show e
   where
@@ -97,7 +98,7 @@ parseLang lang =
       variants <- P.many pVariant P.<?> "variant"
       extensions <- P.many pExtension P.<?> "extension"
       privateUse <- P.option [] (pPrivateUse P.<?> "private use")
-      P.eof
+      -- P.eof  -- like CSL, we allow garbage afterwards
       return Lang{   langLanguage = language
                    , langScript = script
                    , langRegion = region
