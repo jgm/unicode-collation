@@ -26,6 +26,10 @@ normalization).
 Locale-specific tailorings are supported, but in a limited
 way.  We do not yet support `[reorder..]`.
 
+Extension strings (e.g. `&abc < def / ghi`) and
+context before (e.g. `&a >> e | '-'`) are not yet
+supported in tailorings.
+
 ## Performance
 
 ```

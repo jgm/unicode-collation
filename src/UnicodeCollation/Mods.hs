@@ -196,6 +196,8 @@ isSpecial '#' = True
 isSpecial '\'' = True
 isSpecial '\\' = True
 isSpecial '"' = True
+isSpecial '/' = True
+isSpecial '|' = True
 isSpecial c | isSpace c = True
 isSpecial _ = False
 
