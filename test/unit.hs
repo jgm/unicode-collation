@@ -26,11 +26,12 @@ tests :: TestTree -> TestTree
 tests conformanceTree = testGroup "Tests"
   [ conformanceTree
   , testCase "Sorting test 1" $
-    sortBy ourCollate ["hi", "hit", "hít", "hat", "hot",
+    sortBy (collate ourCollator) ["hi", "hit", "hít", "hat", "hot",
                        "naïve", "nag", "name"] @?=
            ["hat","hi","hit","h\237t","hot","nag","naïve","name"]
   , testCase "Sorting test 2" $
-    sortBy ourCollate ["ｶ", "ヵ", "abc", "abç", "ab\xFFFE\&c", "ab©",
+    sortBy (collate ourCollator)
+                      ["ｶ", "ヵ", "abc", "abç", "ab\xFFFE\&c", "ab©",
                        "𝒶bc", "abC", "𝕒bc", "File-3", "ガ", "が", "äbc", "カ",
                        "か", "Abc", "file-12", "filé-110"]
                       @?=
@@ -63,13 +64,13 @@ tests conformanceTree = testGroup "Tests"
     ]
   , testGroup "Localized collations"
     [ testCase "root cha cza" $
-        collateWith "und" "cha" "cza" @?= LT
+        collate "und" "cha" "cza" @?= LT
     , testCase "es traditional cha cza" $
-        collateWith "es-u-co-trad" "cha" "cza" @?= GT
+        collate "es-u-co-trad" "cha" "cza" @?= GT
     , testCase "se ö z" $
-        collateWith "se" "ö" "z" @?= GT
+        collate "se" "ö" "z" @?= GT
     , testCase "tr ö z" $
-        collateWith "tr" "ö" "z" @?= LT
+        collate "tr" "ö" "z" @?= LT
     , testCase "fr-CA sorted list" $
         sortBy (collate (collatorFor "fr-CA-u-kb-true"))
         ["déjà","Meme", "deja", "même", "dejà", "bpef", "bœg", "Boef", "Mémé",
@@ -78,17 +79,17 @@ tests conformanceTree = testGroup "Tests"
         ["bnef", "boef", "Boef", "bœf", "bœg", "bpef", "deja", "dejà", "déjà",
          "Meme", "même", "Mémé", "pêche", "pêche", "pèché", "pêché", "pêché"]
     , testCase "fr with French accents" $
-        collateWith "fr-u-kb-true" "coté" "côte" @?= GT
+        collate "fr-u-kb-true" "coté" "côte" @?= GT
     , testCase "fr without French accents" $
-        collateWith "fr-u-kb-false" "coté" "côte" @?= LT
+        collate "fr-u-kb-false" "coté" "côte" @?= LT
     , testCase "fr kb defaults to true" $
-        collateWith "fr-u-kb" "coté" "côte" @?= GT
+        collate "fr-u-kb" "coté" "côte" @?= GT
     , testCase "fr without kb defaults to false" $
-        collateWith "fr" "coté" "côte" @?= LT
+        collate "fr" "coté" "côte" @?= LT
     , testCase "en with shifted" $
-        collateWith "en-u-ka-shifted" "de-luge" "de Luge" @?= LT
+        collate "en-u-ka-shifted" "de-luge" "de Luge" @?= LT
     , testCase "en with nonignorable" $
-        collateWith "en-u-ka-noignore" "de-luge" "de Luge" @?= GT
+        collate "en-u-ka-noignore" "de-luge" "de Luge" @?= GT
     ]
   , testGroup "BCP 47 Lang parsing"
        (map langParseTest langPairs)
@@ -164,12 +165,6 @@ collateWithTailoring :: Tailoring -> Text -> Text -> Ordering
 collateWithTailoring tlrng =
   collate (rootCollator `withTailoring` tlrng)
 
-collateWith :: Text -> Text -> Text -> Ordering
-collateWith spec =
-  case parseLang spec of
-    Left e -> error e
-    Right lang -> collate (collatorFor lang)
-
 variableOrderingCase :: (VariableWeighting , [Text]) -> TestTree
 variableOrderingCase (w , expected) =
   testCase (show w) $
@@ -186,10 +181,6 @@ variableOrderingCase (w , expected) =
            , "deLuge"
            , "demark" ]
            @?= expected
-
-ourCollate :: Text -> Text -> Ordering
-ourCollate =
-  collate ourCollator
 
 ourCollator :: Collator
 ourCollator = setVariableWeighting Shifted $ rootCollator
@@ -218,22 +209,3 @@ prettySortKey (SortKey ws) = tohexes ws
   tohexes = unwords . map tohex
   tohex = printf "%04X"
 
-{-
-icuCollate :: Text -> Text -> Ordering
-icuCollate = ICU.collate icuCollator
-
-icuSortKey :: Text -> String
-icuSortKey = concatMap (printf "%02X ") . B.unpack . ICU.sortKey icuCollator
-
-icuCollator :: ICU.Collator
-icuCollator = ICU.collatorWith ICU.Root
-                 [ ICU.Collate.AlternateHandling ICU.Collate.Shifted
-                 , ICU.Collate.NormalizationMode True
-                 , ICU.Collate.Strength ICU.Collate.Quaternary]
-
-agreesWithICU :: TextPairInRange -> Bool
-agreesWithICU (TextPairInRange a b) = ourCollate a b == icuCollate a b
-
-toHex :: Text -> [String]
-toHex = map (printf "%04X") . T.unpack
--}

@@ -3,8 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveLift #-}
 module UnicodeCollation.Types
-  ( Collator(..)
-  , CollationOptions(..)
+  ( CollationOptions(..)
   , VariableWeighting(..)
   , CollationElement(..)
   , Collation(..)
@@ -54,10 +53,6 @@ data VariableWeighting =
            -- (de-luge < delu-ge < deluge < deluge- < Deluge)
   | ShiftTrimmed -- ^ Variant of Shifted (deluge < de-luge < delu-ge)
   deriving (Show, Eq, Ord)
-
-data Collator = Collator { collate         :: Text -> Text -> Ordering
-                         , sortKey         :: Text -> SortKey
-                         , collatorOptions :: CollationOptions }
 
 data CollationElement =
   CollationElement

@@ -10,14 +10,13 @@ This library provides a pure Haskell implementation of the
 <https://www.unicode.org/reports/tr10 Unicode Collation Algorithm>,
 allowing proper sorting of Unicode strings.
 
-The simplest way to use the library is to create a localized
-collator using 'collatorFor', which takes as an argument a
-'Lang' representing a BCP47 language tag.
+The simplest way to use the library is to use the 'IsString'
+instance of 'Collator' (together with the @OverloadedStrings@
+extension):
 
 >>> import Data.List (sortBy)
 >>> import qualified Data.Text.IO as T
->>> let en_US = collatorFor "en-US"
->>> mapM_ T.putStrLn $ sortBy (collate en_US) ["𝒶bc","abC","𝕒bc","Abc","abç","äbc"]
+>>> mapM_ T.putStrLn $ sortBy (collate "en-US") ["𝒶bc","abC","𝕒bc","Abc","abç","äbc"]
 abC
 𝒶bc
 𝕒bc
@@ -52,16 +51,21 @@ SortKey [0x213C,0x0000,0x0020,0x002B,0x0000,0x0002,0x0002,0x0000,0xFFFF,0xFFFF]
 >>> sortKey se "ö"
 SortKey [0x2302,0x0000,0x0022,0x0000,0x0009,0x0000,0xFFFF]
 
-Because 'Lang' has an 'IsString' instance, you can just specify it
-using a string literal, as in the above examples.  Note, however,
+Because 'Collator' and 'Lang' have 'IsString' instances, you can just specify
+them using string literals, as in the above examples.  Note, however,
 that you won't get any feedback if the string doesn't parse correctly
-as BCP 47, or if no collation is defined for the specified language;
-instead, you'll just get the default (root) collator.  For this
-reason, we don't recommend relying on the 'IsString' instance.
+as a BCP47 language tag, or if no collation is defined for the specified
+language; instead, you'll just get the default (root) collator.  For
+this reason, we don't recommend relying on the 'IsString' instance.
 
 If you won't know the language until run time, use 'parseLang'
 to parse it to a 'Lang', handling parse errors, and then pass
 the 'Lang' to 'collatorFor'.
+
+>>> let handleParseError = error  -- or something fancier
+>>> lang <- either handleParseError return $ parseLang "bs-Cyrl"
+>>> collate (collatorFor lang) "a" "b"
+LT
 
 If you know the language at compile-time, use the 'collator'
 quasi-quoter and you'll get compile-time errors and warnings:
@@ -83,21 +87,17 @@ The extension syntax can also be used to set collator options.
 The keyword @kb@ can be used to specify the "backwards" accent sorting that is
 sometimes used in French:
 
->>> let fr = [collator|fr|]
->>> collate fr "côte" "coté"
+>>> collate "fr" "côte" "coté"
 GT
->>> let frB = [collator|fr-u-kb|]
->>> collate frB "côte" "coté"
+>>> collate "fr-u-kb" "côte" "coté"
 LT
 
 The keyword @ka@ can be used to specify the variable weighting options which
 affect how punctuation and whitespace are treated:
 
->>> let shifted = [collator|en-u-ka-shifted|]
->>> collate shifted "de-luge" "de Luge"
+>>> collate "en-u-ka-shifted" "de-luge" "de Luge"
 LT
->>> let nonignorable = [collator|en-u-ka-noignore|]
->>> collate nonignorable "de-luge" "de Luge"
+>>> collate "en-u-ka-noignore" "de-luge" "de Luge"
 GT
 
 The keyword @kk@ can be used to turn off the normalization step (which
@@ -108,8 +108,7 @@ if the input is already in NFD form (canonical decomposition).
 
 These options be combined:
 
->>> let complexCollator = [collator|de-DE-u-co-eor-kb-false-ka-shifted|]
->>> collate complexCollator "\x00FE" "u"
+>>> collate "de-DE-u-co-eor-kb-false-ka-shifted" "\x00FE" "u"
 LT
 
 Options can also be set using the functions 'setVariableWeighting',

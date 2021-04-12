@@ -2,7 +2,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 module UnicodeCollation.Collator
-  ( collator
+  ( Collator(..)
+  , collator
   , collationOptions
   , collatorFor
   , mkCollator
@@ -15,6 +16,7 @@ import UnicodeCollation.Lang
 import UnicodeCollation.Tailorings
 import UnicodeCollation.Collation (getCollationElements)
 import Data.Word (Word16)
+import Data.String
 import qualified Data.Text.Normalize as N
 import qualified Data.Text as T
 import Data.Text (Text)
@@ -25,6 +27,13 @@ import Language.Haskell.TH.Quote (QuasiQuoter(..))
 #else
 import Data.Semigroup (Semigroup(..))
 #endif
+
+data Collator = Collator { collate         :: Text -> Text -> Ordering
+                         , sortKey         :: Text -> SortKey
+                         , collatorOptions :: CollationOptions }
+
+instance IsString Collator where
+ fromString = collatorFor . fromString
 
 -- | Create a collator at compile time based on a BCP47 language
 -- tag: e.g., @[collator|es-u-co-trad]@.  Requires the @QuasiQuotes@ extension.
