@@ -11,6 +11,34 @@ pandoc.
 
 Handle / and | in tailorings!
 
+e.g. in fi traditional
+```
+                                        &T<<þ/h<<<Þ/h
+```
+
+e.g. in ja
+```
+<<<ぁ|ー=あ|ー=か|ー=ゕ
+```
+
+```
+a <<< a | '-'
+```
+can turn into
+```
+a'-' = aa
+```
+
+and
+
+```
+a < z / e
+```
+is roughly
+```
+ae < z
+```
+
 We still don't support
 
 e.g. [reorder Cyrl]
