@@ -14,23 +14,26 @@ The simplest way to use the library is to create a localized
 collator using 'collatorFor', which takes as an argument a
 'Lang' representing a BCP47 language tag.
 
->>> import Data.List (sortBy)
+>>> import Data.List (sort, sortBy)
 >>> :set -XOverloadedStrings
 >>> let unsortedList = ["\119990bc","abC","\120146bc","Abc","ab\231","\228bc"]
 >>> let enCollator = collatorFor "en-US"
 >>> sortBy (collate enCollator) unsortedList
 ["abC","\119990bc","\120146bc","Abc","ab\231","\228bc"]
-
-Note the difference from a default sort:
-
->>> sort unsortedList
+>>> sort unsortedList  -- note the difference from the default sort:
 ["Abc","abC","ab\231","\228bc","\119990bc","\120146bc"]
 
+A 'Collator' provides a function 'collate' that compares two texts,
+and a function 'sortKey' that returns the sort key.
+
+>>> let deCollator = collatorFor "de"
 >>> let seCollator = collatorFor "se"
->>> collate enCollator "\246" "z"
+>>> collate deCollator "\246" "z"
 LT
 >>> collate seCollator "\246" "z"
 GT
+>>> sortKey deCollator "z"
+SortKey [0x2286,0x0000,0x0020,0x0000,0x0002,0x0000,0xFFFF]
 
 Because 'Lang' has an 'IsString' instance, you can just specify it
 using a string literal, as in the above examples.  Note, however,
