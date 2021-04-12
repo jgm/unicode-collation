@@ -8,8 +8,7 @@ bench:
 	stack bench --benchmark-arguments="+RTS -T -RTS"
 
 ghci:
-	stack ghci unicode-collation:lib unicode-collation:test:unit --ghc-options=-XOverloadedStrings
-
+	stack ghci --ghc-options=-XOverloadedStrings unicode-collation:lib unicode-collation:test:unit
 clean:
 	stack clean
 
