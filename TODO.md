@@ -9,6 +9,8 @@ pandoc.
 
 # Tailoring parsing
 
+Handle / and | in tailorings!
+
 We still don't support
 
 e.g. [reorder Cyrl]
