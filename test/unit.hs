@@ -90,6 +90,11 @@ tests conformanceTree = testGroup "Tests"
         collate "en-u-ka-shifted" "de-luge" "de Luge" @?= LT
     , testCase "en with nonignorable" $
         collate "en-u-ka-noignore" "de-luge" "de Luge" @?= GT
+    , testCase "de-u-co-phonebk" $
+        sortBy (collate "de-u-co-phonebk")
+        ["Übelacker", "Üxküll", "Uell", "Ülle", "Udet", "Uffenbach", "Ueve"]
+        @?=
+        ["Udet", "Übelacker", "Uell", "Ülle", "Ueve", "Üxküll", "Uffenbach"]
     ]
   , testGroup "BCP 47 Lang parsing"
        (map langParseTest langPairs)
