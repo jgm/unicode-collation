@@ -26,8 +26,30 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
-The file Unicode/Collate/allkeys.txt was copied verbatim
-from http://www.unicode.org/Public/UCA/13.0.0/allkeys.txt
+The file data/allkeys.txt and the conformance test
+data (test/uca-collation-test) was copied from
+http://www.unicode.org/Public/UCA/13.0.0/allkeys.txt
 For this file, Copyright (c) 2020 Unicode, Inc.
+For terms of use, see http://www.unicode.org/terms_of_use.html
+
+---
+
+The file data/DerivedCombiningCLass.txt was copied from
+http://www.unicode.org/Public/13.0.0/ucd/extracted/DerivedCombiningClass.txt
+For this file, Copyright (c) 2020 Unicode, Inc.
+For terms of use, see http://www.unicode.org/terms_of_use.html
+
+---
+
+The file data/allkeys_CLDR.txt was copied from
+https://github.com/unicode-org/cldr/common/uca/allkeys_CLDR.txt
+For this file, Copyright (c) 2020 Unicode, Inc.
+For terms of use, see http://www.unicode.org/terms_of_use.html
+
+---
+
+The collation data file in data/collation were copied from
+https://unicode.org/Public/cldr/38.1/
+For these files, Copyright (c) 2020 Unicode, Inc.
 For terms of use, see http://www.unicode.org/terms_of_use.html
 
