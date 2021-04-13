@@ -23,3 +23,11 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+---
+
+The file Unicode/Collate/allkeys.txt was copied verbatim
+from http://www.unicode.org/Public/UCA/13.0.0/allkeys.txt
+For this file, Copyright (c) 2020 Unicode, Inc.
+For terms of use, see http://www.unicode.org/terms_of_use.html
+
