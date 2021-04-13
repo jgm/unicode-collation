@@ -34,7 +34,7 @@ import qualified Data.Text.Normalize as N
 #else
 import Data.Semigroup (Semigroup(..))
 #endif
--- import Debug.Trace
+import Debug.Trace
 
 parseTailoring :: String -> Text -> Either ParseError Tailoring
 parseTailoring fp =
@@ -276,14 +276,17 @@ applyCollationMod collation cmod =
           -> [CollationElement]
           -> Maybe [CollationElement]
           -> Maybe [CollationElement]
-  reorder _ _   []   _ = Just [completelyIgnorable]
+  reorder _ _   []   _ = Just []
   reorder n lvl (a:as) (Just [])
-    | levelOf a <= lvl = Just [incrementLevel n lvl a a]
-    | otherwise        = reorder n lvl as (Just [])
+    | levelOf a <= lvl = (incrementLevel n lvl a a :)
+                               <$> reorder n lvl as (Just [])
+    | otherwise        = (a :) <$> reorder n lvl as (Just [])
   reorder n lvl (a:as) (Just (b:bs))
-    | levelOf a <= lvl = Just [incrementLevel n lvl a b]
+    | levelOf a <= lvl = (incrementLevel n lvl a b :)
+                               <$> reorder n lvl as (Just bs)
     | otherwise        = (b :) <$> reorder n lvl as (Just bs)
-  reorder n lvl (a:_) Nothing = Just [incrementLevel n lvl a a]
+  reorder n lvl (a:as) Nothing =
+    reorder n lvl (a:as) (Just [])
 
   incrementLevel n L1 eltA eltB =
     eltB{ collationL1 = fromIntegral $ fromIntegral (collationL1 eltA) + n }

@@ -22,6 +22,7 @@ import Data.Maybe (fromMaybe)
 #else
 import Data.Semigroup (Semigroup(..))
 #endif
+-- import Debug.Trace
 
 data Trie a = Trie (Maybe a) (Maybe (M.IntMap (Trie a)))
   deriving (Show, Eq, Ord, Lift, Functor, Foldable, Traversable)

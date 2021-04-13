@@ -27,7 +27,7 @@ import qualified Data.Binary as Binary
 import UnicodeCollation.CombiningClass (genCombiningClassMap)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
--- import Debug.Trace
+import Debug.Trace
 
 -- | Unfold a 'Collation' into an association list.
 unfoldCollation :: Collation -> [([Int], [CollationElement])]
