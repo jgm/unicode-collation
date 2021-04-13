@@ -17,6 +17,7 @@ import Data.Bifunctor (first)
 import Data.Binary (Binary(..))
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
+import Data.Maybe (fromMaybe)
 #if MIN_VERSION_base(4,11,0)
 #else
 import Data.Semigroup (Semigroup(..))
@@ -64,9 +65,7 @@ insert (c:cs) x (Trie mbv Nothing) =
 alter :: (Maybe a -> Maybe a) -> [Int] -> Trie a -> Trie a
 alter f [] (Trie mbv mbm) = Trie (f mbv) mbm
 alter f (c:cs) (Trie mbv (Just m)) =
-  case M.lookup c m of
-    Nothing   -> Trie mbv (Just (M.insert c (alter f cs empty) m))
-    Just trie -> Trie mbv (Just (M.insert c (alter f cs trie) m))
+  Trie mbv (Just (M.insert c (alter f cs $ fromMaybe empty $ M.lookup c m) m))
 alter f (c:cs) (Trie mbv Nothing) =
   Trie mbv (Just (M.insert c (alter f cs empty) mempty))
 
