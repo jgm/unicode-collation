@@ -1,5 +1,8 @@
 # Lang
 
+extension keywords case-insensitive?
+maybe more? check.
+
 change to using a Trie for lookup?  see
 the section on Lookup in https://tools.ietf.org/html/bcp47
 
