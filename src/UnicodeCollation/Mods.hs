@@ -244,10 +244,9 @@ applyCollationMod collation cmod =
     After lvl mbext mbcbef a b  ->
       case (getTarget a, getTarget b,
             mbext >>= getTarget, mbcbef >>= getTarget) of
-        (Just a', Just b', mbexts, _) ->
+        (Just a', Just b', _, _) ->
           alterElements
-             (reorder 1 lvl (getCollationElements collation <$> mbexts)
-               (getCollationElements collation a'))
+             (reorder 1 lvl (getCollationElements collation a'))
              b'
              collation
         _ -> collation
@@ -255,7 +254,7 @@ applyCollationMod collation cmod =
       case (getTarget a, getTarget b) of
         (Just a', Just b') ->
           alterElements
-              (reorder (-1) lvl Nothing (getCollationElements collation a'))
+              (reorder (-1) lvl (getCollationElements collation a'))
               b'
               collation
         _ -> collation
@@ -291,40 +290,36 @@ applyCollationMod collation cmod =
 
   reorder :: Int    -- increment/decrement
           -> Level
-          -> Maybe [CollationElement]
           -> [CollationElement]
           -> Maybe [CollationElement]
           -> Maybe [CollationElement]
-  reorder n lvl mbexts as Nothing   = reorder n lvl mbexts as (Just [])
-  reorder n lvl mbexts as (Just bs) =
+  reorder n lvl as Nothing   = reorder n lvl as (Just [])
+  reorder n lvl as (Just bs) =
     case (as, bs) of
       (a1:a2:arest, b1:b2:brest)
         | a1 == b1
         , levelOf a2 <= lvl
-        -> (a1 :) <$> reorder n lvl mbexts (a2:arest) (Just (b2:brest))
+        -> (a1 :) <$> reorder n lvl (a2:arest) (Just (b2:brest))
       (a1:a2:arest, _:brest)
         | levelOf a1 <= lvl
         , levelOf a2 <= lvl
-        -> (a1 :) <$> reorder n lvl mbexts (a2:arest) (Just brest)
+        -> (a1 :) <$> reorder n lvl (a2:arest) (Just brest)
       (a1:arest, b1:brest)
         | levelOf a1 <= lvl
         -> (incrementLevel n lvl a1 b1 :)
-             <$> reorder n lvl mbexts arest (Just brest)
+             <$> reorder n lvl arest (Just brest)
         | otherwise
-        -> (a1 :) <$> reorder n lvl mbexts arest (Just brest)
+        -> (a1 :) <$> reorder n lvl arest (Just brest)
       (a1:a2:arest, [])
         | levelOf a2 <= lvl
-        -> (a1 :) <$> reorder n lvl mbexts (a2:arest) (Just [])
+        -> (a1 :) <$> reorder n lvl (a2:arest) (Just [])
       (a1:arest, [])
         | levelOf a1 <= lvl
         -> (incrementLevel n lvl a1 a1 :)
-                  <$> reorder n lvl mbexts arest (Just [])
+                  <$> reorder n lvl arest (Just [])
         | otherwise
-        -> (a1 :) <$> reorder n lvl mbexts arest (Just [])
-      ([],_) ->
-        case mbexts of
-              Nothing   -> Just bs
-              Just exts -> reorder 0 lvl Nothing exts (Just bs)
+        -> (a1 :) <$> reorder n lvl arest (Just [])
+      ([],_) -> Just bs
 
   incrementLevel 0 _ eltA _     = eltA
   incrementLevel n L1 eltA eltB =

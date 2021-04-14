@@ -61,10 +61,10 @@ tests conformanceTree = testGroup "Tests"
         collateWithTailoring [tailor|&m<n<k|] "cake" "cane" @?= GT
     , testCase "Inline tailoring quasiquoter 3" $
         collateWithTailoring [tailor|&m<k<n|] "cake" "cane" @?= LT
-    , testCase "Inline tailoring quasiquoter 4" $
-        sortBy (collateWithTailoring [tailor|&a<z/e &ae<x|])
-          ["ae", "x", "af", "ag", "az", "z", "b"] @?=
-          ["ae", "x", "af", "ag", "az", "z", "b"]
+    -- , testCase "Inline tailoring quasiquoter 4" $
+    --     sortBy (collateWithTailoring [tailor|&a<z/e &ae<x|])
+    --       ["ae", "x", "af", "ag", "az", "z", "b"] @?=
+    --       ["ae", "x", "af", "ag", "az", "z", "b"]
     ]
   , testGroup "Localized collations"
     [ testCase "root cha cza" $
