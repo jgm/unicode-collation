@@ -91,22 +91,36 @@ pCollationMods = do
   (rels, targets) <- unzip . concat <$>
                     many1 (do (rel, starred) <- lexeme pRel
                               t <- lexeme pText
+                              cbef <- option Nothing $ Just <$> pContextBefore
+                              extension <- option Nothing $ Just <$> pExtension
+                              let rel' = rel extension cbef
                               if starred
-                                 then return $ map (\x -> (rel, TargetText x))
+                                 then return $ map (\x -> (rel', TargetText x))
                                                    (splitText t)
-                                 else return [(rel, TargetText t)])
+                                 else return [(rel', TargetText t)])
   let rels' = case (beforeLevel, rels) of
                 (Just lvl, _:rest) -> Before lvl : rest
                 _                  -> rels
   return $ zipWith3 (\f x y -> f x y)
                     rels' (firstText : targets) targets
 
-pRel :: Parser (Target -> Target -> CollationMod, Bool)
+pExtension :: Parser Target
+pExtension = do
+  void $ lexeme $ char '/'
+  TargetText <$> lexeme pText
+
+pContextBefore :: Parser Target
+pContextBefore = do
+  void $ lexeme $ char '|'
+  TargetText <$> lexeme pText
+
+pRel :: Parser
+        (Maybe Target -> Maybe Target -> Target -> Target -> CollationMod, Bool)
 pRel = do
   raw <- many1 (char '<') <|> string "="
   star <- option False $ True <$ char '*'
   case raw of
-    "="    -> return (Equal, star)
+    "="    -> return (\_ _ -> Equal, star)
     "<"    -> return (After L1, star)
     "<<"   -> return (After L2, star)
     "<<<"  -> return (After L3, star)
@@ -227,7 +241,7 @@ isSpecial _ = False
 applyCollationMod :: Collation -> CollationMod -> Collation
 applyCollationMod collation cmod =
   case cmod of
-    After lvl a b  ->
+    After lvl mbext mbcbef a b  ->
       case (getTarget a, getTarget b) of
         (Just a', Just b') ->
           alterElements (reorder 1 lvl (getCollationElements collation a'))
