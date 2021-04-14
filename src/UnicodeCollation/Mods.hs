@@ -242,18 +242,22 @@ applyCollationMod :: Collation -> CollationMod -> Collation
 applyCollationMod collation cmod =
   case cmod of
     After lvl mbext mbcbef a b  ->
-      case (getTarget a, getTarget b) of
-        (Just a', Just b') ->
-          alterElements (reorder 1 lvl (getCollationElements collation a'))
-                         b'
-                         collation
+      case (getTarget a, getTarget b,
+            mbext >>= getTarget, mbcbef >>= getTarget) of
+        (Just a', Just b', mbexts, _) ->
+          alterElements
+             (reorder 1 lvl (getCollationElements collation <$> mbexts)
+                            (getCollationElements collation a'))
+             b'
+             collation
         _ -> collation
     Before lvl a b  ->
       case (getTarget a, getTarget b) of
         (Just a', Just b') ->
-          alterElements (reorder (-1) lvl (getCollationElements collation a'))
-                         b'
-                         collation
+          alterElements
+              (reorder (-1) lvl Nothing (getCollationElements collation a'))
+              b'
+              collation
         _ -> collation
     Equal a b      ->
       case (getTarget a, getTarget b) of
@@ -287,20 +291,23 @@ applyCollationMod collation cmod =
 
   reorder :: Int    -- increment/decrement
           -> Level
+          -> Maybe [CollationElement]  -- extension
           -> [CollationElement]
           -> Maybe [CollationElement]
           -> Maybe [CollationElement]
-  reorder _ _   []   _ = Just []
-  reorder n lvl (a:as) (Just [])
+  reorder _ _ Nothing  [] _ = Just []
+  reorder _ lvl (Just exts) [] y = reorder 0 lvl Nothing exts y
+     -- handle extensions; we add the CEs but don't increment, see 3.8
+  reorder n lvl mbexts (a:as) (Just [])
     | levelOf a <= lvl = (incrementLevel n lvl a a :)
-                               <$> reorder n lvl as (Just [])
-    | otherwise        = (a :) <$> reorder n lvl as (Just [])
-  reorder n lvl (a:as) (Just (b:bs))
+                               <$> reorder n lvl mbexts as (Just [])
+    | otherwise        = (a :) <$> reorder n lvl mbexts as (Just [])
+  reorder n lvl mbexts (a:as) (Just (b:bs))
     | levelOf a <= lvl = (incrementLevel n lvl a b :)
-                               <$> reorder n lvl as (Just bs)
-    | otherwise        = (b :) <$> reorder n lvl as (Just bs)
-  reorder n lvl (a:as) Nothing =
-    reorder n lvl (a:as) (Just [])
+                               <$> reorder n lvl mbexts as (Just bs)
+    | otherwise        = (b :) <$> reorder n lvl mbexts as (Just bs)
+  reorder n lvl mbexts (a:as) Nothing =
+    reorder n lvl mbexts (a:as) (Just [])
 
   incrementLevel n L1 eltA eltB =
     eltB{ collationL1 = fromIntegral $ fromIntegral (collationL1 eltA) + n }
