@@ -34,7 +34,7 @@ import qualified Data.Text.Normalize as N
 #else
 import Data.Semigroup (Semigroup(..))
 #endif
-import Debug.Trace
+-- import Debug.Trace
 
 parseTailoring :: String -> Text -> Either ParseError Tailoring
 parseTailoring fp =
@@ -88,18 +88,18 @@ pCollationMods = do
                         _   -> Nothing
 
   firstText <- lexeme pTarget
-  (rels, texts) <- unzip . concat <$>
+  (rels, targets) <- unzip . concat <$>
                     many1 (do (rel, starred) <- lexeme pRel
                               t <- lexeme pText
                               if starred
-                                 then return $ map (rel,) (splitText t)
-                                 else return [(rel, t)])
+                                 then return $ map (\x -> (rel, TargetText x))
+                                                   (splitText t)
+                                 else return [(rel, TargetText t)])
   let rels' = case (beforeLevel, rels) of
                 (Just lvl, _:rest) -> Before lvl : rest
                 _                  -> rels
   return $ zipWith3 (\f x y -> f x y)
-                    rels' (firstText : map TargetText texts)
-                    (map TargetText texts)
+                    rels' (firstText : targets) targets
 
 pRel :: Parser (Target -> Target -> CollationMod, Bool)
 pRel = do
@@ -306,7 +306,7 @@ applyCollationMod collation cmod =
     | l3 > 0    = L3
     | otherwise = L4
 
-  completelyIgnorable = CollationElement False 0 0 0 0xFFFF -- is this right ?
+  -- completelyIgnorable = CollationElement False 0 0 0 0xFFFF
 
 parseCollationXML :: Text -> [(Lang, Text)]
 parseCollationXML t =
