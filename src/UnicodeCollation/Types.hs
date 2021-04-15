@@ -11,9 +11,8 @@ module UnicodeCollation.Types
   )
 where
 
-import Data.Word (Word16, Word8)
+import Data.Word (Word16)
 import Data.Binary (Binary(get, put))
-import Data.Text (Text)
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
 import qualified UnicodeCollation.Trie as Trie

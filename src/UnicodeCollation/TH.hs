@@ -12,10 +12,6 @@ import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Binary as Binary ( encode )
 import UnicodeCollation.Collation (parseCollation)
-import UnicodeCollation.Types
-import UnicodeCollation.Lang
-import Data.Text (Text)
-import qualified Data.Text as T
 #if MIN_VERSION_base(4,11,0)
 #else
 import Data.Semigroup (Semigroup(..))

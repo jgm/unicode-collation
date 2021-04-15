@@ -8,10 +8,7 @@ where
 import UnicodeCollation.Types
 import UnicodeCollation.Lang
 import UnicodeCollation.TH
-import Data.List (foldl')
 import Data.Binary (decode)
-import Language.Haskell.TH.Quote (QuasiQuoter(..))
-import qualified Data.Text as T
 
 -- | The DUCET collation defined in allkeys.txt.
 ducetCollation :: Collation
