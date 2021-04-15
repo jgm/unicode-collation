@@ -2,7 +2,9 @@ test-stack:
 	stack test --test-arguments=--hide-successes --flag unicode-collation:doctests
 
 test-cabal:
-	cabal test -fdoctests --write-ghc-environment-files=always --test-option=--hide-successes
+	cabal build --enable-tests --write-ghc-environment-files=always
+	cabal test unit --test-option=--hide-successes
+	cabal test -fdoctests doctests
 
 bench:
 	stack bench --benchmark-arguments="+RTS -T -RTS"
