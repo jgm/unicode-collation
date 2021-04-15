@@ -1,5 +1,13 @@
 # Lang
 
+in et.xml
+```
+&[before 1]X<õ<<<Õ<ä<<<Ä<ö<<<Ö<ü<<<Ü
+```
+ALL of these need to go before the X so
+e.g. Ö comes before X.  But currently we put õ
+1 before X and then the others pass X...
+
 extension keywords case-insensitive?
 maybe more? check.
 
