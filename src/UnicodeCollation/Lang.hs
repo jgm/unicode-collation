@@ -12,7 +12,6 @@ module UnicodeCollation.Lang
 where
 import Data.Maybe (listToMaybe)
 import Control.Monad (mzero)
-import Data.Either (fromRight)
 import Data.Ord (Down(..))
 import Data.List (sortOn)
 import Data.Char (isAlphaNum, isAscii, isAsciiLower, isAsciiUpper,
@@ -205,3 +204,8 @@ parseLang lang =
       _ <- tok (== "x")
       P.many1 (tok (\t -> lengthBetween 1 8 t && T.all isAsciiAlphaNum t))
 
+-- We define fromRight here instead of importing it,
+-- because it doesn't exist in some base versions we support.
+fromRight :: b -> Either a b -> b
+fromRight fallback (Left _)  = fallback
+fromRight _        (Right x) = x
