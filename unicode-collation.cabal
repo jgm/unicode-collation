@@ -82,7 +82,6 @@ library
                      , binary
                      , text
                      , parsec
-                     , tagsoup
                      , directory
                      , filepath
 
