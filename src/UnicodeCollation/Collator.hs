@@ -3,6 +3,10 @@
 {-# LANGUAGE TemplateHaskell #-}
 module UnicodeCollation.Collator
   ( Collator(..)
+  , rootCollator
+  , setVariableWeighting
+  , setFrenchAccents
+  , setNormalization
   , collator
   , collationOptions
   , collatorFor
@@ -34,6 +38,21 @@ data Collator = Collator { collate         :: Text -> Text -> Ordering
 instance IsString Collator where
  fromString = collatorFor . fromString
 
+rootCollator :: Collator
+rootCollator = mkCollator collationOptions{ optCollation = ducetCollation }
+
+setVariableWeighting :: VariableWeighting -> Collator -> Collator
+setVariableWeighting w coll =
+  mkCollator (collatorOptions coll){ optVariableWeighting = w }
+
+setNormalization :: Bool -> Collator -> Collator
+setNormalization normalize coll =
+  mkCollator (collatorOptions coll){ optNormalize = normalize }
+
+setFrenchAccents :: Bool -> Collator -> Collator
+setFrenchAccents frAccents coll =
+  mkCollator (collatorOptions coll){ optFrenchAccents = frAccents }
+
 -- | Create a collator at compile time based on a BCP47 language
 -- tag: e.g., @[collator|es-u-co-trad]@.  Requires the @QuasiQuotes@ extension.
 collator :: QuasiQuoter
@@ -44,10 +63,8 @@ collator = QuasiQuoter
           fail $ "Could not parse BCP47 tag " <> langtag <> e
         Right lang ->
           case lookupLang lang tailorings of
-            Nothing    ->
-              fail $ "No match (even inexact) found for " <> langtag
-            Just (_, _) ->
-              [| collatorFor lang |]
+            Nothing     -> [| rootCollator |]
+            Just (_, _) -> [| collatorFor lang |]
   , quotePat = undefined
   , quoteType = undefined
   , quoteDec = undefined

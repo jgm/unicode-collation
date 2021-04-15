@@ -47,9 +47,9 @@ LT
 >>> collate se "ö" "z"
 GT
 >>> sortKey de "ö"
-SortKey [0x213C,0x0000,0x0020,0x002B,0x0000,0x0002,0x0002,0x0000,0xFFFF,0xFFFF]
+SortKey [0x213C,0x2007,0x0000,0x0021,0x0021,0x0000,0x0002,0x0002,0x0000,0xFFFF,0xFFFF]
 >>> sortKey se "ö"
-SortKey [0x2302,0x200B,0x0000,0x0020,0x0030,0x0022,0x0000,0x0004,0x0004,0x0009,0x0000,0xFFFF,0xFFFF,0xFFFF]
+SortKey [0x22FD,0x0000,0x0020,0x0000,0x0002,0x0000,0xFFFF]
 
 Because 'Collator' and 'Lang' have 'IsString' instances, you can just specify
 them using string literals, as in the above examples.  Note, however,
@@ -108,8 +108,8 @@ if the input is already in NFD form (canonical decomposition).
 
 These options be combined:
 
->>> collate "de-DE-u-co-eor-kb-false-ka-shifted" "\x00FE" "u"
-LT
+>>> collate "de-DE-u-co-phonebk-kb-false-ka-shifted" "\x00FE" "u"
+GT
 
 Options can also be set using the functions 'setVariableWeighting',
 'setNormalization', and 'setFrenchAccents':
@@ -153,18 +153,4 @@ import UnicodeCollation.Tailorings
 -- >>> :set -XQuasiQuotes
 -- >>> :set -XOverloadedStrings
 
-rootCollator :: Collator
-rootCollator = mkCollator collationOptions{ optCollation = ducetCollation }
-
-setVariableWeighting :: VariableWeighting -> Collator -> Collator
-setVariableWeighting w coll =
-  mkCollator (collatorOptions coll){ optVariableWeighting = w }
-
-setNormalization :: Bool -> Collator -> Collator
-setNormalization normalize coll =
-  mkCollator (collatorOptions coll){ optNormalize = normalize }
-
-setFrenchAccents :: Bool -> Collator -> Collator
-setFrenchAccents frAccents coll =
-  mkCollator (collatorOptions coll){ optFrenchAccents = frAccents }
 
