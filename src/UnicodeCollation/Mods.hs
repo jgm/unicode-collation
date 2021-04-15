@@ -91,9 +91,8 @@ pCollationMods = do
   (rels, targets) <- unzip . concat <$>
                     many1 (do (rel, starred) <- lexeme pRel
                               t <- lexeme pText
-                              cbef <- option Nothing $ Just <$> pContextBefore
-                              extension <- option Nothing $ Just <$> pExtension
-                              let rel' = rel extension cbef
+                              relmods <- many $ pExtension <|> pContextBefore
+                              let rel' = foldr compose2 rel relmods
                               if starred
                                  then return $ map (\x -> (rel', TargetText x))
                                                    (splitText t)
@@ -104,23 +103,28 @@ pCollationMods = do
   return $ zipWith3 (\f x y -> f x y)
                     rels' (firstText : targets) targets
 
-pExtension :: Parser Target
+-- from composition
+compose2 :: (c -> d) -> (a -> b -> c) -> a -> b -> d
+compose2 = (.) . (.)
+
+pExtension :: Parser (CollationMod -> CollationMod)
 pExtension = do
   void $ lexeme $ char '/'
-  TargetText <$> lexeme pText
+  target <- TargetText <$> lexeme pText
+  return $ Extension target
 
-pContextBefore :: Parser Target
+pContextBefore :: Parser (CollationMod -> CollationMod)
 pContextBefore = do
   void $ lexeme $ char '|'
-  TargetText <$> lexeme pText
+  target <- TargetText <$> lexeme pText
+  return $ ContextBefore target
 
-pRel :: Parser
-        (Maybe Target -> Maybe Target -> Target -> Target -> CollationMod, Bool)
+pRel :: Parser (Target -> Target -> CollationMod, Bool)
 pRel = do
   raw <- many1 (char '<') <|> string "="
   star <- option False $ True <$ char '*'
   case raw of
-    "="    -> return (\_ _ -> Equal, star)
+    "="    -> return (Equal, star)
     "<"    -> return (After L1, star)
     "<<"   -> return (After L2, star)
     "<<<"  -> return (After L3, star)
@@ -241,10 +245,9 @@ isSpecial _ = False
 applyCollationMod :: Collation -> CollationMod -> Collation
 applyCollationMod collation cmod =
   case cmod of
-    After lvl mbext mbcbef a b  ->
-      case (getTarget a, getTarget b,
-            mbext >>= getTarget, mbcbef >>= getTarget) of
-        (Just a', Just b', _, _) ->
+    After lvl a b  ->
+      case (getTarget a, getTarget b) of
+        (Just a', Just b') ->
           alterElements
              (reorder 1 lvl (getCollationElements collation a'))
              b'
@@ -267,6 +270,14 @@ applyCollationMod collation cmod =
       -- we want to remove all contractions beginning with a code point in cps
       foldr (alterElements (const Nothing)) collation
             [is | is@(i:_:_) <- collationKeys, i `elem` cps]
+    Extension (TargetText c) (After lvl (TargetText a) b) ->
+      -- in this special case we approximate 'a < b / c' as 'ac < b'
+      applyCollationMod collation (After lvl (TargetText (a <> c)) b)
+    Extension (TargetText c) (Equal (TargetText a) b) ->
+      -- in this special case we approximate 'a = b / c' as 'ac = b'
+      applyCollationMod collation (Equal (TargetText (a <> c)) b)
+    Extension _a _md -> collation -- UNIMPLEMENTED, ignore
+    ContextBefore _a _md -> collation  -- UNIMPLEMENTED, ignore
 
  where
 

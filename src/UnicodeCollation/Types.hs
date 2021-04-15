@@ -149,28 +149,30 @@ instance Binary Category where
 -- | A single modification of a 'Collation', putting one code point
 -- or contraction before or after or equal to another.
 data CollationMod =
-    After Level (Maybe Target) (Maybe Target) Target Target
-       -- 'a < b' (b after a primary), 'a < b / c', 'a << b | d'
-       -- first param is extension, second is context before
-  | Before Level Target Target
-       -- '&[before 1] a < b' (b before a primary)
-  | Equal Target Target
-       -- 'a = b' (sort identically)a
+    After Level Target Target -- 'a < b' (b after a primary)
+  | Before Level Target Target -- '&[before 1] a < b' (b before a primary)
+  | Equal Target Target -- 'a = b' (sort identically)a
   | SuppressContractions [Int]    -- [suppressContractions [ccc]]
+  | Extension Target CollationMod  --'a < b / c'
+  | ContextBefore Target CollationMod -- 'a << b | d'
   deriving (Show, Eq, Ord, Lift)
 
 instance Binary CollationMod where
-  put (After l e1 e2 e3 e4) = put (0x21 :: Word8, l, e1, e2, e3, e4)
+  put (After l e1 e2) = put (0x21 :: Word8, l, e1, e2)
   put (Before l e1 e2) = put (0x22 :: Word8, l, e1, e2)
   put (Equal e1 e2) = put (0x23 :: Word8, e1, e2)
   put (SuppressContractions is) = put (0x24 :: Word8, is)
+  put (Extension e1 md) = put (0x25 :: Word8, e1, md)
+  put (ContextBefore e1 md) = put (0x26 :: Word8, e1, md)
   get = do
     (x :: Word8) <- get
     case x of
-      0x21 -> After <$> get <*> get <*> get <*> get <*> get
+      0x21 -> After <$> get <*> get <*> get
       0x22 -> Before <$> get <*> get <*> get
       0x23 -> Equal <$> get <*> get
       0x24 -> SuppressContractions <$> get
+      0x25 -> Extension <$> get <*> get
+      0x26 -> ContextBefore <$> get <*> get
       _ -> fail "Uknown code CollationMod"
 
 -- | A 'Tailoring' is a collection of changes to a 'Collation'
