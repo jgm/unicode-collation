@@ -123,16 +123,8 @@ collation table in a way that suits a specific locale.
 
 The tailorings provided at <http://unicode.org/Public/cdr/38.1/>
 are included in 'tailorings'; to find the one that best matches
-a 'Lang', use the function 'lookupLang'.  But you can also create
-custom tailorings using the syntax described in
-<http://www.unicode.org/reports/tr35/>, using the 'tailor'
-quasi-quoter:
-
->>> let crazy = rootCollator `withTailoring` [tailor|&ex < d|]
->>> collate crazy "direct" "extract"
-GT
->>> collate crazy "figure" "extract"
-GT
+a 'Lang', use the function 'lookupLang'.  To apply the
+modifications to a collation, just use `<>`.
 
 -}
 
@@ -148,9 +140,6 @@ module UnicodeCollation
        , setVariableWeighting
        , setNormalization
        , setFrenchAccents
-       , Tailoring
-       , withTailoring
-       , tailor
        , tailorings
        , module UnicodeCollation.Lang
        )

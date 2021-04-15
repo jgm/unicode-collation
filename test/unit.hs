@@ -55,18 +55,6 @@ tests conformanceTree = testGroup "Tests"
         ["death" ,"deluge" ,"de luge" ,"de-luge" ,"de\x2010luge" ,"deLuge"
         ,"de Luge" ,"de-Luge" ,"de\x2010Luge" ,"demark"])
       ]
-  , testGroup "Tailoring"
-    [ testCase "Inline tailoring quasiquoter 1" $
-        collateWithTailoring [tailor|&N<ñ<<<Ñ|] "ñ" "N" @?= GT
-    , testCase "Inline tailoring quasiquoter 2" $
-        collateWithTailoring [tailor|&m<n<k|] "cake" "cane" @?= GT
-    , testCase "Inline tailoring quasiquoter 3" $
-        collateWithTailoring [tailor|&m<k<n|] "cake" "cane" @?= LT
-    -- , testCase "Inline tailoring quasiquoter 4" $
-    --     sortBy (collateWithTailoring [tailor|&a<z/e &ae<x|])
-    --       ["ae", "x", "af", "ag", "az", "z", "b"] @?=
-    --       ["ae", "x", "af", "ag", "az", "z", "b"]
-    ]
   , testGroup "Localized collations"
     [ testCase "root cha cza" $
         collate "und" "cha" "cza" @?= LT
@@ -170,10 +158,6 @@ conformanceTestWith coll lineNo !txt1 !txt2 =
                     showHexes txt2 ++ " " ++
                     prettySortKey (sortKey coll txt2))
                    (collate coll txt1 txt2 /= GT)
-
-collateWithTailoring :: Tailoring -> Text -> Text -> Ordering
-collateWithTailoring tlrng =
-  collate (rootCollator `withTailoring` tlrng)
 
 variableOrderingCase :: (VariableWeighting , [Text]) -> TestTree
 variableOrderingCase (w , expected) =

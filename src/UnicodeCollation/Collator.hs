@@ -7,7 +7,6 @@ module UnicodeCollation.Collator
   , collationOptions
   , collatorFor
   , mkCollator
-  , withTailoring
   )
 where
 
@@ -104,16 +103,9 @@ collatorFor lang = mkCollator opts
                  Just "true"     -> True
                  Just "false"    -> False
                  _               -> True,
-             optCollation = ducetCollation `tailorCollation` tailoring }
+             optCollation = ducetCollation <> tailoring }
     tailoring = maybe mempty snd $ lookupLang lang tailorings
     exts = langExtensions lang
-
--- | Apply a 'Tailoring' to a 'Collator.
-withTailoring :: Collator -> Tailoring -> Collator
-withTailoring coll tailoring =
-  let oldCollation = optCollation (collatorOptions coll)
-   in mkCollator (collatorOptions coll){
-                   optCollation = tailorCollation oldCollation tailoring }
 
 -- | Returns a collator constructed using the collation and
 -- variable weighting specified in the options.

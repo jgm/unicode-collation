@@ -7,7 +7,6 @@ module UnicodeCollation.Collation
  , alterElements
  , findLast
  , findFirst
- , hasCategory
  , matchLongestPrefix
  , getCollationElements
  , parseCollation
@@ -87,35 +86,6 @@ findLast f (Collation trie) =
   comp (_,x) (_,y) =  -- note Left a < Right a
     compare (if f x then Right x else Left x)
             (if f y then Right y else Left y)
-
--- | Test a list of collation elements to see if they belong
--- to the specified 'Category'.
-hasCategory :: [CollationElement] -> Category -> Bool
-hasCategory [] TertiaryIgnorable = True
-hasCategory [] SecondaryIgnorable = True
-hasCategory [] PrimaryIgnorable = True
-hasCategory [] _ = False
-hasCategory (CollationElement v p s t _:_) cat =
-  case cat of
-    TertiaryIgnorable  -> p == 0 && s== 0 && t == 0
-    SecondaryIgnorable -> p == 0 && s == 0
-    PrimaryIgnorable   -> p == 0
-    Variable           -> v
-                           -- docs say: if alternate = non-ignorable
-                           --                 p != ignore
-                           --           if alternate = shifted
-                           --                 p,s,t = ignore
-    Regular            -> not v && p /= 0
-                           -- docs say: [last regular] is not actually the last
-                           -- normal CE with a primary weight ... [last regular]
-                           -- is set to the first Hani CE, the artificial
-                           -- script boundary CE at the beginning of this range.
-                           -- We handle this specially in Mods.
-    Implicit           -> p /= 0
-                           --  this is meant for items that are given
-                           --  values implicitly, not in table. Handle in Mods.
-    Trailing           -> p /= 0  -- TODO ??
-                           -- "used for trailing syllable components"
 
 
 -- S2.1 Find the longest initial substring S at each point that

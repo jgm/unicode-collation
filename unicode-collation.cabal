@@ -23,6 +23,7 @@ extra-doc-files:     README.md
 extra-source-files:  stack.yaml
                      data/allkeys.txt
                      data/DerivedCombiningClass.txt
+                     data/tailorings/*.txt
                      test/uca-collation-test/*.txt
 tested-with:         GHC == 8.0.2
                      GHC == 8.2.2
@@ -72,7 +73,6 @@ library
                        UnicodeCollation.TH
                        UnicodeCollation.Tailorings
                        UnicodeCollation.CombiningClass
-                       UnicodeCollation.Mods
   build-depends:       unicode-transforms
                      , bytestring
                      , bytestring-lexing

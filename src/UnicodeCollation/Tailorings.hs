@@ -1,40 +1,109 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 module UnicodeCollation.Tailorings
- ( tailorCollation
- , ducetCollation
- , tailor
+ ( ducetCollation
  , tailorings )
 where
 
 import UnicodeCollation.Types
+import UnicodeCollation.Lang
 import UnicodeCollation.TH
-import UnicodeCollation.Mods (applyCollationMod)
 import Data.List (foldl')
 import Data.Binary (decode)
 import Language.Haskell.TH.Quote (QuasiQuoter(..))
 import qualified Data.Text as T
 
--- | Apply a 'Tailoring' to a 'Collation'.
-tailorCollation :: Collation -> Tailoring -> Collation
-tailorCollation collation (Tailoring mods) =
-  foldl' applyCollationMod collation mods
-
 -- | The DUCET collation defined in allkeys.txt.
 ducetCollation :: Collation
 ducetCollation = decode $(genCollation "data/allkeys.txt")
 
--- | Create a tailoring at compile time: e.g., @[tailor|&b < a < d]@.
--- Requires the @QuasiQuotes@ extension.
--- For the syntax, see <https://unicode.org/reports/tr35/tr35-collation.html>.
-tailor :: QuasiQuoter
-tailor = QuasiQuoter
-  { quoteExp = genTailoring . T.pack
-  , quotePat = undefined
-  , quoteType = undefined
-  , quoteDec = undefined
-  }
-
--- This generates function declarations for all of our collations.
-$(genTailorings "data/collation")
-
+tailorings :: [(Lang, Collation)]
+tailorings =
+  [("af", $(genCollation "data/tailorings/af.txt"))
+  ,("eo", $(genCollation "data/tailorings/eo.txt"))
+  ,("hr", $(genCollation "data/tailorings/hr.txt"))
+  ,("mk", $(genCollation "data/tailorings/mk.txt"))
+  ,("si_u_co_dict", $(genCollation "data/tailorings/si_dict.txt"))
+  ,("ur", $(genCollation "data/tailorings/ur.txt"))
+  ,("ar", $(genCollation "data/tailorings/ar.txt"))
+  ,("es", $(genCollation "data/tailorings/es.txt"))
+  ,("hu", $(genCollation "data/tailorings/hu.txt"))
+  ,("ml", $(genCollation "data/tailorings/ml.txt"))
+  ,("sk", $(genCollation "data/tailorings/sk.txt"))
+  ,("vi", $(genCollation "data/tailorings/vi.txt"))
+  ,("as", $(genCollation "data/tailorings/as.txt"))
+  ,("es_u_co_trad", $(genCollation "data/tailorings/es_trad.txt"))
+  ,("hy", $(genCollation "data/tailorings/hy.txt"))
+  ,("mr", $(genCollation "data/tailorings/mr.txt"))
+  ,("sl", $(genCollation "data/tailorings/sl.txt"))
+  ,("vo", $(genCollation "data/tailorings/vo.txt"))
+  ,("az", $(genCollation "data/tailorings/az.txt"))
+  ,("et", $(genCollation "data/tailorings/et.txt"))
+  ,("ig", $(genCollation "data/tailorings/ig.txt"))
+  ,("mt", $(genCollation "data/tailorings/mt.txt"))
+  ,("sq", $(genCollation "data/tailorings/sq.txt"))
+  ,("wae", $(genCollation "data/tailorings/wae.txt"))
+  ,("be", $(genCollation "data/tailorings/be.txt"))
+  ,("fa", $(genCollation "data/tailorings/fa.txt"))
+  ,("is", $(genCollation "data/tailorings/is.txt"))
+  ,("nb", $(genCollation "data/tailorings/nb.txt"))
+  ,("sr", $(genCollation "data/tailorings/sr.txt"))
+  ,("wo", $(genCollation "data/tailorings/wo.txt"))
+  ,("bn", $(genCollation "data/tailorings/bn.txt"))
+  ,("fi", $(genCollation "data/tailorings/fi.txt"))
+  ,("ja", $(genCollation "data/tailorings/ja.txt"))
+  ,("nn", $(genCollation "data/tailorings/nn.txt"))
+  ,("sv", $(genCollation "data/tailorings/sv.txt"))
+  ,("yo", $(genCollation "data/tailorings/yo.txt"))
+  ,("ca", $(genCollation "data/tailorings/ca.txt"))
+  ,("fi_u_co_phonebk", $(genCollation "data/tailorings/fi_phone.txt"))
+  ,("kk", $(genCollation "data/tailorings/kk.txt"))
+  ,("nso", $(genCollation "data/tailorings/nso.txt"))
+  ,("sv_u_co_reformed", $(genCollation "data/tailorings/sv_refo.txt"))
+  ,("zh", $(genCollation "data/tailorings/zh.txt"))
+  ,("cs", $(genCollation "data/tailorings/cs.txt"))
+  ,("fil", $(genCollation "data/tailorings/fil.txt"))
+  ,("kl", $(genCollation "data/tailorings/kl.txt"))
+  ,("om", $(genCollation "data/tailorings/om.txt"))
+  ,("ta", $(genCollation "data/tailorings/ta.txt"))
+  ,("zh_big5", $(genCollation "data/tailorings/zh_big5.txt"))
+  ,("cu", $(genCollation "data/tailorings/cu.txt"))
+  ,("fo", $(genCollation "data/tailorings/fo.txt"))
+  ,("kn", $(genCollation "data/tailorings/kn.txt"))
+  ,("or", $(genCollation "data/tailorings/or.txt"))
+  ,("te", $(genCollation "data/tailorings/te.txt"))
+  ,("zh_gb", $(genCollation "data/tailorings/zh_gb.txt"))
+  ,("cy", $(genCollation "data/tailorings/cy.txt"))
+  ,("fr_ca", $(genCollation "data/tailorings/fr_ca.txt"))
+  ,("ko", $(genCollation "data/tailorings/ko.txt"))
+  ,("pa", $(genCollation "data/tailorings/pa.txt"))
+  ,("th", $(genCollation "data/tailorings/th.txt"))
+  ,("zh_pin", $(genCollation "data/tailorings/zh_pin.txt"))
+  ,("da", $(genCollation "data/tailorings/da.txt"))
+  ,("gu", $(genCollation "data/tailorings/gu.txt"))
+  ,("kok", $(genCollation "data/tailorings/kok.txt"))
+  ,("pl", $(genCollation "data/tailorings/pl.txt"))
+  ,("tn", $(genCollation "data/tailorings/tn.txt"))
+  ,("zh_strk", $(genCollation "data/tailorings/zh_strk.txt"))
+  ,("de_at_ph", $(genCollation "data/tailorings/de_at_ph.txt"))
+  ,("ha", $(genCollation "data/tailorings/ha.txt"))
+  ,("lkt", $(genCollation "data/tailorings/lkt.txt"))
+  ,("ro", $(genCollation "data/tailorings/ro.txt"))
+  ,("to", $(genCollation "data/tailorings/to.txt"))
+  ,("zh_zhu", $(genCollation "data/tailorings/zh_zhu.txt"))
+  ,("de_phone", $(genCollation "data/tailorings/de_phone.txt"))
+  ,("haw", $(genCollation "data/tailorings/haw.txt"))
+  ,("ln", $(genCollation "data/tailorings/ln.txt"))
+  ,("sa", $(genCollation "data/tailorings/sa.txt"))
+  ,("tr", $(genCollation "data/tailorings/tr.txt"))
+  ,("dsb", $(genCollation "data/tailorings/dsb.txt"))
+  ,("he", $(genCollation "data/tailorings/he.txt"))
+  ,("lt", $(genCollation "data/tailorings/lt.txt"))
+  ,("se", $(genCollation "data/tailorings/se.txt"))
+  ,("ug_cyrl", $(genCollation "data/tailorings/ug_cyrl.txt"))
+  ,("ee", $(genCollation "data/tailorings/ee.txt"))
+  ,("hi", $(genCollation "data/tailorings/hi.txt"))
+  ,("lv", $(genCollation "data/tailorings/lv.txt"))
+  ,("si", $(genCollation "data/tailorings/si.txt"))
+  ,("uk", $(genCollation "data/tailorings/uk.txt"))
+  ]
