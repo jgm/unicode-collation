@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -11,6 +12,7 @@ module UnicodeCollation.Lang
 where
 import Data.Maybe (listToMaybe)
 import Control.Monad (mzero)
+import Data.Either (fromRight)
 import Data.Ord (Down(..))
 import Data.List (sortOn)
 import Data.Char (isAlphaNum, isAscii, isAsciiLower, isAsciiUpper,
@@ -38,7 +40,7 @@ data Lang = Lang{ langLanguage   :: Text
 
 instance IsString Lang where
  fromString =
-   either (const $ Lang "und" Nothing Nothing [] [] []) id . parseLang . T.pack
+   fromRight (Lang "und" Nothing Nothing [] [] []) . parseLang . T.pack
 
 instance Binary Lang where
  put (Lang a b c d e f) = put (a,b,c,d,e,f)
@@ -190,13 +192,13 @@ parseLang lang =
       attrs <- P.many
              (tok (\t -> T.all isAsciiAlphaNum t && lengthBetween 3 8 t))
       keywords <- P.many pKeyword
-      return (c, map (\attr -> (attr, "")) attrs ++ keywords)
+      return (c, map (, "") attrs ++ keywords)
 
     pKeyword = do
       key <- tok (\t -> T.length t == 2 && T.all isAsciiLower t)
       types <- P.many (tok (\t -> lengthBetween 3 8 t &&
                                         T.all isAsciiAlphaNum t))
-      return (key, (T.intercalate "-" types))
+      return (key, T.intercalate "-" types)
 
     -- privateuse    = "x" 1*("-" (1*8alphanum))
     pPrivateUse = do

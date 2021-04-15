@@ -1,6 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings #-}
 {- |
 Copyright: (c) 2021 John MacFarlane
 SPDX-License-Identifier: BSD-2-Clause
