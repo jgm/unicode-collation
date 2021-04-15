@@ -41,15 +41,11 @@ For terms of use, see http://www.unicode.org/terms_of_use.html
 
 ---
 
-The file data/allkeys_CLDR.txt was copied from
-https://github.com/unicode-org/cldr/common/uca/allkeys_CLDR.txt
-For this file, Copyright (c) 2020 Unicode, Inc.
-For terms of use, see http://www.unicode.org/terms_of_use.html
-
----
-
-The collation data file in data/collation were copied from
-https://unicode.org/Public/cldr/38.1/
-For these files, Copyright (c) 2020 Unicode, Inc.
-For terms of use, see http://www.unicode.org/terms_of_use.html
+The files data/tailorings/*.txt were derived from
+modules in the perl Unicode::Collate module,
+Copyright(C) 2001-2020, SADAHIRO Tomoyuki. Japan.
+(Specifically, grep was used to extract the
+modifications to collation tables from Collate/Locale/*.pl.)
+It is released under the same terms as Perl itself.
+https://dev.perl.org/licenses/artistic.html
 

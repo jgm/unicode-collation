@@ -18,7 +18,13 @@ clean:
 
 tailorings: $(TAILORINGS)
 
-data/tailorings/%.txt: data/perl/%.pl
+data/tailorings/%.txt: Unicode-Collate-1.29/Collate/Locale/%.pl
 	awk '/^ENTRY/{exit} f; /ENTRY/{f=1}' $< > $@
+
+Unicode-Collate-1.29/Collate/Locale/%.pl: Unicode-Collate-1.29.tar.gz
+	tar xvzf $< $@
+
+Unicode-Collate-1.29.tar.gz:
+	wget https://cpan.metacpan.org/authors/id/S/SA/SADAHIRO/Unicode-Collate-1.29.tar.gz
 
 .PHONY: test bench ghci clean
