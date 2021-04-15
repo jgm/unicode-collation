@@ -1,12 +1,14 @@
-# Lang
+# Tailorings
 
-in et.xml
-```
-&[before 1]X<õ<<<Õ<ä<<<Ä<ö<<<Ö<ü<<<Ü
-```
-ALL of these need to go before the X so
-e.g. Ö comes before X.  But currently we put õ
-1 before X and then the others pass X...
+handle suppress (e.g. in mk)
+
+handle upper_before_lower?
+
+handle backwards?
+
+handle overrideCJK?  how does it work?
+
+# Lang
 
 extension keywords case-insensitive?
 maybe more? check.
@@ -17,42 +19,6 @@ the section on Lookup in https://tools.ietf.org/html/bcp47
 define ToJSON/FromJSON etc?
 We'll need this when we propagate this up to citeproc and
 pandoc.
-
-# Tailoring parsing
-
-Handle / and | in tailorings!
-
-e.g. in fi traditional
-```
-                                        &T<<þ/h<<<Þ/h
-```
-
-e.g. in ja
-```
-<<<ぁ|ー=あ|ー=か|ー=ゕ
-```
-
-```
-a <<< a | '-'
-```
-can turn into
-```
-a'-' = aa
-```
-
-and
-
-```
-a < z / e
-```
-is roughly
-```
-ae < z
-```
-
-We still don't support
-
-e.g. [reorder Cyrl]
 
 # Weird test failures with tibetan
 
