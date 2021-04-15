@@ -1,10 +1,10 @@
 test-stack:
-	stack test --test-arguments=--hide-successes --flag unicode-collation:doctests
+	stack test --test-arguments=--hide-successes && stack runghc test/doctests.hs
 
 test-cabal:
 	cabal build --enable-tests --write-ghc-environment-files=always
 	cabal test unit --test-option=--hide-successes
-	cabal test -fdoctests doctests
+	cabal run doctests -fdoctests
 
 bench:
 	stack bench --benchmark-arguments="+RTS -T -RTS"
