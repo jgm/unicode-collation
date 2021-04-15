@@ -35,9 +35,10 @@ tests conformanceTree = testGroup "Tests"
                        "𝒶bc", "abC", "𝕒bc", "File-3", "ガ", "が", "äbc", "カ",
                        "か", "Abc", "file-12", "filé-110"]
                       @?=
-                       ["ab\xFFFE\&c", "ab©", "abc", "abC", "𝒶bc", "𝕒bc", "Abc",
-                       "abç", "äbc", "filé-110", "file-12", "File-3", "か",
-                       "ヵ", "カ", "ｶ", "が", "ガ"]
+                       ["ab©", "abc", "abC", "𝒶bc", "𝕒bc", "Abc",
+                       "abç", "äbc", "ab\xFFFE\&c",
+                       "filé-110", "file-12", "File-3",
+                       "か", "ヵ", "カ", "ｶ", "が", "ガ"]
 
   , testGroup "Variable ordering test"
      $ map variableOrderingCase
@@ -150,7 +151,7 @@ conformanceTests = do
 conformanceTestsFor :: VariableWeighting -> FilePath -> IO TestTree
 conformanceTestsFor weighting fp = do
   xs <- parseConformanceTest fp
-  let coll = setVariableWeighting weighting ducetCollator
+  let coll = setVariableWeighting weighting rootCollator
   return $ testGroup ("Conformance tests " ++ show weighting ++ " " ++ fp)
          $ zipWith3 (conformanceTestWith coll) (map fst xs)
                      (map snd xs) (tail (map snd xs))

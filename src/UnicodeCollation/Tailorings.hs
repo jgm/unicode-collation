@@ -2,7 +2,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module UnicodeCollation.Tailorings
  ( tailorCollation
- , rootCollation
  , ducetCollation
  , tailor
  , tailorings )
@@ -21,14 +20,7 @@ tailorCollation :: Collation -> Tailoring -> Collation
 tailorCollation collation (Tailoring mods) =
   foldl' applyCollationMod collation mods
 
--- | The root collation defined in allkeys_CLDR.txt is the collation
--- on which all the other localized tailorings are based.  Use this
--- if you want to tailor your collation.
-rootCollation :: Collation
-rootCollation = decode $(genCollation "data/allkeys_CLDR.txt")
-
--- | The DUCET collation defined in allkeys.txt is used in the
--- conformance tests.
+-- | The DUCET collation defined in allkeys.txt.
 ducetCollation :: Collation
 ducetCollation = decode $(genCollation "data/allkeys.txt")
 

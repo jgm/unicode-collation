@@ -62,7 +62,7 @@ collationOptions =
   { optVariableWeighting = NonIgnorable
   , optFrenchAccents     = False
   , optNormalize         = True
-  , optCollation         = rootCollation
+  , optCollation         = ducetCollation
   }
 
 
@@ -104,7 +104,7 @@ collatorFor lang = mkCollator opts
                  Just "true"     -> True
                  Just "false"    -> False
                  _               -> True,
-             optCollation = rootCollation `tailorCollation` tailoring }
+             optCollation = ducetCollation `tailorCollation` tailoring }
     tailoring = maybe mempty snd $ lookupLang lang tailorings
     exts = langExtensions lang
 

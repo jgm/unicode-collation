@@ -49,7 +49,7 @@ GT
 >>> sortKey de "ö"
 SortKey [0x213C,0x0000,0x0020,0x002B,0x0000,0x0002,0x0002,0x0000,0xFFFF,0xFFFF]
 >>> sortKey se "ö"
-SortKey [0x2302,0x0000,0x0022,0x0000,0x0009,0x0000,0xFFFF]
+SortKey [0x2302,0x200B,0x0000,0x0020,0x0030,0x0022,0x0000,0x0004,0x0004,0x0009,0x0000,0xFFFF,0xFFFF,0xFFFF]
 
 Because 'Collator' and 'Lang' have 'IsString' instances, you can just specify
 them using string literals, as in the above examples.  Note, however,
@@ -142,7 +142,6 @@ module UnicodeCollation
        , collatorFor
        , collator
        , rootCollator
-       , ducetCollator
        , SortKey(..)
        , sortKey
        , VariableWeighting(..)
@@ -166,10 +165,7 @@ import UnicodeCollation.Tailorings
 -- >>> :set -XOverloadedStrings
 
 rootCollator :: Collator
-rootCollator = mkCollator collationOptions{ optCollation = rootCollation }
-
-ducetCollator :: Collator
-ducetCollator = mkCollator collationOptions{ optCollation = ducetCollation }
+rootCollator = mkCollator collationOptions{ optCollation = ducetCollation }
 
 setVariableWeighting :: VariableWeighting -> Collator -> Collator
 setVariableWeighting w coll =

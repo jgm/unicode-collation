@@ -21,9 +21,7 @@ build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
 extra-source-files:  stack.yaml
-                     data/allkeys_CLDR.txt
                      data/allkeys.txt
-                     data/collation/*.xml
                      data/DerivedCombiningClass.txt
                      test/uca-collation-test/*.txt
 tested-with:         GHC == 8.0.2
