@@ -109,18 +109,18 @@ tailorings =
   ,("yo", decode $(genCollation "data/tailorings/yo.txt"))
   ,("zh", decode $(genCollation "data/tailorings/zh.txt"))
   ,("zh_u_co_big5", applyCJKOverrides
-                    $(genCJKOverrides "data/cjk/Big5.txt") $
+                    (decode $(genCJKOverrides "data/cjk/Big5.txt")) $
                     decode $(genCollation "data/tailorings/zh_big5.txt"))
   ,("zh_u_co_gb2312", applyCJKOverrides
-                      $(genCJKOverrides "data/cjk/GB2312.txt") $
+                      (decode $(genCJKOverrides "data/cjk/GB2312.txt")) $
                       decode $(genCollation "data/tailorings/zh_gb.txt"))
   ,("zh_u_co_pinyin", applyCJKOverrides
-                       $(genCJKOverrides "data/cjk/Pinyin.txt") $
+                      (decode $(genCJKOverrides "data/cjk/Pinyin.txt")) $
                        decode $(genCollation "data/tailorings/zh_pin.txt"))
   ,("zh_u_co_stroke", applyCJKOverrides
-                        $(genCJKOverrides "data/cjk/Stroke.txt") $
+                        (decode $(genCJKOverrides "data/cjk/Stroke.txt")) $
                         decode $(genCollation "data/tailorings/zh_strk.txt"))
   ,("zh_u_co_zhuyin", applyCJKOverrides
-                       $(genCJKOverrides "data/cjk/Zhuyin.txt") $
+                       (decode $(genCJKOverrides "data/cjk/Zhuyin.txt")) $
                       decode $(genCollation "data/tailorings/zh_zhu.txt"))
   ]

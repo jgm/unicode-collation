@@ -30,5 +30,5 @@ genCollation fp = do
 genCJKOverrides :: FilePath -> Q Exp
 genCJKOverrides fp = do
   qAddDependentFile fp
-  overrides <- parseCJKOverrides <$> runIO (B.readFile fp)
-  [| overrides |]
+  binaryRep <- Binary.encode . parseCJKOverrides <$> runIO (B.readFile fp)
+  return $ LitE $ StringL $ BL.unpack binaryRep
