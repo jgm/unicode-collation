@@ -123,14 +123,6 @@ Options can also be set using the functions 'setVariableWeighting',
 >>> collate frC "côte" "coté"
 LT
 
-A collation can be "tailored": a tailoring modifies the
-collation table in a way that suits a specific locale.
-
-The tailorings provided at <http://unicode.org/Public/cdr/38.1/>
-are included in 'tailorings'; to find the one that best matches
-a 'Lang', use the function 'lookupLang'.  To apply the
-modifications to a collation, just use `<>`.
-
 -}
 
 module UnicodeCollation
