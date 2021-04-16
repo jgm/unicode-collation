@@ -11,6 +11,7 @@ module UnicodeCollation.Collation
  , matchLongestPrefix
  , getCollationElements
  , parseCollation
+ , parseCJKOverrides
  , canonicalCombiningClass
  )
 where
@@ -243,6 +244,17 @@ parseCollation = foldl' processLine mempty . B.lines
   isSep '.' = True
   isSep _   = False
 
+-- the result is a list of code points; the first will be assigned
+-- the colllation element [0x8000, 0x0020, 0x0002], the next
+-- [0x8001, 0x0020, 0x0002], and so on.
+parseCJKOverrides :: B.ByteString -> [Int]
+parseCJKOverrides = mapMaybe chunkToCp . B.words
+ where
+  chunkToCp b =
+    case readHexadecimal b of
+      Just (x,rest)
+        | B.null rest -> Just x
+      _ -> Nothing -- like the perl module we ignore e.g. FDD0-0041
 
 combiningClassMap :: M.IntMap Int
 combiningClassMap = Binary.decode

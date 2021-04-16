@@ -1,7 +1,9 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 module UnicodeCollation.TH
   ( genCollation
+  , genCJKOverrides
   )
 where
 import Language.Haskell.TH
@@ -9,7 +11,7 @@ import Language.Haskell.TH.Syntax (qAddDependentFile)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Binary as Binary ( encode )
-import UnicodeCollation.Collation (parseCollation)
+import UnicodeCollation.Collation (parseCollation, parseCJKOverrides)
 -- import Debug.Trace
 
 -- NOTE: The reason for the indirection through binary
@@ -24,3 +26,9 @@ genCollation fp = do
   qAddDependentFile fp
   binaryRep <- Binary.encode . parseCollation <$> runIO (B.readFile fp)
   return $ LitE $ StringL $ BL.unpack binaryRep
+
+genCJKOverrides :: FilePath -> Q Exp
+genCJKOverrides fp = do
+  qAddDependentFile fp
+  overrides <- parseCJKOverrides <$> runIO (B.readFile fp)
+  [| overrides |]

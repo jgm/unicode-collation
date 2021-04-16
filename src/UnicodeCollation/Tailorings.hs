@@ -8,12 +8,18 @@ where
 import UnicodeCollation.Types
 import UnicodeCollation.Lang
 import UnicodeCollation.TH
-import UnicodeCollation.Collation (suppressContractions)
+import UnicodeCollation.Collation (suppressContractions, insertElements)
 import Data.Binary (decode)
 
 -- | The DUCET collation defined in allkeys.txt.
 ducetCollation :: Collation
 ducetCollation = decode $(genCollation "data/allkeys.txt")
+
+applyCJKOverrides :: [Int] -> Collation -> Collation
+applyCJKOverrides cps coll = foldr addElt coll (zip cps [0x8000..])
+ where
+  addElt (cp, weight) = insertElements [cp]
+                         [CollationElement False weight 0x0020 0x0002 0x0000]
 
 tailorings :: [(Lang, Collation)]
 tailorings =
@@ -102,9 +108,19 @@ tailorings =
   ,("wo", decode $(genCollation "data/tailorings/wo.txt"))
   ,("yo", decode $(genCollation "data/tailorings/yo.txt"))
   ,("zh", decode $(genCollation "data/tailorings/zh.txt"))
-  ,("zh_u_co_big5", decode $(genCollation "data/tailorings/zh_big5.txt"))
-  ,("zh_u_co_gb2312", decode $(genCollation "data/tailorings/zh_gb.txt"))
-  ,("zh_u_co_pinyin", decode $(genCollation "data/tailorings/zh_pin.txt"))
-  ,("zh_u_co_stroke", decode $(genCollation "data/tailorings/zh_strk.txt"))
-  ,("zh_u_co_zhuyin", decode $(genCollation "data/tailorings/zh_zhu.txt"))
+  ,("zh_u_co_big5", applyCJKOverrides
+                    $(genCJKOverrides "data/cjk/Big5.txt") $
+                    decode $(genCollation "data/tailorings/zh_big5.txt"))
+  ,("zh_u_co_gb2312", applyCJKOverrides
+                      $(genCJKOverrides "data/cjk/GB2312.txt") $
+                      decode $(genCollation "data/tailorings/zh_gb.txt"))
+  ,("zh_u_co_pinyin", applyCJKOverrides
+                       $(genCJKOverrides "data/cjk/Pinyin.txt") $
+                       decode $(genCollation "data/tailorings/zh_pin.txt"))
+  ,("zh_u_co_stroke", applyCJKOverrides
+                        $(genCJKOverrides "data/cjk/Stroke.txt") $
+                        decode $(genCollation "data/tailorings/zh_strk.txt"))
+  ,("zh_u_co_zhuyin", applyCJKOverrides
+                       $(genCJKOverrides "data/cjk/Zhuyin.txt") $
+                      decode $(genCollation "data/tailorings/zh_zhu.txt"))
   ]
