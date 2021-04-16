@@ -107,12 +107,16 @@ collatorFor lang = mkCollator opts
                  Just ""       -> True
                                        -- true is default attribute value
                  Just "true"   -> True
-                 _             -> False,
+                 Just _        -> False
+                 Nothing       -> langLanguage lang == "cu" ||
+                   (langLanguage lang == "fr" && langRegion lang == Just "CA"),
              optVariableWeighting =
                case lookup "u" exts >>= lookup "ka" of
                  Just ""         -> NonIgnorable
                  Just "noignore" -> NonIgnorable
                  Just "shifted"  -> Shifted
+                 Nothing | langLanguage lang == "th"
+                                 -> Shifted
                  _               -> NonIgnorable,
              optNormalize =
                case lookup "u" exts >>= lookup "kk" of

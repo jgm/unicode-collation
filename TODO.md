@@ -1,7 +1,5 @@
 # Tailorings
 
-handle suppress (e.g. in mk)
-
 handle upper_before_lower?
 
 handle backwards?
