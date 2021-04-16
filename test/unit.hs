@@ -88,6 +88,10 @@ tests conformanceTree = testGroup "Tests"
         ["Übelacker", "Üxküll", "Uell", "Ülle", "Udet", "Uffenbach", "Ueve"]
         @?=
         ["Udet", "Übelacker", "Uell", "Ülle", "Ueve", "Üxküll", "Uffenbach"]
+    , testCase "zh-u-co-pinyin" $
+        collate "zh-u-co-pinyin" "\x963F" "\x5475"  @?= LT
+    , testCase "zh-u-co-stroke" $
+        collate "zh-u-co-stroke" "\x963F" "\x5475"  @?= GT
     ]
   , testGroup "BCP 47 Lang parsing"
        (map langParseTest langPairs)
