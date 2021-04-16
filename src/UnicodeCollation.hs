@@ -103,6 +103,14 @@ if the input is already in NFD form (canonical decomposition).
 
 >>> let noNormalizeCollator = [collator|en-u-kk-false|]
 
+The keyword @kf@ can be used to say whether uppercase or lowercase
+letters should be sorted first.
+
+>>> collate "en-u-kf-upper" "A" "a"
+LT
+>>> collate "en-u-kf-lower" "A" "a"
+GT
+
 These options be combined:
 
 >>> collate "de-DE-u-co-phonebk-kb-false-ka-shifted" "\x00FE" "u"

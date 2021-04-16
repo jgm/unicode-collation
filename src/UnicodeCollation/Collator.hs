@@ -120,6 +120,14 @@ collatorFor lang = mkCollator opts
                  Nothing | langLanguage lang == "th"
                                  -> Shifted
                  _               -> NonIgnorable,
+             optUpperBeforeLower =
+               case lookup "u" exts >>= lookup "kf" of
+                 Just ""         -> True
+                 Just "upper"    -> True
+                 Just _          -> False
+                 Nothing         -> langLanguage lang == "mt" ||
+                                    langLanguage lang == "da" ||
+                                    langLanguage lang == "cu",
              optNormalize =
                case lookup "u" exts >>= lookup "kk" of
                  Just ""         -> True
@@ -196,10 +204,15 @@ mkSortKey opts elts = SortKey $
     l2s = (if optFrenchAccents opts
               then reverse
               else id) $ filter (/=0) $ map collationL2 elts
-    l3s = filter (/=0) $ map collationL3 elts
+    l3s = filter (/=0) $ map ((if optUpperBeforeLower opts
+                                  then switchUpperAndLower
+                                  else id) . collationL3) elts
     l4s = (case optVariableWeighting opts of
              ShiftTrimmed -> trimTrailingFFFFs
              _             -> id) $ filter (/=0) $ map collationL4 elts
+    switchUpperAndLower 0x0002 = 0x0008
+    switchUpperAndLower 0x0008 = 0x0002
+    switchUpperAndLower x      = x
 
 trimTrailingFFFFs :: [Word16] -> [Word16]
 trimTrailingFFFFs = reverse . dropWhile (== 0xFFFF) . reverse
