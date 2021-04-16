@@ -8,7 +8,7 @@ module UnicodeCollation.Collator
   , setFrenchAccents
   , setNormalization
   , collator
-  , collationOptions
+  , defaultCollatorOptions
   , collatorFor
   , mkCollator
   )
@@ -33,13 +33,14 @@ import Data.Semigroup (Semigroup(..))
 
 data Collator = Collator { collate         :: Text -> Text -> Ordering
                          , sortKey         :: Text -> SortKey
-                         , collatorOptions :: CollationOptions }
+                         , collatorOptions :: CollatorOptions }
 
 instance IsString Collator where
  fromString = collatorFor . fromString
 
 rootCollator :: Collator
-rootCollator = mkCollator collationOptions{ optCollation = ducetCollation }
+rootCollator =
+  mkCollator defaultCollatorOptions{ optCollation = ducetCollation }
 
 setVariableWeighting :: VariableWeighting -> Collator -> Collator
 setVariableWeighting w coll =
@@ -71,10 +72,10 @@ collator = QuasiQuoter
   }
 
 
--- | Default 'CollationOptions'.
-collationOptions :: CollationOptions
-collationOptions =
-  CollationOptions
+-- | Default 'CollatorOptions'.
+defaultCollatorOptions :: CollatorOptions
+defaultCollatorOptions =
+  CollatorOptions
   { optVariableWeighting = NonIgnorable
   , optFrenchAccents     = False
   , optUpperBeforeLower  = False
@@ -102,7 +103,7 @@ collationOptions =
 collatorFor :: Lang -> Collator
 collatorFor lang = mkCollator opts
   where
-    opts = collationOptions{
+    opts = defaultCollatorOptions{
              optFrenchAccents =
                case lookup "u" exts >>= lookup "kb" of
                  Just ""       -> True
@@ -131,7 +132,7 @@ collatorFor lang = mkCollator opts
 
 -- | Returns a collator constructed using the collation and
 -- variable weighting specified in the options.
-mkCollator :: CollationOptions -> Collator
+mkCollator :: CollatorOptions -> Collator
 mkCollator opts =
   Collator { collate = comparing sortKey'
            , sortKey = sortKey'
@@ -140,7 +141,7 @@ mkCollator opts =
  where
   sortKey' = toSortKey opts
 
-toSortKey :: CollationOptions -> Text -> SortKey
+toSortKey :: CollatorOptions -> Text -> SortKey
 toSortKey opts =
     mkSortKey opts
   . handleVariable (optVariableWeighting opts)
@@ -187,7 +188,7 @@ doVariable useL4 afterVariable (e:es)
   | otherwise
     = e : doVariable useL4 False es
 
-mkSortKey :: CollationOptions -> [CollationElement] -> SortKey
+mkSortKey :: CollatorOptions -> [CollationElement] -> SortKey
 mkSortKey opts elts = SortKey $
     l1s ++ (0:l2s) ++ (0:l3s) ++ if null l4s then [] else (0:l4s)
   where

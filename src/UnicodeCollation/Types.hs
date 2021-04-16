@@ -3,7 +3,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveLift #-}
 module UnicodeCollation.Types
-  ( CollationOptions(..)
+  ( CollatorOptions(..)
   , VariableWeighting(..)
   , CollationElement(..)
   , Collation(..)
@@ -23,8 +23,8 @@ import Data.List (intercalate)
 import Data.Semigroup (Semigroup(..))
 #endif
 
-data CollationOptions =
-  CollationOptions
+data CollatorOptions =
+  CollatorOptions
   { optVariableWeighting  :: VariableWeighting  -- ^ Method for handling
       -- variable elements (see <http://www.unicode.org/reports/tr10/>,
       -- Tables 11 and 12).
