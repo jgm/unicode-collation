@@ -31,6 +31,7 @@ data CollationOptions =
   , optFrenchAccents      :: Bool -- ^ If True, secondary weights are scanned
       -- in reverse order, so we get the sorting
       -- "cote côte coté côté" instead of "cote coté côte côté"
+  , optUpperBeforeLower   :: Bool -- ^ Sort uppercase letters before lower
   , optNormalize          :: Bool -- ^ If True, strings are normalized
       -- to NFD before collation elements are constructed.  If the input
       -- is already normalized, this option can be set to False for

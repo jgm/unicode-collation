@@ -77,6 +77,7 @@ collationOptions =
   CollationOptions
   { optVariableWeighting = NonIgnorable
   , optFrenchAccents     = False
+  , optUpperBeforeLower  = False
   , optNormalize         = True
   , optCollation         = ducetCollation
   }
