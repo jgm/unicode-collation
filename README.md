@@ -23,6 +23,8 @@ involving unmatched surrogates and a few Tibetan characters,
 which seem to be changed in unexpected ways by Text.pack or
 normalization).
 
+Localized collations have not been tested extensively.
+
 ## Performance
 
 ```
@@ -127,6 +129,9 @@ zh-u-co-pinyin
 zh-u-co-stroke
 zh-u-co-zhuyin
 ```
+
+Collation reordering (e.g. `[reorder Latn Kana Hani]`)
+is not suported
 
 ## Data files
 
