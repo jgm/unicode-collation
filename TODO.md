@@ -8,11 +8,6 @@ handle backwards?
 
 handle overrideCJK?  how does it work?
 
-# Lang
-
-extension keywords case-insensitive?
-maybe more? check.
-
 # Weird test failures with tibetan
 
  toHex $ normalize NFD "\x0FB2\x0334\x0F81"

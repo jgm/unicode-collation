@@ -14,8 +14,7 @@ import Data.Maybe (listToMaybe)
 import Control.Monad (mzero)
 import Data.Ord (Down(..))
 import Data.List (sortOn)
-import Data.Char (isAlphaNum, isAscii, isAsciiLower, isAsciiUpper,
-                  isLower, isUpper, isDigit, isSpace)
+import Data.Char (isAlphaNum, isAscii, isDigit, isSpace, isAlpha)
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Text.Parsec as P
@@ -113,57 +112,31 @@ parseLang lang =
     --               / 4ALPHA              ; or reserved for future use
     --               / 5*8ALPHA            ; or registered language subtag
     pLanguage = (do
-      baselang <- tok (\t -> T.all isAsciiLower t && lengthBetween 2 3 t) P.<|>
-                  -- the spec wants lang to be lowercase, but we're more
-                  -- forgiving and also allow uppercase:
-                  (T.toLower
-                   <$> tok (\t -> T.all isAsciiUpper t && lengthBetween 2 3 t))
+      baselang <- T.toLower <$> alphasBetween 2 3
       extlang <- P.option Nothing $ Just <$> pExtlang
       case extlang of
         Nothing  -> pure baselang
         Just ext -> pure $ baselang <> "-" <> ext)
-      P.<|> tok (\t -> T.all isAsciiLower t && lengthBetween 4 8 t)
-
-    tok :: (Text -> Bool) -> P.Parsec [Text] () Text
-    tok f = P.tokenPrim T.unpack (\pos t _ ->
-                                   P.incSourceColumn pos (T.length t))
-                      (\t -> if f t then Just t else Nothing)
-    lengthBetween lo hi t = let len = T.length t in len >= lo && len <= hi
+      P.<|> T.toLower <$> alphasBetween 4 8
 
     -- extlang       = 3ALPHA              ; selected ISO 639 codes
     --                 *2("-" 3ALPHA)      ; permanently reserved
     pExtlang = T.intercalate "-" <$> countBetween 1 3
-                 (tok (\t -> T.all isAsciiLower t && T.length t == 3))
-
-    countBetween (low :: Int) (hi :: Int) p = P.try $ countBetween' low hi p 1
-    countBetween' low hi p (n :: Int) = (do
-     res <- p
-     if n >= hi
-        then return [res]
-        else (res:) <$> countBetween' low hi p (n + 1))
-      P.<|> (if n > low then return [] else mzero)
+                 (T.toLower <$> alphas 3)
 
     -- script        = 4ALPHA              ; ISO 15924 code
-    pScript = tok (\t -> isTitleCase t && T.length t == 4)
-
-    isTitleCase t = case T.uncons t of
-                      Nothing -> False
-                      Just (c,rest) -> isUpper c && T.all isLower rest
+    pScript = T.toTitle <$> alphas 4
 
     -- region        = 2ALPHA              ; ISO 3166-1 code
     --               / 3DIGIT              ; UN M.49 code
-    pRegion =
-      tok (\t -> T.all isAsciiUpper t && T.length t == 2)
-       P.<|> tok (\t -> T.all isDigit t && T.length t == 3)
+    pRegion = T.toUpper <$> alphas 2 P.<|> digits 3
 
     -- variant       = 5*8alphanum         ; registered variants
     --              / (DIGIT 3alphanum)
-    pVariant =
-      tok  (\t -> T.all isAsciiAlphaNum t && lengthBetween 5 8 t)
-        P.<|> tok (\t -> T.all isAsciiAlphaNum t && T.length t == 4 &&
-                             isDigit (T.head t))
-
-    isAsciiAlphaNum c = isAscii c && isAlphaNum c
+    pVariant = T.toLower <$>
+      (alphanumsBetween 5 8
+       P.<|> tok (\t -> T.all isAsciiAlphaNum t && T.length t == 4 &&
+                                    isDigit (T.head t)))
 
     -- extension     = singleton 1*("-" (2*8alphanum))
     -- RFC6087:
@@ -187,22 +160,46 @@ parseLang lang =
     --     a particular 'key' and the order of the 'type' subtags MAY be
     --     significant to the interpretation of the 'keyword'.
     pExtension = do
-      c <- tok (\t -> T.length t == 1 && T.all isAsciiAlphaNum t)
+      c <- T.toLower <$> tok (\t -> T.length t == 1 && T.all isAsciiAlphaNum t)
       attrs <- P.many
-             (tok (\t -> T.all isAsciiAlphaNum t && lengthBetween 3 8 t))
+             (T.toLower <$>
+               tok (\t -> T.all isAsciiAlphaNum t && lengthBetween 3 8 t))
       keywords <- P.many pKeyword
       return (c, map (, "") attrs ++ keywords)
 
     pKeyword = do
-      key <- tok (\t -> T.length t == 2 && T.all isAsciiLower t)
-      types <- P.many (tok (\t -> lengthBetween 3 8 t &&
-                                        T.all isAsciiAlphaNum t))
+      key <- alphas 2
+      types <- P.many (alphanumsBetween 3 8)
       return (key, T.intercalate "-" types)
 
     -- privateuse    = "x" 1*("-" (1*8alphanum))
     pPrivateUse = do
-      _ <- tok (== "x")
-      P.many1 (tok (\t -> lengthBetween 1 8 t && T.all isAsciiAlphaNum t))
+      _ <- tok (\t -> T.toLower t == "x")
+      P.many1 (alphanumsBetween 1 8)
+
+    tok :: (Text -> Bool) -> P.Parsec [Text] () Text
+    tok f = P.tokenPrim T.unpack (\pos t _ ->
+                                   P.incSourceColumn pos (T.length t))
+                      (\t -> if f t then Just t else Nothing)
+
+    countBetween (low :: Int) (hi :: Int) p = P.try $ countBetween' low hi p 1
+    countBetween' low hi p (n :: Int) = (do
+     res <- p
+     if n >= hi
+        then return [res]
+        else (res:) <$> countBetween' low hi p (n + 1))
+      P.<|> (if n > low then return [] else mzero)
+
+    isAsciiAlpha c = isAscii c && isAlpha c
+    alphas len = tok (\t -> T.all isAsciiAlpha t && T.length t == len)
+    digits len = tok (\t -> T.all isDigit t && T.length t == len)
+    alphasBetween minLen maxLen =
+      tok (\t -> T.all isAsciiAlpha t && lengthBetween minLen maxLen t)
+    alphanumsBetween minLen maxLen =
+      tok (\t -> T.all isAsciiAlphaNum t && lengthBetween minLen maxLen t)
+    lengthBetween lo hi t = let len = T.length t in len >= lo && len <= hi
+    isAsciiAlphaNum c = isAscii c && isAlphaNum c
+
 
 -- We define fromRight here instead of importing it,
 -- because it doesn't exist in some base versions we support.
