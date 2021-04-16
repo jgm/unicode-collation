@@ -6,6 +6,7 @@ module UnicodeCollation.Collator
   , rootCollator
   , setVariableWeighting
   , setFrenchAccents
+  , setUpperBeforeLower
   , setNormalization
   , collator
   , defaultCollatorOptions
@@ -53,6 +54,10 @@ setNormalization normalize coll =
 setFrenchAccents :: Bool -> Collator -> Collator
 setFrenchAccents frAccents coll =
   mkCollator (collatorOptions coll){ optFrenchAccents = frAccents }
+
+setUpperBeforeLower :: Bool -> Collator -> Collator
+setUpperBeforeLower upperBefore coll =
+  mkCollator (collatorOptions coll){ optUpperBeforeLower = upperBefore }
 
 -- | Create a collator at compile time based on a BCP47 language
 -- tag: e.g., @[collator|es-u-co-trad]@.  Requires the @QuasiQuotes@ extension.

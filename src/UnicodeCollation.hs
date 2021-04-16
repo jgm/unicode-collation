@@ -145,6 +145,7 @@ module UnicodeCollation
        , setVariableWeighting
        , setNormalization
        , setFrenchAccents
+       , setUpperBeforeLower
        , tailorings
        , module UnicodeCollation.Lang
        )

@@ -1,9 +1,5 @@
 # Tailorings
 
-handle upper_before_lower?
-
-handle backwards?
-
 handle overrideCJK?  how does it work?
 
 # Weird test failures with tibetan
