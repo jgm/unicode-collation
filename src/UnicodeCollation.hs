@@ -113,8 +113,8 @@ GT
 
 These options be combined:
 
->>> collate "de-DE-u-co-phonebk-kb-false-ka-shifted" "\x00FE" "u"
-GT
+>>> collate "de-DE-u-co-phonebk-kb-false-ka-shifted" "Udet" "Über"
+LT
 
 Options can also be set using the functions 'setVariableWeighting',
 'setNormalization', and 'setFrenchAccents':
