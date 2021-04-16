@@ -105,7 +105,7 @@ sl
 sq
 sr
 sv
-sv-u-co-reformed
+sv-u-co-reform
 ta
 te
 th
@@ -121,7 +121,7 @@ wae
 wo
 yo
 zh
-zh-u-co-big5han
+zh-u-co-big5
 zh-u-co-gb2312
 zh-u-co-pinyin
 zh-u-co-stroke
