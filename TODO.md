@@ -13,13 +13,6 @@ handle overrideCJK?  how does it work?
 extension keywords case-insensitive?
 maybe more? check.
 
-change to using a Trie for lookup?  see
-the section on Lookup in https://tools.ietf.org/html/bcp47
-
-define ToJSON/FromJSON etc?
-We'll need this when we propagate this up to citeproc and
-pandoc.
-
 # Weird test failures with tibetan
 
  toHex $ normalize NFD "\x0FB2\x0334\x0F81"
