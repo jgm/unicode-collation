@@ -5,6 +5,7 @@ module UnicodeCollation.Collation
  ( unfoldCollation
  , insertElements
  , alterElements
+ , suppressContractions
  , findLast
  , findFirst
  , matchLongestPrefix
@@ -32,11 +33,19 @@ import Data.Foldable (minimumBy, maximumBy)
 unfoldCollation :: Collation -> [([Int], [CollationElement])]
 unfoldCollation (Collation trie) = Trie.unfoldTrie trie
 
--- | Insert collation elements for the given code points (if tehre is
+-- | Insert collation elements for the given code points (if there is
 -- more than one code point, it is a contraction).
 insertElements :: [Int] -> [CollationElement] -> Collation -> Collation
 insertElements codepoints els (Collation trie) =
   Collation $ Trie.insert codepoints els trie
+
+-- | Suppress contracts starting with any of the code points in the list.
+suppressContractions :: [Int] -> Collation -> Collation
+suppressContractions cps coll =
+  foldr (alterElements (const Nothing)) coll
+    [is | is@(i:_:_) <- collationKeys, i `elem` cps]
+ where
+  collationKeys = map fst $ unfoldCollation coll
 
 -- | Change the collation elements defined for the specified code point(s).
 alterElements :: (Maybe [CollationElement] -> Maybe [CollationElement])

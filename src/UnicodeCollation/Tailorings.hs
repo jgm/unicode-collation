@@ -8,6 +8,7 @@ where
 import UnicodeCollation.Types
 import UnicodeCollation.Lang
 import UnicodeCollation.TH
+import UnicodeCollation.Collation (suppressContractions)
 import Data.Binary (decode)
 
 -- | The DUCET collation defined in allkeys.txt.
@@ -24,7 +25,8 @@ tailorings =
   ,("bn", decode $(genCollation "data/tailorings/bn.txt"))
   ,("ca", decode $(genCollation "data/tailorings/ca.txt"))
   ,("cs", decode $(genCollation "data/tailorings/cs.txt"))
-  ,("cu", decode $(genCollation "data/tailorings/cu.txt"))
+  ,("cu", suppressContractions [0x0418, 0x0438] $
+            decode $(genCollation "data/tailorings/cu.txt"))
   ,("cy", decode $(genCollation "data/tailorings/cy.txt"))
   ,("da", decode $(genCollation "data/tailorings/da.txt"))
   ,("de_AT_u_co_phonebk", decode $(genCollation "data/tailorings/de_at_ph.txt"))
@@ -61,7 +63,8 @@ tailorings =
   ,("ln", decode $(genCollation "data/tailorings/ln.txt"))
   ,("lt", decode $(genCollation "data/tailorings/lt.txt"))
   ,("lv", decode $(genCollation "data/tailorings/lv.txt"))
-  ,("mk", decode $(genCollation "data/tailorings/mk.txt"))
+  ,("mk", suppressContractions [0x0418, 0x0438] $
+           decode $(genCollation "data/tailorings/mk.txt"))
   ,("ml", decode $(genCollation "data/tailorings/ml.txt"))
   ,("mr", decode $(genCollation "data/tailorings/mr.txt"))
   ,("mt", decode $(genCollation "data/tailorings/mt.txt"))
@@ -80,7 +83,8 @@ tailorings =
   ,("sk", decode $(genCollation "data/tailorings/sk.txt"))
   ,("sl", decode $(genCollation "data/tailorings/sl.txt"))
   ,("sq", decode $(genCollation "data/tailorings/sq.txt"))
-  ,("sr", decode $(genCollation "data/tailorings/sr.txt"))
+  ,("sr", suppressContractions [0x0418, 0x0438] $
+            decode $(genCollation "data/tailorings/sr.txt"))
   ,("sv", decode $(genCollation "data/tailorings/sv.txt"))
   ,("sv_u_co_reformed", decode $(genCollation "data/tailorings/sv_refo.txt"))
   ,("ta", decode $(genCollation "data/tailorings/ta.txt"))
