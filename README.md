@@ -23,13 +23,6 @@ involving unmatched surrogates and a few Tibetan characters,
 which seem to be changed in unexpected ways by Text.pack or
 normalization).
 
-Locale-specific tailorings are supported, but in a limited
-way.  We do not yet support `[reorder..]`.
-
-Extension strings (e.g. `&abc < def / ghi`) and
-context before (e.g. `&a >> e | '-'`) are not yet
-supported in tailorings.
-
 ## Performance
 
 ```
