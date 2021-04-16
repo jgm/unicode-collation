@@ -1,7 +1,9 @@
-TAILORINGS=$(patsubst data/perl/%.pl,data/tailorings/%.txt,$(wildcard data/perl/*.pl))
+TAILORINGS=$(patsubst %,data/tailorings/%.txt, af ar as az be bn ca cs cu cy da de_at_ph de_phone dsb ee eo es es_trad et fa fi fi_phone fil fo fr_ca gu ha haw he hi hr hu hy ig is ja kk kl kn ko kok lkt ln lt lv mk ml mr mt nb nn nso om or pa pl ro sa se si si_dict sk sl sq sr sv sv_refo ta te th tn to tr ug_cyrl uk ur vi vo wae wo yo zh zh_big5 zh_gb zh_pin zh_strk zh_zhu)
+CJK=$(patsubst %,data/cjk/%.txt, Big5 GB2312 JISX0208 Pinyin Stroke Zhuyin)
 
 test-stack:
-	stack test --test-arguments=--hide-successes && stack runghc test/doctests.hs
+	stack test --test-arguments=--hide-successes && \
+	  stack runghc test/doctests.hs
 
 test-cabal:
 	cabal build --enable-tests --write-ghc-environment-files=always
@@ -16,10 +18,13 @@ ghci:
 clean:
 	stack clean
 
-tailorings: $(TAILORINGS)
+tailorings: $(TAILORINGS) $(CJK)
 
 data/tailorings/%.txt: Unicode-Collate-1.29/Collate/Locale/%.pl
 	awk '/^ENTRY/{exit} f; /ENTRY/{f=1}' $< > $@
+
+data/cjk/%.txt: Unicode-Collate-1.29/Collate/CJK/%.pm
+	awk '/^__END__/{exit} f; /^__DATA__/{f=1}' $< > $@
 
 Unicode-Collate-1.29/Collate/Locale/%.pl: Unicode-Collate-1.29.tar.gz
 	tar xvzf $< $@
@@ -27,4 +32,4 @@ Unicode-Collate-1.29/Collate/Locale/%.pl: Unicode-Collate-1.29.tar.gz
 Unicode-Collate-1.29.tar.gz:
 	wget https://cpan.metacpan.org/authors/id/S/SA/SADAHIRO/Unicode-Collate-1.29.tar.gz
 
-.PHONY: test bench ghci clean
+.PHONY: test bench ghci clean tailorings
