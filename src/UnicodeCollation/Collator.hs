@@ -103,6 +103,9 @@ defaultCollatorOptions =
 -- The 'optVariableWeight' option will be set if the
 -- unicode extensions include the @ka@ keyword (e.g. @fr-FR-u-kb-ka-shifted@
 -- or @en-u-ka-noignore@).
+-- The `optUpperBeforeLower` option will be set if the unicode
+-- extensions include the @kf@ keyword (e.g. @fr-u-kf-upper@
+-- or @fr-u-kf-lower@).
 -- The 'optNormalize' option will be set if the unicode extensions
 -- include the @kk@ keyword (e.g. @fr-u-kk-false@).
 collatorFor :: Lang -> Collator
