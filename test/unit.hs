@@ -5,6 +5,7 @@ import Text.Collate
 import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit
+import Data.Either (lefts)
 import Data.List (sortBy)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -143,23 +144,27 @@ conformanceTestsFor weighting fp = do
   xs <- parseConformanceTest fp
   let coll = setVariableWeighting weighting rootCollator
   return $ testCase ("Conformance tests " ++ show weighting ++ " " ++ fp)
-         $ mapM_ (conformanceTestWith coll)
-         $ zip3 (map fst xs) (map snd xs) (tail (map snd xs))
+         $ (\zs -> case lefts zs of
+                     [] -> return ()
+                     es -> assertFailure (unlines es))
+         $ map (conformanceTestWith coll)
+              (zip3 (map fst xs) (map snd xs) (tail (map snd xs)))
 
-conformanceTestWith :: Collator -> (Int, Text, Text) -> Assertion
+conformanceTestWith :: Collator -> (Int, Text, Text) -> Either String ()
 conformanceTestWith coll (lineNo, txt1, txt2) =
   let showHexes = unwords . map ((\c -> if c > 0xFFFF
                                            then printf "%05X" c
                                            else printf "%04X" c) . ord)
                           . T.unpack
-   in assertBool ("[line " ++ show lineNo ++ "] " ++
-                  showHexes txt1 ++ " <= " ++ showHexes txt2 ++ "\n" ++
-                  "Calculated sort keys:\n" ++
-                    showHexes txt1 ++ " " ++
-                    prettySortKey (sortKey coll txt1) ++ "\n" ++
-                    showHexes txt2 ++ " " ++
-                    prettySortKey (sortKey coll txt2))
-                   (collate coll txt1 txt2 /= GT)
+   in if collate coll txt1 txt2 /= GT
+         then Right ()
+         else Left $ "[line " ++ show lineNo ++ "] " ++
+                      showHexes txt1 ++ " <= " ++ showHexes txt2 ++ "\n" ++
+                      "Calculated sort keys:\n" ++
+                        showHexes txt1 ++ " " ++
+                        prettySortKey (sortKey coll txt1) ++ "\n" ++
+                        showHexes txt2 ++ " " ++
+                        prettySortKey (sortKey coll txt2)
 
 variableOrderingCase :: (VariableWeighting , [Text]) -> TestTree
 variableOrderingCase (w , expected) =
