@@ -126,31 +126,33 @@ getCollationElements :: Collation -> [Int] -> [CollationElement]
 getCollationElements collation = go
  where
   matcher = matchLongestPrefix collation
-  go [] = []
-  go (c:cs) = case matcher (c:cs) of
-                Nothing -> calculateImplicitWeight c ++ go cs
-                Just (elts, [], _) -> elts
-                Just (elts, is, subcollation)
-                 | null unblockedNonStarters -> elts ++ go is
-                 | otherwise ->
-                     case sortOn remainderLength matches of
-                       ((newelts, rs, _):_)
-                              -> newelts ++ go (rs ++
-                                         drop (length unblockedNonStarters) is)
-                       []   -> elts ++ go is
-                  -- Now we need to check the whole sequence of
-                  -- unblocked nonstarters, which can come in different orders
-                    where
-                      getUnblockedNonStarters _ [] = []
-                      getUnblockedNonStarters n (x:xs)
-                        = let ccc = canonicalCombiningClass x
-                           in if ccc > n
-                                 then x : getUnblockedNonStarters ccc xs
-                                 else []
-                      unblockedNonStarters = getUnblockedNonStarters 0 is
-                      matches = mapMaybe (matchLongestPrefix subcollation)
-                                 (take 24 (permutations unblockedNonStarters))
-                      remainderLength (_,ys,_) = length ys
+  go cs =
+    case matcher cs of
+       Nothing ->
+         case cs of
+           (c:rest) -> calculateImplicitWeight c ++ go rest
+           []       -> []
+       Just (elts, [], _) -> elts
+       Just (elts, is, subcollation)
+        | null unblockedNonStarters -> elts ++ go is
+        | otherwise ->
+            case sortOn remainderLength matches of
+              ((newelts, rs, _):_)
+                  -> newelts ++ go (rs ++ drop (length unblockedNonStarters) is)
+              []  -> elts ++ go is
+         -- Now we need to check the whole sequence of
+         -- unblocked nonstarters, which can come in different orders
+           where
+             getUnblockedNonStarters _ [] = []
+             getUnblockedNonStarters n (x:xs)
+               = let ccc = canonicalCombiningClass x
+                  in if ccc > n
+                        then x : getUnblockedNonStarters ccc xs
+                        else []
+             unblockedNonStarters = getUnblockedNonStarters 0 is
+             matches = mapMaybe (matchLongestPrefix subcollation)
+                        (take 24 (permutations unblockedNonStarters))
+             remainderLength (_,ys,_) = length ys
 
 -- see 10.1.3, Implicit Weights
 -- from allkeys.txt:
