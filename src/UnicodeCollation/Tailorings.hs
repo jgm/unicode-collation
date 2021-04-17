@@ -21,6 +21,7 @@ applyCJKOverrides cps coll = foldr addElt coll (zip cps [0x8000..])
   addElt (cp, weight) = insertElements [cp]
                          [CollationElement False weight 0x0020 0x0002 0x0000]
 
+-- | An association list matching 'Lang's with tailored 'Collation's.
 tailorings :: [(Lang, Collation)]
 tailorings =
   [("af", decode $(genCollation "data/tailorings/af.txt"))

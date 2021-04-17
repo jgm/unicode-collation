@@ -39,28 +39,43 @@ data Collator = Collator { collate         :: Text -> Text -> Ordering
 instance IsString Collator where
  fromString = collatorFor . fromString
 
+-- | Default collator based on DUCET table (@allkeys.txt@).
 rootCollator :: Collator
 rootCollator =
   mkCollator defaultCollatorOptions{ optCollation = ducetCollation }
 
+-- | Set method for handling variable elements (punctuation
+-- and spaces): see <http://www.unicode.org/reports/tr10/>,
+-- Tables 11 and 12.
 setVariableWeighting :: VariableWeighting -> Collator -> Collator
 setVariableWeighting w coll =
   mkCollator (collatorOptions coll){ optVariableWeighting = w }
 
+-- | The Unicode Collation Algorithm expects input to be normalized
+-- into its canonical decomposition (NFD). By default, collators perform
+-- this normalization. If your input is already normalized, you can increase
+-- performance by disabling this step: @setNormalization False@.
 setNormalization :: Bool -> Collator -> Collator
 setNormalization normalize coll =
   mkCollator (collatorOptions coll){ optNormalize = normalize }
 
+-- | @setFrenchAccents True@ causes secondary weights to be scanned
+-- in reverse order, so we get the sorting
+-- @cote côte coté côté@ instead of @cote coté côte côté@.
+-- The default is usually @False@, except for @fr-CA@ where it is @True@.
 setFrenchAccents :: Bool -> Collator -> Collator
 setFrenchAccents frAccents coll =
   mkCollator (collatorOptions coll){ optFrenchAccents = frAccents }
 
+-- | Most collations default to sorting lowercase letters before
+-- uppercase (exceptions: @mt@, @da@, @cu@).  To select the opposite
+-- behavior, use @setUpperBeforeLower True@.
 setUpperBeforeLower :: Bool -> Collator -> Collator
 setUpperBeforeLower upperBefore coll =
   mkCollator (collatorOptions coll){ optUpperBeforeLower = upperBefore }
 
--- | Create a collator at compile time based on a BCP47 language
--- tag: e.g., @[collator|es-u-co-trad]@.  Requires the @QuasiQuotes@ extension.
+-- | Create a collator at compile time based on a BCP 47 language
+-- tag: e.g., @[collator|es-u-co-trad|]@.  Requires the @QuasiQuotes@ extension.
 collator :: QuasiQuoter
 collator = QuasiQuoter
   { quoteExp = \langtag -> do
@@ -76,7 +91,6 @@ collator = QuasiQuoter
   , quoteDec = undefined
   }
 
-
 -- | Default 'CollatorOptions'.
 defaultCollatorOptions :: CollatorOptions
 defaultCollatorOptions =
@@ -88,26 +102,22 @@ defaultCollatorOptions =
   , optCollation         = ducetCollation
   }
 
-
-
 -- | Returns a collator based on a BCP 47 language tag.
 -- If no exact match is found, we try to find the best match
 -- (falling back to the root collation if nothing else succeeds).
 -- If something other than the default collation for a language
 -- is desired, the @co@ keyword of the unicode extensions can be
 -- used (e.g. @es-u-co-trad@ for traditional Spanish).
--- The language tag affects not just the collation but the collator
--- options.  The 'optFrenchAccents' option will be set if the
--- unicode extensions (after @-u-@) include the @kb@ keyword
--- (e.g. @fr-FR-u-kb-true@).
--- The 'optVariableWeight' option will be set if the
--- unicode extensions include the @ka@ keyword (e.g. @fr-FR-u-kb-ka-shifted@
--- or @en-u-ka-noignore@).
--- The `optUpperBeforeLower` option will be set if the unicode
--- extensions include the @kf@ keyword (e.g. @fr-u-kf-upper@
--- or @fr-u-kf-lower@).
--- The 'optNormalize' option will be set if the unicode extensions
--- include the @kk@ keyword (e.g. @fr-u-kk-false@).
+-- Other unicode extensions affect the collator options:
+--
+-- - The @kb@ keyword has the same effect as
+--   'setFrenchAccents' (e.g. @fr-FR-u-kb-true@).
+-- - The @ka@ keyword has the same effect as 'setVariableWeight'
+--   (e.g. @fr-FR-u-kb-ka-shifted@ or @en-u-ka-noignore@).
+-- - The @kf@ keyword has the same effect as 'setUpperBeforeLower'
+--   (e.g. @fr-u-kf-upper@ or @fr-u-kf-lower@).
+-- - The @kk@ keyword has the same effect as 'setNormalization'
+--   (e.g. @fr-u-kk-false@).
 collatorFor :: Lang -> Collator
 collatorFor lang = mkCollator opts
   where

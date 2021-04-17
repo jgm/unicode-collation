@@ -27,7 +27,7 @@ import Instances.TH.Lift ()
 import Data.Semigroup (Semigroup(..))
 #endif
 
--- | Represents a BCP47 language tag.
+-- | Represents a BCP 47 language tag (<https://tools.ietf.org/html/bcp47>).
 data Lang = Lang{ langLanguage   :: Text
                 , langScript     :: Maybe Text
                 , langRegion     :: Maybe Text
@@ -47,6 +47,11 @@ instance Binary Lang where
      return $ Lang a b c d e f
 
 -- | Find best match for a 'Lang' in an association list.
+-- We require a match in 'langLanguage'; after that,
+-- we look for matches in the following priority order:
+-- 'langScript', 'langRegion', 'langVariants',
+-- 'langExtensions' (under @"u"@),
+-- collation ('langExtensions' under @"u-co"@).
 lookupLang :: Lang -> [(Lang, a)] -> Maybe (Lang, a)
 lookupLang lang =
     listToMaybe
@@ -63,7 +68,7 @@ lookupLang lang =
     (if (lookup "u" (langExtensions l) >>= lookup "co") ==
         (lookup "u" (langExtensions lang) >>= lookup "co") then 1 else 0)
 
--- | Render a 'Lang' in BCP47 form.
+-- | Render a 'Lang' in BCP 47 form.
 renderLang :: Lang -> Text
 renderLang lang =
     langLanguage lang
@@ -78,7 +83,7 @@ renderLang lang =
   renderPrivateUse [] = ""
   renderPrivateUse ts = "-x" <> mconcat (map (T.cons '-') ts)
 
--- | Parse a BCP47 language tag as a 'Lang'.
+-- | Parse a BCP 47 language tag as a 'Lang'.
 parseLang :: Text -> Either String Lang
 parseLang lang =
   case P.parse pLangTag "lang" (T.split (\c -> c == '-' || c == '_')

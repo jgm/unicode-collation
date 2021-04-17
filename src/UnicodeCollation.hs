@@ -117,7 +117,7 @@ These options be combined:
 LT
 
 Options can also be set using the functions 'setVariableWeighting',
-'setNormalization', and 'setFrenchAccents':
+'setNormalization', 'setUpperBeforeLower', and 'setFrenchAccents':
 
 >>> let frC = setFrenchAccents True [collator|fr|]
 >>> collate frC "côte" "coté"
