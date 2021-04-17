@@ -48,7 +48,7 @@ jobs:
             prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
-          - ghc: '9.0.1',
+          - ghc: '9.0.1'
             cabal: '3.4'
             prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
