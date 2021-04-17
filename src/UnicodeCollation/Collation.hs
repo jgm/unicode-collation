@@ -24,7 +24,6 @@ import qualified Data.IntMap as M
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
 import Data.ByteString.Lex.Integral (readHexadecimal)
 import Data.List (foldl', permutations, sortOn)
-import qualified Data.Binary as Binary
 import UnicodeCollation.CombiningClass (genCombiningClassMap)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
@@ -257,8 +256,8 @@ parseCJKOverrides = mapMaybe chunkToCp . B.words
       _ -> Nothing -- like the perl module we ignore e.g. FDD0-0041
 
 combiningClassMap :: M.IntMap Int
-combiningClassMap = Binary.decode
-   $(genCombiningClassMap "data/DerivedCombiningClass.txt")
+combiningClassMap = M.fromList $!
+  $(genCombiningClassMap "data/DerivedCombiningClass.txt")
 
 -- | Determine the canonical combining class for a code point.
 canonicalCombiningClass :: Int -> Int

@@ -1,32 +1,28 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 module UnicodeCollation.CombiningClass
   ( genCombiningClassMap
   )
 where
 import Data.Maybe
 import Data.Text (Text)
-import qualified Data.Binary as Binary
 import qualified Data.Text as T
 import qualified Data.Text.IO as T
 import qualified Data.Text.Read as TR
-import qualified Data.IntMap as M
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (qAddDependentFile)
-import qualified Data.ByteString.Lazy.Char8 as BL
 
 genCombiningClassMap :: FilePath -> Q Exp
 genCombiningClassMap fp  = do
   qAddDependentFile fp
-  binaryRep <- Binary.encode . parseDerivedCombiningClass <$>
-                  runIO (T.readFile fp)
-  return $ LitE $ StringL $ BL.unpack binaryRep
+  cccmap <- parseDerivedCombiningClass <$> runIO (T.readFile fp)
+  [| cccmap |]
 
-
-parseDerivedCombiningClass :: Text -> M.IntMap Int
+parseDerivedCombiningClass :: Text -> [(Int, Int)]
 parseDerivedCombiningClass =
-  M.fromList . concat . mapMaybe parseLine . T.lines
+  concat . mapMaybe parseLine . T.lines
 
 parseLine :: Text -> Maybe [(Int, Int)]
 parseLine t =
