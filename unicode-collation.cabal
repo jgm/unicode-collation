@@ -21,7 +21,6 @@ build-type:          Simple
 extra-doc-files:     README.md
                      CHANGELOG.md
 extra-source-files:  stack.yaml
-                     cabal.project
                      data/allkeys.txt
                      data/DerivedCombiningClass.txt
                      data/tailorings/*.txt
