@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 module Main (main) where
-import UnicodeCollation
+import Text.Collate
 import Text.Printf
 import Test.Tasty
 import Test.Tasty.HUnit

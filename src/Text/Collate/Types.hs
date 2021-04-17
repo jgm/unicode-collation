@@ -2,7 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveLift #-}
-module UnicodeCollation.Types
+module Text.Collate.Types
   ( CollatorOptions(..)
   , VariableWeighting(..)
   , CollationElement(..)
@@ -15,7 +15,7 @@ import Data.Word (Word16)
 import Data.Binary (Binary(get, put))
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
-import qualified UnicodeCollation.Trie as Trie
+import qualified Text.Collate.Trie as Trie
 import Text.Printf
 import Data.List (intercalate)
 #if MIN_VERSION_base(4,11,0)

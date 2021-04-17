@@ -65,15 +65,15 @@ common common-options
 library
   import:              common-options
   hs-source-dirs:      src
-  exposed-modules:     UnicodeCollation
-                       UnicodeCollation.Lang
-  other-modules:       UnicodeCollation.Trie
-                       UnicodeCollation.Types
-                       UnicodeCollation.Collation
-                       UnicodeCollation.Collator
-                       UnicodeCollation.TH
-                       UnicodeCollation.Tailorings
-                       UnicodeCollation.CombiningClass
+  exposed-modules:     Text.Collate
+                       Text.Collate.Lang
+  other-modules:       Text.Collate.Trie
+                       Text.Collate.Types
+                       Text.Collate.Collation
+                       Text.Collate.Collator
+                       Text.Collate.TH
+                       Text.Collate.Tailorings
+                       Text.Collate.CombiningClass
   build-depends:       unicode-transforms
                      , bytestring
                      , bytestring-lexing

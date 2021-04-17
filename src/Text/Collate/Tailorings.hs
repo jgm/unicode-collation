@@ -1,14 +1,14 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
-module UnicodeCollation.Tailorings
+module Text.Collate.Tailorings
  ( ducetCollation
  , tailorings )
 where
 
-import UnicodeCollation.Types
-import UnicodeCollation.Lang
-import UnicodeCollation.TH
-import UnicodeCollation.Collation (suppressContractions, insertElements)
+import Text.Collate.Types
+import Text.Collate.Lang
+import Text.Collate.TH
+import Text.Collate.Collation (suppressContractions, insertElements)
 import Data.Binary (decode)
 
 -- | The DUCET collation defined in allkeys.txt.

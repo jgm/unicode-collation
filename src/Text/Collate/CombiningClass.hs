@@ -2,7 +2,7 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
-module UnicodeCollation.CombiningClass
+module Text.Collate.CombiningClass
   ( genCombiningClassMap
   )
 where

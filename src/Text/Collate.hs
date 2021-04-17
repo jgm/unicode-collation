@@ -125,7 +125,7 @@ LT
 
 -}
 
-module UnicodeCollation
+module Text.Collate
        ( Collator
        , collate
        , collatorFor
@@ -139,13 +139,13 @@ module UnicodeCollation
        , setFrenchAccents
        , setUpperBeforeLower
        , tailorings
-       , module UnicodeCollation.Lang
+       , module Text.Collate.Lang
        )
 where
-import UnicodeCollation.Types
-import UnicodeCollation.Lang
-import UnicodeCollation.Collator
-import UnicodeCollation.Tailorings
+import Text.Collate.Types
+import Text.Collate.Lang
+import Text.Collate.Collator
+import Text.Collate.Tailorings
 
 -- $setup
 -- >>> :set -XQuasiQuotes

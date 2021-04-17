@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
-module UnicodeCollation.Collator
+module Text.Collate.Collator
   ( Collator(..)
   , rootCollator
   , setVariableWeighting
@@ -15,10 +15,10 @@ module UnicodeCollation.Collator
   )
 where
 
-import UnicodeCollation.Types
-import UnicodeCollation.Lang
-import UnicodeCollation.Tailorings
-import UnicodeCollation.Collation (getCollationElements)
+import Text.Collate.Types
+import Text.Collate.Lang
+import Text.Collate.Tailorings
+import Text.Collate.Collation (getCollationElements)
 import Data.Word (Word16)
 import Data.String
 import qualified Data.Text.Normalize as N

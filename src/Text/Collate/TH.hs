@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskellQuotes #-}
-module UnicodeCollation.TH
+module Text.Collate.TH
   ( genCollation
   , genCJKOverrides
   )
@@ -11,7 +11,7 @@ import Language.Haskell.TH.Syntax (qAddDependentFile)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Binary as Binary ( encode )
-import UnicodeCollation.Collation (parseCollation, parseCJKOverrides)
+import Text.Collate.Collation (parseCollation, parseCJKOverrides)
 -- import Debug.Trace
 
 -- NOTE: The reason for the indirection through binary

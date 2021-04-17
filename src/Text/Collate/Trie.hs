@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE DeriveLift #-}
-module UnicodeCollation.Trie
+module Text.Collate.Trie
   ( Trie
   , empty
   , insert

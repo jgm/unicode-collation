@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import UnicodeCollation
+import Text.Collate
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import Data.List (sortBy)

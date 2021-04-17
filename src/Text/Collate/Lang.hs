@@ -3,7 +3,7 @@
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-module UnicodeCollation.Lang
+module Text.Collate.Lang
   ( Lang(..)
   , parseLang
   , renderLang

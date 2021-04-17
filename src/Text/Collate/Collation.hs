@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
-module UnicodeCollation.Collation
+module Text.Collate.Collation
  ( unfoldCollation
  , insertElements
  , alterElements
@@ -16,15 +16,15 @@ module UnicodeCollation.Collation
  )
 where
 
-import UnicodeCollation.Types
-import qualified UnicodeCollation.Trie as Trie
+import Text.Collate.Types
+import qualified Text.Collate.Trie as Trie
 import qualified Data.ByteString.Char8 as B
 import qualified Data.IntSet as IntSet
 import qualified Data.IntMap as M
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
 import Data.ByteString.Lex.Integral (readHexadecimal)
 import Data.List (foldl', permutations, sortOn)
-import UnicodeCollation.CombiningClass (genCombiningClassMap)
+import Text.Collate.CombiningClass (genCombiningClassMap)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
 -- import Debug.Trace

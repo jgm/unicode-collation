@@ -6,7 +6,7 @@ import Test.Tasty.Bench
 import Test.QuickCheck
 import Data.Text (Text)
 import qualified Data.Text.ICU as ICU
-import UnicodeCollation
+import Text.Collate
 import Test.QuickCheck.Instances.Text ()
 import Data.List (sortBy)
 -- import Debug.Trace
