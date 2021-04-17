@@ -33,4 +33,7 @@ Unicode-Collate-1.29/Collate/Locale/%.pl: Unicode-Collate-1.29.tar.gz
 Unicode-Collate-1.29.tar.gz:
 	wget https://cpan.metacpan.org/authors/id/S/SA/SADAHIRO/Unicode-Collate-1.29.tar.gz
 
-.PHONY: test bench ghci clean tailorings
+lint:
+	hlint src app test benchmark
+
+.PHONY: test bench ghci clean tailorings lint
