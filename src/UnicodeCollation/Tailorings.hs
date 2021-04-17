@@ -13,7 +13,7 @@ import Data.Binary (decode)
 
 -- | The DUCET collation defined in allkeys.txt.
 ducetCollation :: Collation
-ducetCollation = decode $(genCollation "data/allkeys.txt")
+ducetCollation = decode $! $(genCollation "data/allkeys.txt")
 
 applyCJKOverrides :: [Int] -> Collation -> Collation
 applyCJKOverrides cps coll = foldr addElt coll (zip cps [0x8000..])
