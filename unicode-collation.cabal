@@ -83,7 +83,6 @@ library
                      , binary
                      , text
                      , parsec
-                     , directory
                      , filepath
 
   other-extensions:    TemplateHaskell
