@@ -160,10 +160,10 @@ conformanceTestWith coll (lineNo, txt1, txt2) =
          then Right ()
          else Left $ "[line " ++ show lineNo ++ "] " ++
                       showHexes txt1 ++ " <= " ++ showHexes txt2 ++ "\n" ++
-                      "Calculated sort keys:\n" ++
-                        showHexes txt1 ++ " " ++
-                        prettySortKey (sortKey coll txt1) ++ "\n" ++
-                        showHexes txt2 ++ " " ++
+                      "  Calculated sort keys:\n  [" ++
+                        showHexes txt1 ++ "] " ++
+                        prettySortKey (sortKey coll txt1) ++ "\n  [" ++
+                        showHexes txt2 ++ "] " ++
                         prettySortKey (sortKey coll txt2)
 
 variableOrderingCase :: (VariableWeighting , [Text]) -> TestTree
