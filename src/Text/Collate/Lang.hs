@@ -79,7 +79,9 @@ renderLang lang =
      <> renderPrivateUse (langPrivateUse lang)
  where
   renderExtension (c, ks) = "-" <> c <> mconcat (map renderKeyword ks)
-  renderKeyword (k, v) = "-" <> k <> if T.null v then "" else ("-" <> v)
+  renderKeyword (k, v) = "-" <> k <> if T.null v
+                                        then ""
+                                        else "-" <> v
   renderPrivateUse [] = ""
   renderPrivateUse ts = "-x" <> mconcat (map (T.cons '-') ts)
 

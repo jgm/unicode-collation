@@ -1,5 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 module Main (main) where
@@ -92,6 +90,8 @@ tests conformanceTree = testGroup "Tests"
     , testCase "zh-u-co-stroke" $
         collate "zh-u-co-stroke" "\x963F" "\x5475"  @?= GT
     ]
+  , testCase "QuasiQuotes" $
+       collate [collator|zh-u-co-pinyin|] "\x963F" "\x5475" @?= LT
   , testGroup "BCP 47 Lang parsing"
        (map langParseTest langPairs)
   , testGroup "BCP 47 Lang round-trip"
@@ -179,7 +179,7 @@ variableOrderingCase (w , expected) =
            @?= expected
 
 ourCollator :: Collator
-ourCollator = setVariableWeighting Shifted $ rootCollator
+ourCollator = setVariableWeighting Shifted rootCollator
 
 parseConformanceTest :: FilePath -> IO [(Int, Text)]
 parseConformanceTest fp = do
