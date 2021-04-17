@@ -92,7 +92,7 @@ tailorings =
   ,("sr", suppressContractions [0x0418, 0x0438] $
             decode $(genCollation "data/tailorings/sr.txt"))
   ,("sv", decode $(genCollation "data/tailorings/sv.txt"))
-  ,("sv_u_co_reform", decode $(genCollation "data/tailorings/sv_refo.txt"))
+  ,("sv_u_co_reformed", decode $(genCollation "data/tailorings/sv_refo.txt"))
   ,("ta", decode $(genCollation "data/tailorings/ta.txt"))
   ,("te", decode $(genCollation "data/tailorings/te.txt"))
   ,("th", decode $(genCollation "data/tailorings/th.txt"))
@@ -108,7 +108,7 @@ tailorings =
   ,("wo", decode $(genCollation "data/tailorings/wo.txt"))
   ,("yo", decode $(genCollation "data/tailorings/yo.txt"))
   ,("zh", decode $(genCollation "data/tailorings/zh.txt"))
-  ,("zh_u_co_big5", applyCJKOverrides
+  ,("zh_u_co_big5han", applyCJKOverrides
                     (decode $(genCJKOverrides "data/cjk/Big5.txt")) $
                     decode $(genCollation "data/tailorings/zh_big5.txt"))
   ,("zh_u_co_gb2312", applyCJKOverrides
