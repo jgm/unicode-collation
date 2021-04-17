@@ -42,6 +42,10 @@ flag doctests
                        Use with: @--write-ghc-environment-files=always@.
   Default:             False
 
+flag executable
+  Description:         Build the unicode-collate executable.
+  Default:             False
+
 common common-options
   build-depends:       base >= 4.9 && < 4.15
 
@@ -97,6 +101,10 @@ executable unicode-collate
   ghc-options:         -threaded
                        -rtsopts
                        -with-rtsopts=-N
+  if flag(executable)
+     buildable:        True
+  else
+     buildable:        False
 
 test-suite unit
   import:              common-options
