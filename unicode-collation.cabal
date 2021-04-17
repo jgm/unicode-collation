@@ -117,8 +117,7 @@ test-suite doctests
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             doctests.hs
-  build-depends:       base,
-                       doctest >= 0.8,
+  build-depends:       doctest >= 0.8,
                        th-lift-instances
   ghc-options:         -threaded
                        -rtsopts
