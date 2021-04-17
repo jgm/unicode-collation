@@ -1,8 +1,15 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DeriveLift #-}
 module Text.Collate.Collation
- ( unfoldCollation
+ ( Collation(..)
+ , VariableWeighting(..)
+ , CollationElement(..)
+ , unfoldCollation
  , insertElements
  , alterElements
  , suppressContractions
@@ -16,8 +23,6 @@ module Text.Collate.Collation
  )
 where
 
-import Text.Collate.Types
-import qualified Text.Collate.Trie as Trie
 import qualified Data.ByteString.Char8 as B
 import qualified Data.IntSet as IntSet
 import qualified Data.IntMap as M
@@ -27,7 +32,59 @@ import Data.List (foldl', permutations, sortOn)
 import Text.Collate.CombiningClass (genCombiningClassMap)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
+import Data.Word (Word16)
+import Data.Binary (Binary(get, put))
+import Language.Haskell.TH.Syntax (Lift(..))
+import Instances.TH.Lift ()
+import qualified Text.Collate.Trie as Trie
+import Text.Printf
+#if MIN_VERSION_base(4,11,0)
+#else
+import Data.Semigroup (Semigroup(..))
+#endif
 -- import Debug.Trace
+
+-- | 'VariableWeighting' affects how punctuation is treated.
+-- See <http://www.unicode.org/reports/tr10/#Variable_Weighting>.
+data VariableWeighting =
+    NonIgnorable   -- ^ Don't ignore punctuation (Deluge < deluge-)
+  | Blanked -- ^ Completely ignore punctuation (Deluge = deluge-)
+  | Shifted -- ^ Consider punctuation at lower priority
+           -- (de-luge < delu-ge < deluge < deluge- < Deluge)
+  | ShiftTrimmed -- ^ Variant of Shifted (deluge < de-luge < delu-ge)
+  deriving (Show, Eq, Ord)
+
+data CollationElement =
+  CollationElement
+    { collationVariable :: !Bool
+    , collationL1       :: {-# UNPACK #-} !Word16
+    , collationL2       :: {-# UNPACK #-} !Word16
+    , collationL3       :: {-# UNPACK #-} !Word16
+    , collationL4       :: {-# UNPACK #-} !Word16
+    } deriving (Eq, Lift)
+
+instance Ord CollationElement where
+ compare (CollationElement _ p1 s1 t1 q1) (CollationElement _ p2 s2 t2 q2) =
+   compare p1 p2 <> compare s1 s2 <> compare t1 t2 <> compare q1 q2
+
+instance Show CollationElement where
+  show (CollationElement v l1 l2 l3 l4) =
+    printf "CollationElement %s 0x%04X 0x%04X 0x%04X 0x%04X" (show v) l1 l2 l3 l4
+
+instance Binary CollationElement where
+   put (CollationElement v w x y z) = put (v,w,x,y,z)
+   get = do
+     (v,w,x,y,z) <- get
+     return $ CollationElement v w x y z
+
+newtype Collation = Collation { unCollation :: Trie.Trie [CollationElement] }
+  deriving (Show, Eq, Ord, Lift, Semigroup, Monoid)
+
+instance Binary Collation where
+   put (Collation m) = put m
+   get = Collation <$> get
+
+
 
 -- | Unfold a 'Collation' into an association list.
 unfoldCollation :: Collation -> [([Int], [CollationElement])]

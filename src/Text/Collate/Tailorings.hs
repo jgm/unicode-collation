@@ -5,10 +5,10 @@ module Text.Collate.Tailorings
  , tailorings )
 where
 
-import Text.Collate.Types
 import Text.Collate.Lang
 import Text.Collate.TH
-import Text.Collate.Collation (suppressContractions, insertElements)
+import Text.Collate.Collation (suppressContractions, insertElements,
+                               Collation, CollationElement(..))
 import Data.Binary (decode)
 
 -- | The DUCET collation defined in allkeys.txt.

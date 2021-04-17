@@ -3,6 +3,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Text.Collate.Collator
   ( Collator(..)
+  , SortKey(..)
+  , VariableWeighting(..)
   , rootCollator
   , setVariableWeighting
   , setFrenchAccents
@@ -15,10 +17,10 @@ module Text.Collate.Collator
   )
 where
 
-import Text.Collate.Types
 import Text.Collate.Lang
 import Text.Collate.Tailorings
-import Text.Collate.Collation (getCollationElements)
+import Text.Collate.Collation (getCollationElements, Collation(..),
+                               CollationElement(..), VariableWeighting(..))
 import Data.Word (Word16)
 import Data.String
 import qualified Data.Text.Normalize as N
@@ -26,11 +28,47 @@ import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Ord (comparing)
 import Data.Char (ord)
+import Data.List (intercalate)
+import Text.Printf (printf)
 import Language.Haskell.TH.Quote (QuasiQuoter(..))
 #if MIN_VERSION_base(4,11,0)
 #else
 import Data.Semigroup (Semigroup(..))
 #endif
+
+data CollatorOptions =
+  CollatorOptions
+  { optVariableWeighting  :: VariableWeighting  -- ^ Method for handling
+      -- variable elements (see <http://www.unicode.org/reports/tr10/>,
+      -- Tables 11 and 12).
+  , optFrenchAccents      :: Bool -- ^ If True, secondary weights are scanned
+      -- in reverse order, so we get the sorting
+      -- "cote côte coté côté" instead of "cote coté côte côté"
+  , optUpperBeforeLower   :: Bool -- ^ Sort uppercase letters before lower
+  , optNormalize          :: Bool -- ^ If True, strings are normalized
+      -- to NFD before collation elements are constructed.  If the input
+      -- is already normalized, this option can be set to False for
+      -- better performance.
+  , optCollation          :: Collation  -- ^ The collation to use.
+  } deriving (Show, Eq, Ord)
+
+showWordList :: [Word16] -> String
+showWordList ws =
+    "[" ++ intercalate ","
+            (map (printf "0x%04X" . (fromIntegral :: Word16 -> Int)) ws) ++ "]"
+
+newtype SortKey = SortKey [Word16]
+  deriving (Eq, Ord)
+
+instance Show SortKey where
+ show (SortKey ws) = "SortKey " ++ showWordList ws
+
+-- Note that & b < q <<< Q is the same as & b < q, & q <<< Q
+-- Another syntactic shortcut is:
+-- & a <* bcd-gp-s => & a < b < c < d < e < f < g < p < q < r < s
+-- & a =* bB => & a = b = B (without that, we have a contraction)
+-- &[before 2] a << b => sorts sorts b before a
+
 
 data Collator = Collator { collate         :: Text -> Text -> Ordering
                          , sortKey         :: Text -> SortKey

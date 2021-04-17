@@ -68,7 +68,6 @@ library
   exposed-modules:     Text.Collate
                        Text.Collate.Lang
   other-modules:       Text.Collate.Trie
-                       Text.Collate.Types
                        Text.Collate.Collation
                        Text.Collate.Collator
                        Text.Collate.TH

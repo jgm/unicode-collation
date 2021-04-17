@@ -142,7 +142,6 @@ module Text.Collate
        , module Text.Collate.Lang
        )
 where
-import Text.Collate.Types
 import Text.Collate.Lang
 import Text.Collate.Collator
 import Text.Collate.Tailorings
