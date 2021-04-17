@@ -16,7 +16,6 @@ import Data.Char
 import Data.Maybe
 import qualified Data.ByteString.Char8 as B8
 
-
 main :: IO ()
 main = do
   conformanceTree <- conformanceTests
@@ -139,24 +138,23 @@ conformanceTests = do
               "test/uca-collation-test/CollationTest_NON_IGNORABLE_SHORT.txt"
   return $ testGroup "Conformance tests" [nonIgnorable, shifted]
 
-
 conformanceTestsFor :: VariableWeighting -> FilePath -> IO TestTree
 conformanceTestsFor weighting fp = do
   xs <- parseConformanceTest fp
   let coll = setVariableWeighting weighting rootCollator
-  return $ testGroup ("Conformance tests " ++ show weighting ++ " " ++ fp)
-         $ zipWith3 (conformanceTestWith coll) (map fst xs)
-                     (map snd xs) (tail (map snd xs))
+  return $ testCase ("Conformance tests " ++ show weighting ++ " " ++ fp)
+         $ mapM_ (conformanceTestWith coll)
+         $ zip3 (map fst xs) (map snd xs) (tail (map snd xs))
 
-conformanceTestWith :: Collator -> Int -> Text -> Text -> TestTree
-conformanceTestWith coll lineNo !txt1 !txt2 =
+conformanceTestWith :: Collator -> (Int, Text, Text) -> Assertion
+conformanceTestWith coll (lineNo, txt1, txt2) =
   let showHexes = unwords . map ((\c -> if c > 0xFFFF
                                            then printf "%05X" c
                                            else printf "%04X" c) . ord)
                           . T.unpack
-   in testCase ("[line " ++ show lineNo ++ "] " ++
-                showHexes txt1 ++ " <= " ++ showHexes txt2) $
-        assertBool ("Calculated sort keys:\n" ++
+   in assertBool ("[line " ++ show lineNo ++ "] " ++
+                  showHexes txt1 ++ " <= " ++ showHexes txt2 ++ "\n" ++
+                  "Calculated sort keys:\n" ++
                     showHexes txt1 ++ " " ++
                     prettySortKey (sortKey coll txt1) ++ "\n" ++
                     showHexes txt2 ++ " " ++
