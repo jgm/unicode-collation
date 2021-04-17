@@ -146,6 +146,7 @@ https://cpan.metacpan.org/authors/id/S/SA/SADAHIRO/Unicode-Collate-1.29.tar.gz
 
 The package includes an executable component, `unicode-collate`,
 which may be used for testing and for collating in scripts.
+To build it, enable the `executable` flag.
 For usage instructions, `unicode-collate --help`.
 
 ## References

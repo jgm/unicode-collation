@@ -1,0 +1,7 @@
+packages: .
+tests: True
+
+source-repository-package
+  type: git
+  location: https://github.com/WorldSEnder/text-icu
+  tag: 7657227a7ca8ad13be86db5c190b806774a5fd6b
