@@ -13,17 +13,12 @@ import Data.List (sortBy)
 
 main :: IO ()
 main = do
-  let icuCollator = ICU.collator ICU.Root
-  let icuCollate = ICU.collate icuCollator
-  let ourCollate = collate (collatorFor "en")
   (randomTexts :: [Text]) <- generate (infiniteListOf arbitrary)
   let tenThousand = take 10000 randomTexts
   defaultMain
     [ bench "sort a list of 10000 random Texts"
-        (whnf (sortBy ourCollate) tenThousand)
-    , bench "sort a list of 10000 random Texts (OverloadedStrings)"
-        (whnf (sortBy (collate "en")) tenThousand)
+        (whnf (sortBy (collate rootCollator)) tenThousand)
     , bench "sort same list with text-icu"
-        (whnf (sortBy icuCollate) tenThousand)
+        (whnf (sortBy (ICU.collate (ICU.collator ICU.Root))) tenThousand)
     ]
 

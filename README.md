@@ -28,10 +28,10 @@ Localized collations have not been tested extensively.
 ## Performance
 
 ```
-  sort a list of 10000 random Texts: OK (2.21s)
-    8.2 ms ± 637 μs,  27 MB allocated, 903 KB copied
-  sort same list with text-icu:      OK (2.10s)
-    2.0 ms ± 114 μs, 7.1 MB allocated, 148 KB copied
+  sort a list of 10000 random Texts: OK (2.31s)
+    8.7 ms ± 473 μs,  27 MB allocated, 901 KB copied
+  sort same list with text-icu:      OK (4.61s)
+    2.3 ms ± 173 μs, 7.1 MB allocated, 149 KB copied
 ```
 
 ## Localized collations
