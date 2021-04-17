@@ -51,7 +51,7 @@ jobs:
           - ghc: '9.0.1'
             cabal: '3.4'
             prefix: ''
-            cabalopts: '-fdoctests --write-ghc-environment-files=always'
+            cabalopts: '-fdoctests --write-ghc-environment-files=always --allow-newer=unicode-transforms:ghc-prim'
             testopts: '--test-option=--hide-successes'
     steps:
     - uses: actions/checkout@v2
