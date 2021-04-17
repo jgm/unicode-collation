@@ -56,7 +56,6 @@ common common-options
                        -Wincomplete-uni-patterns
                        -Wincomplete-record-updates
                        +RTS -A8m -RTS
-                       -j4
   if impl(ghc >= 8.0)
     ghc-options:       -Wredundant-constraints
   if impl(ghc >= 8.2)
@@ -147,4 +146,4 @@ benchmark benchmark
                      , text-icu
                      , quickcheck-instances
                      , QuickCheck
-  ghc-options:         -rtsopts -with-rtsopts=-A8m -j1
+  ghc-options:         -rtsopts -with-rtsopts=-A8m
