@@ -97,6 +97,20 @@ tests conformanceTree = testGroup "Tests"
        (map langParseTest langPairs)
   , testGroup "BCP 47 Lang round-trip"
        (map langRoundTripTest langPairs)
+  , testGroup "collatorLang and fallback behavior"
+    [ testCase "de => ROOT" $
+        collatorLang "de" @?= Nothing
+    , testCase "de-AT => ROOT" $
+        collatorLang "dt-AT" @?= Nothing
+    , testCase "es-u-co-trad" $
+        collatorLang "es-ES" @?= Just (Lang "es" Nothing Nothing [] [] [])
+    , testCase "de-DE-u-co-phonebk" $
+        collatorLang "de-DE-u-co-phonebk" @?=
+          Just (Lang "de" Nothing Nothing [] [("u",[("co","phonebk")])] [])
+    , testCase "fr-u-co-kb" $
+        collatorLang "fr-u-co-kb" @?=
+          Just (Lang "fr" Nothing Nothing [] [("u",[("kb","")])] [])
+    ]
   ]
 
 emptyLang :: Lang
