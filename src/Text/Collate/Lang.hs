@@ -10,7 +10,7 @@ module Text.Collate.Lang
   , lookupLang
   )
 where
-import Data.Maybe (listToMaybe)
+import Data.Maybe (listToMaybe, mapMaybe)
 import Control.Monad (mzero)
 import Data.Ord (Down(..))
 import Data.List (sortOn)
@@ -47,26 +47,32 @@ instance Binary Lang where
      return $ Lang a b c d e f
 
 -- | Find best match for a 'Lang' in an association list.
--- We require a match in 'langLanguage'; after that,
--- we look for matches in the following priority order:
--- 'langScript', 'langRegion', 'langVariants',
--- 'langExtensions' (under @"u"@),
--- collation ('langExtensions' under @"u-co"@).
 lookupLang :: Lang -> [(Lang, a)] -> Maybe (Lang, a)
 lookupLang lang =
-    listToMaybe
-  . sortOn (Down . scoreMatch)
-  . filter (\(l,_) -> langLanguage l == langLanguage lang)
+    fmap snd
+  . listToMaybe
+  . sortOn (Down . fst)
+  . (mapMaybe (\(l,t) ->
+       case match l of
+         Nothing -> Nothing
+         Just x -> Just (x,(l,t))))
  where
-  scoreMatch :: (Lang, a) -> Int
-  scoreMatch (l,_) =
-    (if langScript l == langScript lang then 20 else 0) +
-    (if langRegion l == langRegion lang then 10 else 0) +
-    (if langVariants l == langVariants lang then 5 else 0) +
-    (if lookup "u" (langExtensions l) ==
-        lookup "u" (langExtensions lang) then 2 else 0) +
-    (if (lookup "u" (langExtensions l) >>= lookup "co") ==
-        (lookup "u" (langExtensions lang) >>= lookup "co") then 1 else 0)
+  langsMatch l = if langLanguage lang == langLanguage l
+                    then Just True
+                    else Nothing
+  maybeMatch f l = case (f l, f lang) of
+                     (Nothing, Nothing) -> Just True
+                     (Nothing, Just _)  -> Just False
+                     (Just x, mby)      -> case mby of
+                                             Just y | x == y -> Just True
+                                             _ -> Nothing
+  langCollation l = lookup "u" (langExtensions l) >>= lookup "co"
+  match l = do
+    lm <- langsMatch l
+    sm <- maybeMatch langScript l
+    rm <- maybeMatch langRegion l
+    cm <- maybeMatch langCollation l
+    return (lm,sm,rm,cm)
 
 -- | Render a 'Lang' in BCP 47 form.
 renderLang :: Lang -> Text

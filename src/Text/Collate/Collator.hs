@@ -86,7 +86,9 @@ rootCollator =
 
 -- | Report 'Lang' used for tailoring in a collator.
 -- Note that because of fallbac rules, this may be somewhat
--- different from the 'Lang' passed to 'collatorFor'.
+-- different from the 'Lang' passed to 'collatorFor'.  This 'Lang'
+-- won't contain unicode extensions used to set options, but
+-- it will contain the collation if a non-default collation is being used.
 collatorLang :: Collator -> Maybe Lang
 collatorLang = optLang . collatorOptions
 

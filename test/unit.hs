@@ -107,9 +107,9 @@ tests conformanceTree = testGroup "Tests"
     , testCase "de-DE-u-co-phonebk" $
         collatorLang "de-DE-u-co-phonebk" @?=
           Just (Lang "de" Nothing Nothing [] [("u",[("co","phonebk")])] [])
-    , testCase "fr-u-co-kb" $
-        collatorLang "fr-u-co-kb" @?=
-          Just (Lang "fr" Nothing Nothing [] [("u",[("kb","")])] [])
+    , testCase "es-u-co-nonexist-kb" $
+        collatorLang "es-u-co-nonexist-kb" @?=
+          Just (Lang "es" Nothing Nothing [] [] [])
     ]
   ]
 
