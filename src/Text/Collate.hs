@@ -134,6 +134,7 @@ module Text.Collate
        , SortKey(..)
        , sortKey
        , VariableWeighting(..)
+       , collatorLang
        , setVariableWeighting
        , setNormalization
        , setFrenchAccents

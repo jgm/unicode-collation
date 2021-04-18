@@ -6,6 +6,7 @@ module Text.Collate.Collator
   , SortKey(..)
   , VariableWeighting(..)
   , rootCollator
+  , collatorLang
   , setVariableWeighting
   , setFrenchAccents
   , setUpperBeforeLower
@@ -38,7 +39,8 @@ import Data.Semigroup (Semigroup(..))
 
 data CollatorOptions =
   CollatorOptions
-  { optVariableWeighting  :: VariableWeighting  -- ^ Method for handling
+  { optLang               :: Maybe Lang -- ^ Which lang was used for tailoring
+  , optVariableWeighting  :: VariableWeighting  -- ^ Method for handling
       -- variable elements (see <http://www.unicode.org/reports/tr10/>,
       -- Tables 11 and 12).
   , optFrenchAccents      :: Bool -- ^ If True, secondary weights are scanned
@@ -81,6 +83,12 @@ instance IsString Collator where
 rootCollator :: Collator
 rootCollator =
   mkCollator defaultCollatorOptions{ optCollation = ducetCollation }
+
+-- | Report 'Lang' used for tailoring in a collator.
+-- Note that because of fallbac rules, this may be somewhat
+-- different from the 'Lang' passed to 'collatorFor'.
+collatorLang :: Collator -> Maybe Lang
+collatorLang = optLang . collatorOptions
 
 -- | Set method for handling variable elements (punctuation
 -- and spaces): see <http://www.unicode.org/reports/tr10/>,
@@ -133,7 +141,8 @@ collator = QuasiQuoter
 defaultCollatorOptions :: CollatorOptions
 defaultCollatorOptions =
   CollatorOptions
-  { optVariableWeighting = NonIgnorable
+  { optLang              = Nothing
+  , optVariableWeighting = NonIgnorable
   , optFrenchAccents     = False
   , optUpperBeforeLower  = False
   , optNormalize         = True
@@ -160,6 +169,7 @@ collatorFor :: Lang -> Collator
 collatorFor lang = mkCollator opts
   where
     opts = defaultCollatorOptions{
+             optLang          = langUsed,
              optFrenchAccents =
                case lookup "u" exts >>= lookup "kb" of
                  Just ""       -> True
@@ -191,7 +201,9 @@ collatorFor lang = mkCollator opts
                  Just "false"    -> False
                  _               -> True,
              optCollation = ducetCollation <> tailoring }
-    tailoring = maybe mempty snd $ lookupLang lang tailorings
+    (langUsed, tailoring) = case lookupLang lang tailorings of
+                              Nothing    -> (Nothing, mempty)
+                              Just (l,t) -> (Just l, t)
     exts = langExtensions lang
 
 -- | Returns a collator constructed using the collation and
