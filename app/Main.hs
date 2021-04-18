@@ -22,8 +22,9 @@ main = do
   when (any isHelp args) $ do
     putStrLn "Usage:    unicode-collate [COLLATION]"
     putStrLn "Options:"
-    putStrLn "          --help  Print usage information"
-    putStrLn "          --list  List supported collations"
+    putStrLn "          --help     Print usage information"
+    putStrLn "          --list     List supported collations"
+    putStrLn "          --verbose  Diagnostic information to stderr"
     putStrLn ""
     putStrLn "Sorts lines from stdin using the specified collation."
     putStrLn "COLLATION is a BCP47 language code. Examples:"
@@ -39,9 +40,14 @@ main = do
     mapM_ (T.putStrLn . renderLang . fst) tailorings
     exitSuccess
 
-  spec <- maybe "root" T.pack . listToMaybe <$> getArgs
+  let isOpt ('-':_) = True
+      isOpt _       = False
+  spec <- maybe "root" T.pack . listToMaybe . filter (not . isOpt) <$> getArgs
   lang <- either handleError return $ parseLang spec
   let myCollator = collatorFor lang
+  when ("--verbose" `elem` args) $
+    hPutStrLn stderr $ "Tailoring: " <>
+      maybe "ROOT" (T.unpack . renderLang) (collatorLang myCollator)
   T.getContents >>= mapM_ T.putStrLn . sortBy (collate myCollator) . T.lines
 
 handleError :: String -> IO a
