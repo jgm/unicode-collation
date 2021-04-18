@@ -27,5 +27,7 @@ main = do
         (whnf (sortBy (collate (collatorFor "zh"))) tenThousand)
     , bench "sort same list with text-icu (zh)"
         (whnf (sortBy (ICU.collate (icuCollator "zh"))) tenThousand)
+    , bench "sort a list of 10000 random Texts (en-u-kk-false = no normalize)"
+        (whnf (sortBy (collate (collatorFor "en-u-kk-false"))) tenThousand)
     ]
 
