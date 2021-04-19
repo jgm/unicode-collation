@@ -7,7 +7,6 @@
 {-# LANGUAGE DeriveLift #-}
 module Text.Collate.Collation
  ( Collation(..)
- , VariableWeighting(..)
  , CollationElement(..)
  , unfoldCollation
  , insertElements
@@ -43,16 +42,6 @@ import Text.Printf
 import Data.Semigroup (Semigroup(..))
 #endif
 -- import Debug.Trace
-
--- | 'VariableWeighting' affects how punctuation is treated.
--- See <http://www.unicode.org/reports/tr10/#Variable_Weighting>.
-data VariableWeighting =
-    NonIgnorable   -- ^ Don't ignore punctuation (Deluge < deluge-)
-  | Blanked -- ^ Completely ignore punctuation (Deluge = deluge-)
-  | Shifted -- ^ Consider punctuation at lower priority
-           -- (de-luge < delu-ge < deluge < deluge- < Deluge)
-  | ShiftTrimmed -- ^ Variant of Shifted (deluge < de-luge < delu-ge)
-  deriving (Show, Eq, Ord)
 
 data CollationElement =
   CollationElement

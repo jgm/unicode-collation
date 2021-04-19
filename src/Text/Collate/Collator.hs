@@ -22,7 +22,7 @@ where
 import Text.Collate.Lang
 import Text.Collate.Tailorings
 import Text.Collate.Collation (getCollationElements, Collation(..),
-                               CollationElement(..), VariableWeighting(..))
+                               CollationElement(..))
 import Data.Word (Word16)
 import Data.String
 import qualified Data.Text.Normalize as N
@@ -37,6 +37,16 @@ import Language.Haskell.TH.Quote (QuasiQuoter(..))
 #else
 import Data.Semigroup (Semigroup(..))
 #endif
+
+-- | 'VariableWeighting' affects how punctuation is treated.
+-- See <http://www.unicode.org/reports/tr10/#Variable_Weighting>.
+data VariableWeighting =
+    NonIgnorable   -- ^ Don't ignore punctuation (Deluge < deluge-)
+  | Blanked -- ^ Completely ignore punctuation (Deluge = deluge-)
+  | Shifted -- ^ Consider punctuation at lower priority
+           -- (de-luge < delu-ge < deluge < deluge- < Deluge)
+  | ShiftTrimmed -- ^ Variant of Shifted (deluge < de-luge < delu-ge)
+  deriving (Show, Eq, Ord)
 
 data CollatorOptions =
   CollatorOptions
@@ -292,9 +302,12 @@ mkSortKey opts elts = SortKey $
     l3s = filter (/=0) $ map ((if optUpperBeforeLower opts
                                   then switchUpperAndLower
                                   else id) . collationL3) elts
-    l4s = (case optVariableWeighting opts of
-             ShiftTrimmed -> trimTrailingFFFFs
-             _             -> id) $ filter (/=0) $ map collationL4 elts
+    l4s = case optVariableWeighting opts of
+             NonIgnorable -> []
+             Blanked      -> []
+             ShiftTrimmed -> trimTrailingFFFFs l4s'
+             Shifted      -> l4s'
+    l4s' = filter (/=0) $ map collationL4 elts
     switchUpperAndLower 0x0002 = 0x0008
     switchUpperAndLower 0x0008 = 0x0002
     switchUpperAndLower x      = x
