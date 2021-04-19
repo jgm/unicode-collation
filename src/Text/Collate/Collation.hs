@@ -182,14 +182,13 @@ findLast f (Collation trie) =
 getCollationElements :: Collation -> [Int] -> [CollationElement]
 getCollationElements collation = go
  where
-  matcher = matchLongestPrefix collation
+  go [] = []
   go cs =
-    case matcher cs of
+    case matchLongestPrefix collation cs of
        Nothing ->
          case cs of
            (c:rest) -> calculateImplicitWeight c ++ go rest
            []       -> []
-       Just (elts, [], _) -> elts
        Just (elts, is, subcollation)
         | null unblockedNonStarters -> elts ++ go is
         | otherwise ->
