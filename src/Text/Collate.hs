@@ -133,6 +133,7 @@ module Text.Collate
        , rootCollator
        , SortKey(..)
        , sortKey
+       , renderSortKey
        , VariableWeighting(..)
        , collatorLang
        , setVariableWeighting

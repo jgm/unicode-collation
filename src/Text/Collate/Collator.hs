@@ -4,6 +4,7 @@
 module Text.Collate.Collator
   ( Collator(..)
   , SortKey(..)
+  , renderSortKey
   , VariableWeighting(..)
   , rootCollator
   , collatorLang
@@ -64,6 +65,16 @@ newtype SortKey = SortKey [Word16]
 
 instance Show SortKey where
  show (SortKey ws) = "SortKey " ++ showWordList ws
+
+-- | Render sort key in the manner used in the CLDR collation test data:
+-- the character '|' is used to separate the levels of the key and
+-- corresponds to a 0 in the actual sort key.
+renderSortKey :: SortKey -> String
+renderSortKey (SortKey ws) = "[" ++ tohexes ws ++ "]"
+ where
+  tohexes = unwords . map tohex
+  tohex 0 = "|"
+  tohex x = printf "%04X" x
 
 -- Note that & b < q <<< Q is the same as & b < q, & q <<< Q
 -- Another syntactic shortcut is:

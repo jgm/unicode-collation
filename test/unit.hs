@@ -176,9 +176,9 @@ conformanceTestWith coll (lineNo, txt1, txt2) =
                       showHexes txt1 ++ " <= " ++ showHexes txt2 ++ "\n" ++
                       "  Calculated sort keys:\n  [" ++
                         showHexes txt1 ++ "] " ++
-                        prettySortKey (sortKey coll txt1) ++ "\n  [" ++
+                        renderSortKey (sortKey coll txt1) ++ "\n  [" ++
                         showHexes txt2 ++ "] " ++
-                        prettySortKey (sortKey coll txt2)
+                        renderSortKey (sortKey coll txt2)
 
 variableOrderingCase :: (VariableWeighting , [Text]) -> TestTree
 variableOrderingCase (w , expected) =
@@ -217,10 +217,3 @@ parseConformanceTestLine lineno bs =
    in if B8.take 1 bs == "#"
          then Nothing
          else Just (lineno, T.pack $ map chr codepoints)
-
-prettySortKey :: SortKey -> String
-prettySortKey (SortKey ws) = tohexes ws
- where
-  tohexes = unwords . map tohex
-  tohex = printf "%04X"
-
