@@ -8,6 +8,7 @@ module Text.Collate.Collator
   , VariableWeighting(..)
   , rootCollator
   , collatorLang
+  , CollatorOptions(..)
   , setVariableWeighting
   , setFrenchAccents
   , setUpperBeforeLower
@@ -50,7 +51,11 @@ data VariableWeighting =
 
 data CollatorOptions =
   CollatorOptions
-  { optLang               :: Maybe Lang -- ^ Which lang was used for tailoring
+  { optLang               :: Maybe Lang -- ^ 'Lang' used for tailoring.
+      -- Note that because of fallback rules, this may be somewhat
+      -- different from the 'Lang' passed to 'collatorFor'.  This 'Lang'
+      -- won't contain unicode extensions used to set options, but
+      -- it will specify the collation if a non-default collation is being used.
   , optVariableWeighting  :: VariableWeighting  -- ^ Method for handling
       -- variable elements (see <http://www.unicode.org/reports/tr10/>,
       -- Tables 11 and 12).
@@ -92,24 +97,29 @@ renderSortKey (SortKey ws) = "[" ++ tohexes ws ++ "]"
 -- &[before 2] a << b => sorts sorts b before a
 
 
-data Collator = Collator { collate           :: Text -> Text -> Ordering
-                         , sortKey           :: Text -> SortKey
-                         , collatorOptions   :: CollatorOptions
-                         , collatorCollation :: Collation }
+data Collator =
+  Collator
+  { -- | Compare two 'Text's
+    collate           :: Text -> Text -> Ordering
+    -- | The sort key used to compare a 'Text'
+  , sortKey           :: Text -> SortKey
+    -- | The options used for this 'Collator'
+  , collatorOptions   :: CollatorOptions
+    -- | The collation table used for this 'Collator'
+  , collatorCollation :: Collation
+  }
 
 instance IsString Collator where
  fromString = collatorFor . fromString
 
 -- | Default collator based on DUCET table (@allkeys.txt@).
 rootCollator :: Collator
-rootCollator =
-  mkCollator defaultCollatorOptions ducetCollation
+rootCollator = mkCollator defaultCollatorOptions ducetCollation
 
--- | Report 'Lang' used for tailoring in a collator.
--- Note that because of fallbac rules, this may be somewhat
+-- | 'Lang' used for tailoring. Because of fallback rules, this may be somewhat
 -- different from the 'Lang' passed to 'collatorFor'.  This 'Lang'
 -- won't contain unicode extensions used to set options, but
--- it will contain the collation if a non-default collation is being used.
+-- it will specify the collation if a non-default collation is being used.
 collatorLang :: Collator -> Maybe Lang
 collatorLang = optLang . collatorOptions
 
