@@ -53,9 +53,19 @@ main = do
   let myCollator = collatorFor lang
   let verbose = "--verbose" `elem` args
   let codepoints = "--hex" `elem` args
-  when verbose $
-    T.putStrLn $ "Using tailoring: " <>
-      maybe "ROOT" renderLang (collatorLang myCollator)
+  let opts = collatorOptions myCollator
+  when verbose $ do
+    T.putStrLn "Options:"
+    T.putStrLn $ "  Tailoring:          " <>
+                    maybe "ROOT" renderLang (optLang opts)
+    putStrLn   $ "  Variable weighting: " <>
+                      show (optVariableWeighting opts)
+    putStrLn   $ "  French accents:     " <>
+                      show (optFrenchAccents opts)
+    putStrLn   $ "  Upper before lower: " <>
+                      show (optUpperBeforeLower opts)
+    putStrLn   $ "  Normalize:          " <>
+                    show (optNormalize opts)
   let renderLine t = do
         t' <- if codepoints
                  then parseAsCodePoints t
