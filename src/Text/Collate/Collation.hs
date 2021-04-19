@@ -202,10 +202,10 @@ getCollationElements collation = go
            where
              getUnblockedNonStarters _ [] = []
              getUnblockedNonStarters n (x:xs)
-               = let ccc = canonicalCombiningClass x
-                  in if ccc > n
-                        then x : getUnblockedNonStarters ccc xs
-                        else []
+               = case canonicalCombiningClass x of
+                   ccc
+                     | ccc > n   -> x : getUnblockedNonStarters ccc xs
+                     | otherwise -> []
              unblockedNonStarters = getUnblockedNonStarters 0 is
              matches = mapMaybe (matchLongestPrefix subcollation)
                         (take 24 (permutations unblockedNonStarters))
