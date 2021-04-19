@@ -24,7 +24,7 @@ main = do
     putStrLn "Options:"
     putStrLn "          --help     Print usage information"
     putStrLn "          --list     List supported collations"
-    putStrLn "          --verbose  Diagnostic information to stderr"
+    putStrLn "          --verbose  Include diagnostic information"
     putStrLn ""
     putStrLn "Sorts lines from stdin using the specified collation."
     putStrLn "COLLATION is a BCP47 language code. Examples:"
@@ -45,10 +45,16 @@ main = do
   spec <- maybe "root" T.pack . listToMaybe . filter (not . isOpt) <$> getArgs
   lang <- either handleError return $ parseLang spec
   let myCollator = collatorFor lang
-  when ("--verbose" `elem` args) $
-    hPutStrLn stderr $ "Tailoring: " <>
-      maybe "ROOT" (T.unpack . renderLang) (collatorLang myCollator)
-  T.getContents >>= mapM_ T.putStrLn . sortBy (collate myCollator) . T.lines
+  let verbose = "--verbose" `elem` args
+  when verbose $
+    T.putStrLn $ "Using tailoring: " <>
+      maybe "ROOT" renderLang (collatorLang myCollator)
+  let renderLine t = do
+        T.putStr t
+        when verbose $
+          T.putStr $ " " <> T.pack (renderSortKey (sortKey myCollator t))
+        T.putStrLn ""
+  T.getContents >>= mapM_ renderLine . sortBy (collate myCollator) . T.lines
 
 handleError :: String -> IO a
 handleError msg = do
