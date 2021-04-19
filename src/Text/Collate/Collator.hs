@@ -212,7 +212,9 @@ collatorFor lang = mkCollator opts
 -- variable weighting specified in the options.
 mkCollator :: CollatorOptions -> Collator
 mkCollator opts =
-  Collator { collate = comparing sortKey'
+  Collator { collate = \x y -> if x == y  -- optimization
+                                  then EQ
+                                  else comparing sortKey' x y
            , sortKey = sortKey'
            , collatorOptions = opts
            }
