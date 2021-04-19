@@ -237,10 +237,10 @@ collatorFor lang = mkCollator opts collation
                  Just "true"     -> True
                  Just "false"    -> False
                  _               -> True }
-    collation = ducetCollation <> tailoring
-    (langUsed, tailoring) = case lookupLang lang tailorings of
-                              Nothing    -> (Nothing, mempty)
-                              Just (l,t) -> (Just l, t)
+    (langUsed, collation) =
+      case lookupLang lang tailorings of
+        Nothing            -> (Nothing, ducetCollation)
+        Just (l,tailoring) -> (Just l, ducetCollation <> tailoring)
     exts = langExtensions lang
 
 -- | Returns a collator constructed using the collation and
