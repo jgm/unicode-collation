@@ -62,7 +62,6 @@ data CollatorOptions =
       -- to NFD before collation elements are constructed.  If the input
       -- is already normalized, this option can be set to False for
       -- better performance.
-  , optCollation          :: Collation  -- ^ The collation to use.
   } deriving (Show, Eq, Ord)
 
 showWordList :: [Word16] -> String
@@ -93,9 +92,10 @@ renderSortKey (SortKey ws) = "[" ++ tohexes ws ++ "]"
 -- &[before 2] a << b => sorts sorts b before a
 
 
-data Collator = Collator { collate         :: Text -> Text -> Ordering
-                         , sortKey         :: Text -> SortKey
-                         , collatorOptions :: CollatorOptions }
+data Collator = Collator { collate           :: Text -> Text -> Ordering
+                         , sortKey           :: Text -> SortKey
+                         , collatorOptions   :: CollatorOptions
+                         , collatorCollation :: Collation }
 
 instance IsString Collator where
  fromString = collatorFor . fromString
@@ -103,7 +103,7 @@ instance IsString Collator where
 -- | Default collator based on DUCET table (@allkeys.txt@).
 rootCollator :: Collator
 rootCollator =
-  mkCollator defaultCollatorOptions{ optCollation = ducetCollation }
+  mkCollator defaultCollatorOptions ducetCollation
 
 -- | Report 'Lang' used for tailoring in a collator.
 -- Note that because of fallbac rules, this may be somewhat
@@ -113,35 +113,40 @@ rootCollator =
 collatorLang :: Collator -> Maybe Lang
 collatorLang = optLang . collatorOptions
 
+modifyCollatorOptions :: (CollatorOptions -> CollatorOptions)
+                      -> Collator -> Collator
+modifyCollatorOptions f coll =
+  mkCollator (f $ collatorOptions coll) (collatorCollation coll)
+
 -- | Set method for handling variable elements (punctuation
 -- and spaces): see <http://www.unicode.org/reports/tr10/>,
 -- Tables 11 and 12.
 setVariableWeighting :: VariableWeighting -> Collator -> Collator
-setVariableWeighting w coll =
-  mkCollator (collatorOptions coll){ optVariableWeighting = w }
+setVariableWeighting w =
+  modifyCollatorOptions (\o -> o{ optVariableWeighting = w })
 
 -- | The Unicode Collation Algorithm expects input to be normalized
 -- into its canonical decomposition (NFD). By default, collators perform
 -- this normalization. If your input is already normalized, you can increase
 -- performance by disabling this step: @setNormalization False@.
 setNormalization :: Bool -> Collator -> Collator
-setNormalization normalize coll =
-  mkCollator (collatorOptions coll){ optNormalize = normalize }
+setNormalization normalize =
+  modifyCollatorOptions (\o -> o{ optNormalize = normalize })
 
 -- | @setFrenchAccents True@ causes secondary weights to be scanned
 -- in reverse order, so we get the sorting
 -- @cote côte coté côté@ instead of @cote coté côte côté@.
 -- The default is usually @False@, except for @fr-CA@ where it is @True@.
 setFrenchAccents :: Bool -> Collator -> Collator
-setFrenchAccents frAccents coll =
-  mkCollator (collatorOptions coll){ optFrenchAccents = frAccents }
+setFrenchAccents frAccents =
+  modifyCollatorOptions (\o -> o{ optFrenchAccents = frAccents })
 
 -- | Most collations default to sorting lowercase letters before
 -- uppercase (exceptions: @mt@, @da@, @cu@).  To select the opposite
 -- behavior, use @setUpperBeforeLower True@.
 setUpperBeforeLower :: Bool -> Collator -> Collator
-setUpperBeforeLower upperBefore coll =
-  mkCollator (collatorOptions coll){ optUpperBeforeLower = upperBefore }
+setUpperBeforeLower upperBefore =
+  modifyCollatorOptions (\o -> o{ optUpperBeforeLower = upperBefore })
 
 -- | Create a collator at compile time based on a BCP 47 language
 -- tag: e.g., @[collator|es-u-co-trad|]@.  Requires the @QuasiQuotes@ extension.
@@ -169,7 +174,6 @@ defaultCollatorOptions =
   , optFrenchAccents     = False
   , optUpperBeforeLower  = False
   , optNormalize         = True
-  , optCollation         = ducetCollation
   }
 
 -- | Returns a collator based on a BCP 47 language tag.
@@ -189,7 +193,7 @@ defaultCollatorOptions =
 -- - The @kk@ keyword has the same effect as 'setNormalization'
 --   (e.g. @fr-u-kk-false@).
 collatorFor :: Lang -> Collator
-collatorFor lang = mkCollator opts
+collatorFor lang = mkCollator opts collation
   where
     opts = defaultCollatorOptions{
              optLang          = langUsed,
@@ -222,8 +226,8 @@ collatorFor lang = mkCollator opts
                  Just ""         -> True
                  Just "true"     -> True
                  Just "false"    -> False
-                 _               -> True,
-             optCollation = ducetCollation <> tailoring }
+                 _               -> True }
+    collation = ducetCollation <> tailoring
     (langUsed, tailoring) = case lookupLang lang tailorings of
                               Nothing    -> (Nothing, mempty)
                               Just (l,t) -> (Just l, t)
@@ -231,22 +235,23 @@ collatorFor lang = mkCollator opts
 
 -- | Returns a collator constructed using the collation and
 -- variable weighting specified in the options.
-mkCollator :: CollatorOptions -> Collator
-mkCollator opts =
+mkCollator :: CollatorOptions -> Collation -> Collator
+mkCollator opts collation =
   Collator { collate = \x y -> if x == y  -- optimization
                                   then EQ
                                   else comparing sortKey' x y
            , sortKey = sortKey'
            , collatorOptions = opts
+           , collatorCollation = collation
            }
  where
-  sortKey' = toSortKey opts
+  sortKey' = toSortKey opts collation
 
-toSortKey :: CollatorOptions -> Text -> SortKey
-toSortKey opts =
+toSortKey :: CollatorOptions -> Collation -> Text -> SortKey
+toSortKey opts collation =
     mkSortKey opts
   . handleVariable (optVariableWeighting opts)
-  . getCollationElements (optCollation opts)
+  . getCollationElements collation
   . T.foldr ((:) . ord) []
   . if optNormalize opts
        then N.normalize N.NFD
