@@ -135,6 +135,8 @@ module Text.Collate
        , sortKey
        , renderSortKey
        , VariableWeighting(..)
+       , CollatorOptions(..)
+       , collatorOptions
        , collatorLang
        , setVariableWeighting
        , setNormalization
@@ -151,5 +153,3 @@ import Text.Collate.Tailorings
 -- $setup
 -- >>> :set -XQuasiQuotes
 -- >>> :set -XOverloadedStrings
-
-
