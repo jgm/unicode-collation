@@ -172,12 +172,9 @@ getCollationElements :: Collation -> [Int] -> [CollationElement]
 getCollationElements collation = go
  where
   go [] = []
-  go cs =
-    case matchLongestPrefix collation cs of
-       Nothing ->
-         case cs of
-           (c:rest) -> calculateImplicitWeight c ++ go rest
-           []       -> []
+  go (c:cs) =
+    case matchLongestPrefix collation (c:cs) of
+       Nothing -> calculateImplicitWeight c ++ go cs
        Just (elts, is, subcollation)
         | null unblockedNonStarters -> elts ++ go is
         | otherwise ->
