@@ -97,6 +97,7 @@ executable unicode-collate
   main-is:             Main.hs
   build-depends:       unicode-collation
                      , containers
+                     , unicode-transforms
                      , text
   ghc-options:         -threaded
                        -rtsopts

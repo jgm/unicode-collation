@@ -2,14 +2,19 @@
 module Main (main) where
 
 import Text.Collate
+import Data.Char (chr, ord)
+import Data.Text (Text)
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
+import qualified Data.Text.Read as TR
 import Data.List (sortBy)
 import System.Environment (getArgs)
 import Data.Maybe
 import Control.Monad
 import System.Exit
+import Text.Printf
 import System.IO
+import Data.Text.Normalize (normalize, NormalizationMode(NFD))
 
 main :: IO ()
 main = do
@@ -22,9 +27,10 @@ main = do
   when (any isHelp args) $ do
     putStrLn "Usage:    unicode-collate [COLLATION]"
     putStrLn "Options:"
-    putStrLn "          --help     Print usage information"
-    putStrLn "          --list     List supported collations"
-    putStrLn "          --verbose  Include diagnostic information"
+    putStrLn "          --hex     Parse input as hex code points"
+    putStrLn "          --help    Print usage information"
+    putStrLn "          --list    List supported collations"
+    putStrLn "          --verbose Include diagnostic information"
     putStrLn ""
     putStrLn "Sorts lines from stdin using the specified collation."
     putStrLn "COLLATION is a BCP47 language code. Examples:"
@@ -46,15 +52,35 @@ main = do
   lang <- either handleError return $ parseLang spec
   let myCollator = collatorFor lang
   let verbose = "--verbose" `elem` args
+  let codepoints = "--hex" `elem` args
   when verbose $
     T.putStrLn $ "Using tailoring: " <>
       maybe "ROOT" renderLang (collatorLang myCollator)
   let renderLine t = do
-        T.putStr t
-        when verbose $
-          T.putStr $ " " <> T.pack (renderSortKey (sortKey myCollator t))
-        T.putStrLn ""
+        t' <- if codepoints
+                 then parseAsCodePoints t
+                 else return t
+        T.putStrLn t'
+        when verbose $ do
+          putStrLn $ "  " <> renderCodePoints (normalize NFD t')
+          putStrLn $ "  " <> renderSortKey (sortKey myCollator t')
   T.getContents >>= mapM_ renderLine . sortBy (collate myCollator) . T.lines
+
+renderCodePoints :: Text -> String
+renderCodePoints t =
+  unwords $ map (printf "%04X" . ord) (T.unpack t)
+
+parseAsCodePoints :: Text -> IO Text
+parseAsCodePoints t = do
+  let ws = T.words t
+  cs <- mapM parseCodePoint ws
+  return $ T.pack $ map chr cs
+
+parseCodePoint :: Text -> IO Int
+parseCodePoint t =
+  case TR.hexadecimal t of
+    Right (x,t') | T.null t' -> return x
+    _ -> handleError $ "Could not parse " <> show t <> " as hex code point."
 
 handleError :: String -> IO a
 handleError msg = do
