@@ -147,8 +147,22 @@ module Text.Collate
        )
 where
 import Text.Collate.Lang
+    ( lookupLang, parseLang, Lang(..), renderLang )
 import Text.Collate.Collator
-import Text.Collate.Tailorings
+    ( collatorFor,
+      collator,
+      setNormalization,
+      setUpperBeforeLower,
+      setFrenchAccents,
+      setVariableWeighting,
+      rootCollator,
+      Collator(collate, sortKey, collatorOptions),
+      SortKey(..),
+      CollatorOptions(..),
+      collatorLang,
+      VariableWeighting(..),
+      renderSortKey )
+import Text.Collate.Tailorings ( tailorings )
 
 -- $setup
 -- >>> :set -XQuasiQuotes
