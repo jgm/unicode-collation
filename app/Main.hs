@@ -70,10 +70,12 @@ main = do
         t' <- if codepoints
                  then parseAsCodePoints t
                  else return t
-        T.putStrLn t'
-        when verbose $ do
-          putStrLn $ "  " <> renderCodePoints (normalize NFD t')
-          putStrLn $ "  " <> renderSortKey (sortKey myCollator t')
+        when verbose $
+          putStr $ renderCodePoints (normalize NFD t') ++ "; # ("
+        T.putStr t'
+        if verbose
+           then putStrLn $ ") " ++ renderSortKey (sortKey myCollator t')
+           else putStrLn ""
   T.getContents >>= mapM_ renderLine . sortBy (collate myCollator) . T.lines
 
 renderCodePoints :: Text -> String
@@ -82,7 +84,7 @@ renderCodePoints t =
 
 parseAsCodePoints :: Text -> IO Text
 parseAsCodePoints t = do
-  let ws = T.words t
+  let ws = T.words $ T.takeWhile (/=';') t -- everything after ; is ignored
   cs <- mapM parseCodePoint ws
   return $ T.pack $ map chr cs
 
