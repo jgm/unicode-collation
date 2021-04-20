@@ -55,27 +55,25 @@ main = do
   let codepoints = "--hex" `elem` args
   let opts = collatorOptions myCollator
   when verbose $ do
-    T.putStrLn "Options:"
-    T.putStrLn $ "  Tailoring:          " <>
-                    maybe "ROOT" renderLang (optLang opts)
-    putStrLn   $ "  Variable weighting: " <>
+    hPutStrLn stderr "Options:"
+    hPutStrLn stderr $ "  Tailoring:          " <>
+                    maybe "ROOT" (T.unpack . renderLang) (optLang opts)
+    hPutStrLn stderr $ "  Variable weighting: " <>
                       show (optVariableWeighting opts)
-    putStrLn   $ "  French accents:     " <>
+    hPutStrLn stderr $ "  French accents:     " <>
                       show (optFrenchAccents opts)
-    putStrLn   $ "  Upper before lower: " <>
+    hPutStrLn stderr $ "  Upper before lower: " <>
                       show (optUpperBeforeLower opts)
-    putStrLn   $ "  Normalize:          " <>
+    hPutStrLn stderr $ "  Normalize:          " <>
                     show (optNormalize opts)
   let renderLine t = do
         t' <- if codepoints
                  then parseAsCodePoints t
                  else return t
         when verbose $
-          putStr $ renderCodePoints (normalize NFD t') ++ "; # ("
-        T.putStr t'
-        if verbose
-           then putStrLn $ ") " ++ renderSortKey (sortKey myCollator t')
-           else putStrLn ""
+          hPutStrLn stderr $ renderCodePoints (normalize NFD t') ++ "; # ("
+            ++ T.unpack t' ++ ") " ++ renderSortKey (sortKey myCollator t')
+        T.putStrLn t'
   T.getContents >>= mapM_ renderLine . sortBy (collate myCollator) . T.lines
 
 renderCodePoints :: Text -> String
