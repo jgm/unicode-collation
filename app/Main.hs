@@ -7,9 +7,8 @@ import Data.Text (Text)
 import qualified Data.Text.IO as T
 import qualified Data.Text as T
 import qualified Data.Text.Read as TR
-import Data.List (sortBy)
+import Data.List (sortBy, find)
 import System.Environment (getArgs)
-import Data.Maybe
 import Control.Monad
 import System.Exit
 import Text.Printf
@@ -48,7 +47,7 @@ main = do
 
   let isOpt ('-':_) = True
       isOpt _       = False
-  spec <- maybe "root" T.pack . listToMaybe . filter (not . isOpt) <$> getArgs
+  spec <- maybe "root" T.pack . find (not . isOpt) <$> getArgs
   lang <- either handleError return $ parseLang spec
   let myCollator = collatorFor lang
   let verbose = "--verbose" `elem` args

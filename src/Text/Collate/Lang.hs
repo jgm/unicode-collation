@@ -52,10 +52,10 @@ lookupLang lang =
     fmap snd
   . listToMaybe
   . sortOn (Down . fst)
-  . (mapMaybe (\(l,t) ->
+  . mapMaybe (\(l,t) ->
        case match l of
          Nothing -> Nothing
-         Just x -> Just (x,(l,t))))
+         Just x -> Just (x,(l,t)))
  where
   langsMatch l = if langLanguage lang == langLanguage l
                     then Just True
