@@ -1,0 +1,20 @@
+# HLint configuration file
+# https://github.com/ndmitchell/hlint
+##########################
+
+# Specify additional command line arguments
+#
+- arguments: [--color=auto, --cpp-ansi]
+
+# Ignore some builtin hints
+#
+- ignore: {name: "Avoid lambda"}
+- ignore: {name: "Eta reduce"}
+- ignore: {name: "Evaluate"}
+- ignore: {name: "Reduce duplication"} # TODO: could be more fine-grained
+- ignore: {name: "Use &&&"}
+- ignore: {name: "Use String"}
+- ignore: {name: "Use camelCase"}
+- ignore: {name: "Use fmap"}  # specific for GHC 7.8 compat
+- ignore: {name: "Use isDigit"}
+
