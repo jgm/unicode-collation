@@ -116,6 +116,7 @@ instance IsString Collator where
 rootCollator :: Collator
 rootCollator = mkCollator defaultCollatorOptions ducetCollation
 
+{-# DEPRECATED collatorLang "Use (optLang . collatorOptions)" #-}
 -- | 'Lang' used for tailoring. Because of fallback rules, this may be somewhat
 -- different from the 'Lang' passed to 'collatorFor'.  This 'Lang'
 -- won't contain unicode extensions used to set options, but
