@@ -100,13 +100,16 @@ renderSortKey (SortKey ws) = "[" ++ tohexes ws ++ "]"
 data Collator =
   Collator
   { -- | Compare two 'Text's
-    collate           :: Text -> Text -> Ordering
+    collate               :: Text -> Text -> Ordering
     -- | The sort key used to compare a 'Text'
-  , sortKey           :: Text -> SortKey
+  , sortKey               :: Text -> SortKey
+    -- | The sort key used to compare a list of code points,
+    -- assumed to be normalized (NFD).
+  , sortKeyFromCodePoints :: [Int] -> SortKey
     -- | The options used for this 'Collator'
-  , collatorOptions   :: CollatorOptions
+  , collatorOptions       :: CollatorOptions
     -- | The collation table used for this 'Collator'
-  , collatorCollation :: Collation
+  , collatorCollation     :: Collation
   }
 
 instance IsString Collator where
@@ -252,21 +255,21 @@ mkCollator opts collation =
                                   then EQ
                                   else comparing sortKey' x y
            , sortKey = sortKey'
+           , sortKeyFromCodePoints = sortKeyFromCodePoints'
            , collatorOptions = opts
            , collatorCollation = collation
            }
  where
-  sortKey' = toSortKey opts collation
-
-toSortKey :: CollatorOptions -> Collation -> Text -> SortKey
-toSortKey opts collation =
-    mkSortKey opts
-  . handleVariable (optVariableWeighting opts)
-  . getCollationElements collation
-  . T.foldr ((:) . ord) []
-  . if optNormalize opts
-       then N.normalize N.NFD
-       else id
+  sortKey' =
+      sortKeyFromCodePoints'
+    . T.foldr ((:) . ord) []
+    . if optNormalize opts
+         then N.normalize N.NFD
+         else id
+  sortKeyFromCodePoints' =
+      mkSortKey opts
+    . handleVariable (optVariableWeighting opts)
+    . getCollationElements collation
 
 handleVariable :: VariableWeighting -> [CollationElement] -> [CollationElement]
 handleVariable NonIgnorable = id

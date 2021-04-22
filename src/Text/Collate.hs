@@ -48,6 +48,14 @@ SortKey [0x213C,0x0000,0x0020,0x002B,0x0000,0x0002,0x0002]
 >>> sortKey se "ö"
 SortKey [0x22FD,0x0000,0x0020,0x0000,0x0002]
 
+There is a also a function 'sortKeyFromCodePoints', which
+takes as input a list of (Int) code points rather than a 'Text'.
+These are assumed to be in NFD form already.  This may be useful
+for users who are sorting a type other than 'Text'.
+
+>>> sortKeyFromCodePoints de [0x006F, 0x0308]
+SortKey [0x213C,0x0000,0x0020,0x002B,0x0000,0x0002,0x0002]
+
 Because 'Collator' and 'Lang' have 'IsString' instances, you can just specify
 them using string literals, as in the above examples.  Note, however,
 that you won't get any feedback if the string doesn't parse correctly
@@ -133,6 +141,7 @@ module Text.Collate
        , rootCollator
        , SortKey(..)
        , sortKey
+       , sortKeyFromCodePoints
        , renderSortKey
        , VariableWeighting(..)
        , CollatorOptions(..)
@@ -156,7 +165,7 @@ import Text.Collate.Collator
       setFrenchAccents,
       setVariableWeighting,
       rootCollator,
-      Collator(collate, sortKey, collatorOptions),
+      Collator(collate, sortKey, sortKeyFromCodePoints, collatorOptions),
       SortKey(..),
       CollatorOptions(..),
       collatorLang,
