@@ -27,7 +27,7 @@ import qualified Data.IntSet as IntSet
 import qualified Data.IntMap as M
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
 import Data.ByteString.Lex.Integral (readHexadecimal)
-import Data.List (foldl', permutations, sortOn)
+import Data.List (foldl')
 import Text.Collate.CombiningClass (genCombiningClassMap)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
@@ -114,6 +114,14 @@ matchLongestPrefix (Collation trie) codepoints =
     Nothing -> Nothing
     Just (els, is, trie') -> Just (els, is, Collation trie')
 
+lookupNonEmptyChild :: Collation
+                    -> Int
+                    -> Maybe ([CollationElement], Collation)
+lookupNonEmptyChild (Collation trie) point =
+  case Trie.lookupNonEmptyChild trie point of
+    Nothing -> Nothing
+    Just (els, trie') -> Just (els, Collation trie')
+
 -- | Find the first element in a 'Collation' that meets a condition.
 -- Return the code points and the elements.
 findFirst :: ([CollationElement] -> Bool)
@@ -175,26 +183,25 @@ getCollationElements collation = go
   go (c:cs) =
     case matchLongestPrefix collation (c:cs) of
        Nothing -> calculateImplicitWeight c ++ go cs
-       Just (elts, is, subcollation)
-        | null unblockedNonStarters -> elts ++ go is
-        | otherwise ->
-            case sortOn remainderLength matches of
-              ((newelts, rs, _):_)
-                  -> newelts ++ go (rs ++ drop (length unblockedNonStarters) is)
-              []  -> elts ++ go is
-         -- Now we need to check the whole sequence of
-         -- unblocked nonstarters, which can come in different orders
-           where
-             getUnblockedNonStarters _ [] = []
-             getUnblockedNonStarters n (x:xs)
-               = case canonicalCombiningClass x of
-                   ccc
-                     | ccc > n   -> x : getUnblockedNonStarters ccc xs
-                     | otherwise -> []
-             unblockedNonStarters = getUnblockedNonStarters 0 is
-             matches = mapMaybe (matchLongestPrefix subcollation)
-                        (take 24 (permutations unblockedNonStarters))
-             remainderLength (_,ys,_) = length ys
+       Just (elts, is, subcollation) ->
+        let (elts', is') = extendMatch elts is subcollation
+        in elts' ++ go is'
+          where
+             -- find the first unblocked non-starter that can extend
+             -- the current match, also removing it from the code
+             -- point list
+             popExtender = popExtender' 0 id
+             popExtender' _ _ [] _ = Nothing
+             popExtender' n acc (x:xs) subc
+               | ccc <- canonicalCombiningClass x,
+                 ccc > n =
+                 case lookupNonEmptyChild subc x of
+                   Just (elts', subc') -> Just (elts', acc xs, subc')
+                   Nothing -> popExtender' ccc (acc . (x :)) xs subc
+               | otherwise = Nothing
+             extendMatch es ubs subc = case popExtender ubs subc of
+               Just (elts', ubs', subc') -> extendMatch elts' ubs' subc'
+               Nothing -> (es, ubs)
 
 -- see 10.1.3, Implicit Weights
 -- from allkeys.txt:
