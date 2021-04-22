@@ -183,24 +183,29 @@ getCollationElements collation = go
   go (c:cs) =
     case matchLongestPrefix collation (c:cs) of
        Nothing -> calculateImplicitWeight c ++ go cs
-       Just (elts, is, subcollation) ->
-        let (elts', is') = extendMatch elts is subcollation
-        in elts' ++ go is'
+       Just (elts, is, subcollation) -> elts' ++ go (unblockedNonStarters' ++ is')
           where
+             getUnblockedNonStarters _ [] = ([], [])
+             getUnblockedNonStarters n (x:xs)
+               = case canonicalCombiningClass x of
+                   ccc
+                     | ccc > n,
+                       (xs', rest) <- getUnblockedNonStarters ccc xs
+                       -> (x : xs', rest)
+                     | otherwise -> ([], x : xs)
+             (unblockedNonStarters, is') = getUnblockedNonStarters 0 is
+             (elts', unblockedNonStarters') = extendMatch elts unblockedNonStarters subcollation
              -- find the first unblocked non-starter that can extend
              -- the current match, also removing it from the code
              -- point list
-             popExtender = popExtender' 0 id
-             popExtender' _ _ [] _ = Nothing
-             popExtender' n acc (x:xs) subc
-               | ccc <- canonicalCombiningClass x,
-                 ccc > n =
-                 case lookupNonEmptyChild subc x of
-                   Just (elts', subc') -> Just (elts', acc xs, subc')
-                   Nothing -> popExtender' ccc (acc . (x :)) xs subc
-               | otherwise = Nothing
+             popExtender = popExtender' id
+             popExtender' _ [] _ = Nothing
+             popExtender' acc (x:xs) subc
+               = case lookupNonEmptyChild subc x of
+                   Just (es', subc') -> Just (es', acc xs, subc')
+                   Nothing -> popExtender' (acc . (x :)) xs subc
              extendMatch es ubs subc = case popExtender ubs subc of
-               Just (elts', ubs', subc') -> extendMatch elts' ubs' subc'
+               Just (es', ubs', subc') -> extendMatch es' ubs' subc'
                Nothing -> (es, ubs)
 
 -- see 10.1.3, Implicit Weights
