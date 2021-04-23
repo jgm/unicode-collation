@@ -12,6 +12,7 @@ import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL
 import Data.Binary as Binary ( encode )
 import Text.Collate.Collation (parseCollation, parseCJKOverrides)
+import Data.Text.Encoding (decodeUtf8)
 -- import Debug.Trace
 
 -- NOTE: The reason for the indirection through binary
@@ -24,11 +25,13 @@ import Text.Collate.Collation (parseCollation, parseCJKOverrides)
 genCollation :: FilePath -> Q Exp
 genCollation fp = do
   qAddDependentFile fp
-  binaryRep <- Binary.encode . parseCollation <$> runIO (B.readFile fp)
+  binaryRep <- Binary.encode . parseCollation . decodeUtf8
+                  <$> runIO (B.readFile fp)
   return $ LitE $ StringL $ BL.unpack binaryRep
 
 genCJKOverrides :: FilePath -> Q Exp
 genCJKOverrides fp = do
   qAddDependentFile fp
-  binaryRep <- Binary.encode . parseCJKOverrides <$> runIO (B.readFile fp)
+  binaryRep <- Binary.encode . parseCJKOverrides . decodeUtf8
+                  <$> runIO (B.readFile fp)
   return $ LitE $ StringL $ BL.unpack binaryRep

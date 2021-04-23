@@ -22,11 +22,12 @@ module Text.Collate.Collation
  )
 where
 
-import qualified Data.ByteString.Char8 as B
 import qualified Data.IntSet as IntSet
 import qualified Data.IntMap as M
+import qualified Data.Text as T
+import qualified Data.Text.Read as TR
+import Data.Text (Text)
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
-import Data.ByteString.Lex.Integral (readHexadecimal)
 import Data.List (foldl')
 import Text.Collate.CombiningClass (genCombiningClassMap)
 import Data.Maybe
@@ -261,35 +262,27 @@ calculateImplicitWeight cp =
       | otherwise
         -> (0xFBC0 + (cp `shiftR` 15), (cp .&. 0x7FFFF) .|. 0x8000)
 
-readCodepoints :: B.ByteString -> ([Int], B.ByteString)
-readCodepoints b =
-  case readHexadecimal b of
-    Nothing -> ([], b)
-    Just (codepoint, rest) ->
-      let (cps, b') = readCodepoints (B.dropWhile (==' ') rest)
-        in (codepoint:cps, b')
-
 -- | Parse a 'Collation' from a 'ByteString' in the format of
 -- @allkeys.txt@.
-parseCollation :: B.ByteString -> Collation
-parseCollation = foldl' processLine mempty . B.lines
+parseCollation :: Text -> Collation
+parseCollation = foldl' processLine mempty . T.lines
  where
-  processLine trie b =
-    case readCodepoints b of
+  processLine trie t =
+    case readCodePoints t of
       ([],_) -> trie
       (c:cs, rest) -> insertElements (c:cs) (go rest) trie
-  go b =
-    case B.break (== ']') (B.drop 1 $ B.dropWhile (/= '[') b) of
+  go t =
+    case T.break (== ']') (T.drop 1 $ T.dropWhile (/= '[') t) of
       (contents, rest)
-         | B.null rest -> []
+         | T.null rest -> []
          | otherwise   -> parseContents contents : go rest
-  parseContents b =
-    let isVariable = not (B.null b) && B.head b == '*'
+  parseContents t =
+    let isVariable = not (T.null t) && T.head t == '*'
         isIgnorable (0,0,0) = True
         isIgnorable _       = False
-    in case map readHexadecimal $ filter (not . B.null)
-                                  (B.splitWith isSep b) of
-              [Just (x,_), Just (y,_), Just (z,_)]
+    in case map TR.hexadecimal $ filter (not . T.null)
+                                  (T.split isSep t) of
+              [Right (x,_), Right (y,_), Right (z,_)]
                 -> CollationElement isVariable x y z
                                     (if isVariable || isIgnorable (x,y,z)
                                         then 0
@@ -302,13 +295,13 @@ parseCollation = foldl' processLine mempty . B.lines
 -- the result is a list of code points; the first will be assigned
 -- the colllation element [0x8000, 0x0020, 0x0002], the next
 -- [0x8001, 0x0020, 0x0002], and so on.
-parseCJKOverrides :: B.ByteString -> [Int]
-parseCJKOverrides = mapMaybe chunkToCp . B.words
+parseCJKOverrides :: Text -> [Int]
+parseCJKOverrides = mapMaybe chunkToCp . T.words
  where
-  chunkToCp b =
-    case readHexadecimal b of
-      Just (x,rest)
-        | B.null rest -> Just x
+  chunkToCp t =
+    case TR.hexadecimal t of
+      Right (x,rest)
+        | T.null rest -> Just x
       _ -> Nothing -- like the perl module we ignore e.g. FDD0-0041
 
 combiningClassMap :: M.IntMap Int
@@ -319,3 +312,11 @@ combiningClassMap = M.fromList $!
 canonicalCombiningClass :: Int -> Int
 canonicalCombiningClass cp = fromMaybe 0 $ M.lookup cp combiningClassMap
 
+
+readCodePoints :: Text -> ([Int], Text)
+readCodePoints t =
+  case TR.hexadecimal t of
+    Left _                  -> ([], t)
+    Right (codepoint, rest) ->
+      let (cps, t') = readCodePoints (T.dropWhile (==' ') rest)
+        in (codepoint:cps, t')
