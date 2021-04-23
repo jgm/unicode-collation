@@ -19,9 +19,8 @@ library offers a pure Haskell solution.
 ## Conformance
 
 The library passes UCA conformance tests (except for tests
-involving unmatched surrogates and a few Tibetan characters,
-which seem to be changed in unexpected ways by Text.pack or
-normalization).
+involving unmatched surrogates, which seem to be changed in
+unexpected ways by Text.pack).
 
 Localized collations have not been tested extensively.
 
