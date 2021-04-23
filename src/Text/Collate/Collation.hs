@@ -29,7 +29,7 @@ import qualified Data.Text.Read as TR
 import Data.Text (Text)
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
 import Data.List (foldl')
-import Text.Collate.CombiningClass (genCombiningClassMap)
+import Text.Collate.UnicodeData (genCanonicalCombiningClassMap)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
 import Data.Word (Word16)
@@ -305,8 +305,7 @@ parseCJKOverrides = mapMaybe chunkToCp . T.words
       _ -> Nothing -- like the perl module we ignore e.g. FDD0-0041
 
 combiningClassMap :: M.IntMap Int
-combiningClassMap = M.fromList $!
-  $(genCombiningClassMap "data/DerivedCombiningClass.txt")
+combiningClassMap = $(genCanonicalCombiningClassMap)
 
 -- | Determine the canonical combining class for a code point.
 canonicalCombiningClass :: Int -> Int

@@ -35,3 +35,4 @@ genCJKOverrides fp = do
   binaryRep <- Binary.encode . parseCJKOverrides . decodeUtf8
                   <$> runIO (B.readFile fp)
   return $ LitE $ StringL $ BL.unpack binaryRep
+

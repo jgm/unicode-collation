@@ -22,7 +22,7 @@ extra-doc-files:     README.md
                      CHANGELOG.md
 extra-source-files:  stack.yaml
                      data/allkeys.txt
-                     data/DerivedCombiningClass.txt
+                     data/UnicodeData.txt
                      data/tailorings/*.txt
                      data/cjk/*.txt
                      test/uca-collation-test/*.txt
@@ -76,7 +76,7 @@ library
                        Text.Collate.Collator
                        Text.Collate.TH
                        Text.Collate.Tailorings
-                       Text.Collate.CombiningClass
+                       Text.Collate.UnicodeData
   build-depends:       unicode-transforms >= 0.3.7.1
                      , bytestring
                      , template-haskell

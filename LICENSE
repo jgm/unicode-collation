@@ -34,8 +34,8 @@ For terms of use, see http://www.unicode.org/terms_of_use.html
 
 ---
 
-The file data/DerivedCombiningCLass.txt was copied from
-http://www.unicode.org/Public/13.0.0/ucd/extracted/DerivedCombiningClass.txt
+The file data/UnicodeData.txt was copied from
+http://www.unicode.org/Public/13.0.0/UnicodeData.txt
 For this file, Copyright (c) 2020 Unicode, Inc.
 For terms of use, see http://www.unicode.org/terms_of_use.html
 
