@@ -215,6 +215,7 @@ parseConformanceTestLine :: Int -> B8.ByteString -> Maybe (Int, Text)
 parseConformanceTestLine lineno bs =
   let readhex = either error fst . TR.hexadecimal
       codepoints = map (readhex . TE.decodeLatin1) $ B8.words bs
-   in if B8.take 1 bs == "#"
+      t = T.pack (map chr codepoints)
+   in if T.any (== '\xFFFD') t || T.null t
          then Nothing
-         else Just (lineno, T.pack $ map chr codepoints)
+         else Just (lineno, t)
