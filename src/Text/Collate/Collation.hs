@@ -18,19 +18,16 @@ module Text.Collate.Collation
  , getCollationElements
  , parseCollation
  , parseCJKOverrides
- , canonicalCombiningClass
  )
 where
 
 import qualified Data.IntSet as IntSet
-import qualified Data.IntMap as M
 import qualified Data.Text as T
 import qualified Data.Text.Read as TR
 import Data.Text (Text)
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
 import Data.List (foldl')
-import Text.Collate.UnicodeData (genCanonicalCombiningClassMap,
-                                 readCodePoints)
+import Text.Collate.UnicodeData (readCodePoints)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
 import Data.Word (Word16)
@@ -38,6 +35,7 @@ import Data.Binary (Binary(get, put))
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
 import qualified Text.Collate.Trie as Trie
+import Text.Collate.CombiningClass (canonicalCombiningClass)
 import Text.Printf
 #if MIN_VERSION_base(4,11,0)
 #else
@@ -305,18 +303,3 @@ parseCJKOverrides = mapMaybe chunkToCp . T.words
         | T.null rest -> Just x
       _ -> Nothing -- like the perl module we ignore e.g. FDD0-0041
 
-combiningClassMap :: M.IntMap Int
-combiningClassMap = $(genCanonicalCombiningClassMap)
-
--- | Determine the canonical combining class for a code point.
-canonicalCombiningClass :: Int -> Int
-canonicalCombiningClass cp = fromMaybe 0 $ M.lookup cp combiningClassMap
-
-
-readCodePoints :: Text -> ([Int], Text)
-readCodePoints t =
-  case TR.hexadecimal t of
-    Left _                  -> ([], t)
-    Right (codepoint, rest) ->
-      let (cps, t') = readCodePoints (T.dropWhile (==' ') rest)
-        in (codepoint:cps, t')

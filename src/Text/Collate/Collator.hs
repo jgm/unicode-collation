@@ -24,9 +24,9 @@ import Text.Collate.Lang
 import Text.Collate.Tailorings
 import Text.Collate.Collation (getCollationElements, Collation(..),
                                CollationElement(..))
+import Text.Collate.Normalize (toNFD)
 import Data.Word (Word16)
 import Data.String
-import qualified Data.Text.Normalize as N
 import qualified Data.Text as T
 import Data.Text (Text)
 import Data.Ord (comparing)
@@ -103,8 +103,7 @@ data Collator =
     collate               :: Text -> Text -> Ordering
     -- | The sort key used to compare a 'Text'
   , sortKey               :: Text -> SortKey
-    -- | The sort key used to compare a list of code points,
-    -- assumed to be normalized (NFD).
+    -- | The sort key used to compare a list of code points.
   , sortKeyFromCodePoints :: [Int] -> SortKey
     -- | The options used for this 'Collator'
   , collatorOptions       :: CollatorOptions
@@ -263,13 +262,14 @@ mkCollator opts collation =
   sortKey' =
       sortKeyFromCodePoints'
     . T.foldr ((:) . ord) []
-    . if optNormalize opts
-         then N.normalize N.NFD
-         else id
   sortKeyFromCodePoints' =
       mkSortKey opts
     . handleVariable (optVariableWeighting opts)
     . getCollationElements collation
+    . \cps ->
+        if optNormalize opts -- && not (isNFD cps)
+           then toNFD cps
+           else cps
 
 handleVariable :: VariableWeighting -> [CollationElement] -> [CollationElement]
 handleVariable NonIgnorable = id

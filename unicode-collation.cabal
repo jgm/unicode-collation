@@ -71,14 +71,15 @@ library
   hs-source-dirs:      src
   exposed-modules:     Text.Collate
                        Text.Collate.Lang
+                       Text.Collate.Normalize
+                       Text.Collate.CombiningClass
   other-modules:       Text.Collate.Trie
                        Text.Collate.Collation
                        Text.Collate.Collator
                        Text.Collate.TH
                        Text.Collate.Tailorings
                        Text.Collate.UnicodeData
-  build-depends:       unicode-transforms >= 0.3.7.1
-                     , bytestring
+  build-depends:       bytestring
                      , template-haskell
                      , th-lift-instances
                      , containers
@@ -95,7 +96,6 @@ executable unicode-collate
   main-is:             Main.hs
   build-depends:       unicode-collation
                      , containers
-                     , unicode-transforms
                      , text
   ghc-options:         -threaded
                        -rtsopts
@@ -113,7 +113,9 @@ test-suite unit
   build-depends:       unicode-collation
                      , bytestring
                      , tasty
+                     , tasty-quickcheck
                      , tasty-hunit
+                     , unicode-transforms >= 0.3.7.1
                      , text
   ghc-options:         -threaded
                        -rtsopts

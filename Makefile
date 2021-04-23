@@ -2,7 +2,7 @@ TAILORINGS=$(patsubst %,data/tailorings/%.txt, af ar as az be bn ca cs cu cy da 
 CJK=$(patsubst %,data/cjk/%.txt, Big5 GB2312 JISX0208 Pinyin Stroke Zhuyin)
 
 test-stack:
-	stack test --test-arguments=--hide-successes \
+	stack test \
 	  --flag unicode-collation:executable && \
 	  stack runghc test/doctests.hs
 

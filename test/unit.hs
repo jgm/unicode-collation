@@ -2,8 +2,10 @@
 {-# LANGUAGE QuasiQuotes #-}
 module Main (main) where
 import Text.Collate
+import Text.Collate.Normalize (toNFD)
 import Text.Printf
 import Test.Tasty
+import Test.Tasty.QuickCheck
 import Test.Tasty.HUnit
 import Data.Either (lefts)
 import Data.List (sortBy)
@@ -11,6 +13,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import qualified Data.Text.Read as TR
+import qualified Data.Text.Normalize as N
 import Data.Char
 import Data.Maybe
 import qualified Data.ByteString.Char8 as B8
@@ -111,6 +114,11 @@ tests conformanceTree = testGroup "Tests"
     , testCase "es-u-co-nonexist-kb" $
         (optLang . collatorOptions) "es-u-co-nonexist-kb" @?=
           Just (Lang "es" Nothing Nothing [] [] [])
+    ]
+  , testGroup "Normalization"
+    [ testProperty "toNFD agrees with unicode-transforms"
+         (\cs -> toNFD (map ord cs) ==
+           (map ord . T.unpack . N.normalize N.NFD . T.pack) cs)
     ]
   ]
 

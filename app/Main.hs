@@ -13,7 +13,7 @@ import Control.Monad
 import System.Exit
 import Text.Printf
 import System.IO
-import Data.Text.Normalize (normalize, NormalizationMode(NFD))
+import Text.Collate.Normalize (toNFD)
 
 main :: IO ()
 main = do
@@ -70,14 +70,14 @@ main = do
                  then parseAsCodePoints t
                  else return t
         when verbose $
-          hPutStrLn stderr $ renderCodePoints (normalize NFD t') ++ "; # ("
+          hPutStrLn stderr $ renderCodePoints
+            (toNFD $ map ord $ T.unpack t') ++ "; # ("
             ++ T.unpack t' ++ ") " ++ renderSortKey (sortKey myCollator t')
         T.putStrLn t'
   T.getContents >>= mapM_ renderLine . sortBy (collate myCollator) . T.lines
 
-renderCodePoints :: Text -> String
-renderCodePoints t =
-  unwords $ map (printf "%04X" . ord) (T.unpack t)
+renderCodePoints :: [Int] -> String
+renderCodePoints = unwords . map (printf "%04X")
 
 parseAsCodePoints :: Text -> IO Text
 parseAsCodePoints t = do
