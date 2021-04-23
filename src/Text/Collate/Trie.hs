@@ -10,6 +10,7 @@ module Text.Collate.Trie
   , alter
   , unfoldTrie
   , matchLongestPrefix
+  , lookupNonEmptyChild
   )
   where
 
@@ -86,3 +87,11 @@ matchLongestPrefix = go Nothing
                           Nothing -> best
                           Just x  -> Just (x, c:cs, trie)) trie cs
 
+-- | Return the sub-trie at the given branch if it exists and has a
+-- non-empty node
+lookupNonEmptyChild :: Trie a -> Int -> Maybe (a, Trie a)
+lookupNonEmptyChild (Trie _ Nothing) _ = Nothing
+lookupNonEmptyChild (Trie _ (Just m)) idx = do
+  Trie mnode m' <- M.lookup idx m
+  node <- mnode
+  return (node, Trie Nothing m')
