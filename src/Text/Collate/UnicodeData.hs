@@ -8,13 +8,16 @@ module Text.Collate.UnicodeData
   , toCanonicalDecompositionMap
   , genCanonicalCombiningClassMap
   , genCanonicalDecompositionMap
+  , readCodePoints
   )
 where
-import qualified Data.ByteString.Char8 as B
-import Data.ByteString (ByteString)
+import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.Read as TR
+import qualified Data.ByteString as B
+import qualified Data.Text.Encoding as TE
 import qualified Data.IntMap as M
 import GHC.Generics (Generic)
-import Data.ByteString.Lex.Integral (readHexadecimal, readDecimal)
 import Instances.TH.Lift ()
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax (qAddDependentFile)
@@ -22,13 +25,16 @@ import Language.Haskell.TH.Syntax (qAddDependentFile)
 unicodeDataPath :: FilePath
 unicodeDataPath = "data/UnicodeData.txt"
 
+readUtf8Text :: FilePath -> IO Text
+readUtf8Text fp = TE.decodeUtf8 <$> B.readFile fp
+
 -- | Generate map of code points to canonical combining class,
 -- from UnicodeData.txt.
 genCanonicalCombiningClassMap :: Q Exp
 genCanonicalCombiningClassMap = do
   qAddDependentFile unicodeDataPath
   cccmap <- toCanonicalCombiningClassMap . parseUnicodeData
-               <$> runIO (B.readFile unicodeDataPath)
+               <$> runIO (readUtf8Text unicodeDataPath)
   [| cccmap |]
 
 -- | Generate map of code points to canonical decompositions,
@@ -37,11 +43,11 @@ genCanonicalDecompositionMap :: Q Exp
 genCanonicalDecompositionMap = do
   qAddDependentFile unicodeDataPath
   dmap <- toCanonicalDecompositionMap . parseUnicodeData
-              <$> runIO (B.readFile unicodeDataPath)
+              <$> runIO (readUtf8Text unicodeDataPath)
   [| dmap |]
 
-parseUnicodeData :: ByteString -> M.IntMap UChar
-parseUnicodeData = foldr parseLine mempty . B.lines
+parseUnicodeData :: Text -> M.IntMap UChar
+parseUnicodeData = foldr parseLine mempty . T.lines
 
 toCanonicalCombiningClassMap :: M.IntMap UChar -> M.IntMap Int
 toCanonicalCombiningClassMap =
@@ -78,7 +84,7 @@ data DecompositionType =
 data UChar =
   UChar
   { uCodePoint :: Int
-  , uName :: ByteString
+  , uName :: Text
   , uGeneralCategory :: GeneralCategory
   , uCanonicalCombiningClass :: Int
   , uBidiClass :: BidiClass
@@ -86,35 +92,35 @@ data UChar =
   , uDecompositionMapping :: [Int]
   , uNumericTypeAndValue :: (Maybe Int, Maybe Int, Maybe Int)
   , uBidiMirrored :: Bool
-  , uUnicode1Name :: ByteString
-  , uISOComment :: ByteString
+  , uUnicode1Name :: Text
+  , uISOComment :: Text
   , uSimpleUppercaseMapping :: Int
   , uSimpleLowercaseMapping :: Int
   , uSimpleTitlecaseMappping :: Int
   } deriving (Show, Eq, Ord, Generic)
 
-readCodepoint :: ByteString -> Int
-readCodepoint b =
-  case readHexadecimal b of
-    Nothing -> 0
-    Just (codepoint, _) -> codepoint
+readCodePoint :: Text -> Int
+readCodePoint t =
+  case TR.hexadecimal t of
+    Left e               -> error e -- ok to error at compile-time
+    Right (codepoint, _) -> codepoint
 
-readCodepoints :: ByteString -> ([Int], ByteString)
-readCodepoints b =
-  case readHexadecimal b of
-    Nothing -> ([], b)
-    Just (codepoint, rest) ->
-      let (cps, b') = readCodepoints (B.dropWhile (==' ') rest)
-        in (codepoint:cps, b')
+readCodePoints :: Text -> ([Int], Text)
+readCodePoints t =
+  case TR.hexadecimal t of
+    Left _                  -> ([], t)
+    Right (codepoint, rest) ->
+      let (cps, t') = readCodePoints (T.dropWhile (==' ') rest)
+        in (codepoint:cps, t')
 
-parseDecomp :: ByteString -> (DecompositionType, [Int])
+parseDecomp :: Text -> (DecompositionType, [Int])
 parseDecomp bs =
-  case B.uncons bs of
+  case T.uncons bs of
     Just ('<',rest) -> (ty,xs)
       where
-       xs = fst $ readCodepoints cps
-       (x,y) = B.break (=='>') rest
-       cps = B.dropWhile (\c -> c == '>' || c == ' ') y
+       xs = fst $ readCodePoints cps
+       (x,y) = T.break (=='>') rest
+       cps = T.dropWhile (\c -> c == '>' || c == ' ') y
        ty = case x of
               "font" -> Font
               "noBreak" -> NoBreak
@@ -133,33 +139,39 @@ parseDecomp bs =
               "fraction" -> Fraction
               "compat" -> Compat
               _ -> Compat
-    _ -> (Canonical,) . fst $ readCodepoints bs
+    _ -> (Canonical,) . fst $ readCodePoints bs
 
-parseLine :: ByteString -> M.IntMap UChar -> M.IntMap UChar
-parseLine bs =
-  case B.split ';' bs of
+parseLine :: Text -> M.IntMap UChar -> M.IntMap UChar
+parseLine t =
+  case T.splitOn ";" t of
     [f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14] ->
       M.insert codepoint uchar
      where
-      codepoint = readCodepoint f0
+      codepoint = readCodePoint f0
       (decompType, decompMapping) = parseDecomp f5
+      readNumericValue x =
+        case TR.decimal x of
+          Left _      -> Nothing
+          Right (v,_) -> Just v
       uchar = UChar
         { uCodePoint = codepoint
         , uName = f1
-        , uGeneralCategory = read (B.unpack f2)
-        , uCanonicalCombiningClass = maybe 0 fst (readDecimal f3)
-        , uBidiClass = read (B.unpack f4)
+        , uGeneralCategory = read (T.unpack f2)
+        , uCanonicalCombiningClass = either (const 0) fst (TR.decimal f3)
+        , uBidiClass = read (T.unpack f4)
         , uDecompositionType = decompType
         , uDecompositionMapping = decompMapping
-        , uNumericTypeAndValue = (fst <$> readDecimal f6,
-                                  fst <$> readDecimal f7,
-                                  fst <$> readDecimal f8)
+        , uNumericTypeAndValue =
+             (readNumericValue f6,
+              readNumericValue f7,
+              readNumericValue f8)
         , uBidiMirrored = f9 == "Y"
         , uUnicode1Name = f10
         , uISOComment = f11
-        , uSimpleUppercaseMapping = readCodepoint f12
-        , uSimpleLowercaseMapping = readCodepoint f13
-        , uSimpleTitlecaseMappping = readCodepoint f14
+        , uSimpleUppercaseMapping = readCodePoint f12
+        , uSimpleLowercaseMapping = readCodePoint f13
+        , uSimpleTitlecaseMappping = readCodePoint f14
         }
-    _ -> error $ "Wrong number of fields in record:\n" ++ show bs
+    _ -> error $ "Wrong number of fields in record:\n" ++ show t
+
 

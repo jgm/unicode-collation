@@ -29,7 +29,8 @@ import qualified Data.Text.Read as TR
 import Data.Text (Text)
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
 import Data.List (foldl')
-import Text.Collate.UnicodeData (genCanonicalCombiningClassMap)
+import Text.Collate.UnicodeData (genCanonicalCombiningClassMap,
+                                 readCodePoints)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
 import Data.Word (Word16)
