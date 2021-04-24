@@ -72,7 +72,7 @@ library
   exposed-modules:     Text.Collate
                        Text.Collate.Lang
                        Text.Collate.Normalize
-                       Text.Collate.CombiningClass
+                       Text.Collate.CanonicalCombiningClass
   other-modules:       Text.Collate.Trie
                        Text.Collate.Collation
                        Text.Collate.Collator

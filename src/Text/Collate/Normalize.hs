@@ -14,7 +14,7 @@ module Text.Collate.Normalize
 where
 import qualified Data.IntMap as M
 import Text.Collate.UnicodeData (genCanonicalDecompositionMap)
-import Text.Collate.CombiningClass (canonicalCombiningClass)
+import Text.Collate.CanonicalCombiningClass (canonicalCombiningClass)
 import Data.List (sortOn)
 
 canonicalDecompositionMap :: M.IntMap [Int]

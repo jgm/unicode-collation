@@ -33,7 +33,7 @@ import Data.Binary (Binary(get, put))
 import Language.Haskell.TH.Syntax (Lift(..))
 import Instances.TH.Lift ()
 import qualified Text.Collate.Trie as Trie
-import Text.Collate.CombiningClass (canonicalCombiningClass)
+import Text.Collate.CanonicalCombiningClass (canonicalCombiningClass)
 import Text.Printf
 #if MIN_VERSION_base(4,11,0)
 #else

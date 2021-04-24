@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-module Text.Collate.CombiningClass
+module Text.Collate.CanonicalCombiningClass
   ( canonicalCombiningClass )
 where
 import Text.Collate.UnicodeData (genCanonicalCombiningClassMap)
