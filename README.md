@@ -43,7 +43,7 @@ It doesn't seem to matter much what collation is used:
 ```
 
 Normalization accounts for about 15% of the run time,
-as we can see be turning it off:
+as we can see by turning it off:
 
 ```
   sort a list of 10000 random Texts (en-u-kk-false = no normalize):
