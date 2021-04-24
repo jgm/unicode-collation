@@ -24,6 +24,7 @@ main = do
   let tenThousand = take 10000 randomTexts
   let tenThousandSingletons = take 10000 randomSingletonTexts
   let tenThousandAscii = take 10000 randomAsciiTexts
+  let tenThousandLong = map ("A bcd efgh ijklmnop qrs tuv WxyZ" <>) tenThousand
   let icuCollator lang = ICU.collatorWith (ICU.Locale lang)
                           [NormalizationMode True, Strength Quaternary]
   defaultMain
@@ -45,5 +46,9 @@ main = do
         (whnf (sortBy (collate (collatorFor "en"))) tenThousandSingletons)
     , bench "sort same list with text-icu (en)"
         (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandSingletons)
+    , bench "sort a list of 10000 random Texts that agree in first 32 chars (en)"
+        (whnf (sortBy (collate (collatorFor "en"))) tenThousandLong)
+    , bench "sort same list with text-icu (en)"
+        (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLong)
     ]
 
