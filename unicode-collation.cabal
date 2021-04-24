@@ -72,10 +72,10 @@ library
   exposed-modules:     Text.Collate
                        Text.Collate.Lang
                        Text.Collate.Normalize
-                       Text.Collate.CanonicalCombiningClass
   other-modules:       Text.Collate.Trie
                        Text.Collate.Collation
                        Text.Collate.Collator
+                       Text.Collate.CanonicalCombiningClass
                        Text.Collate.TH
                        Text.Collate.Tailorings
                        Text.Collate.UnicodeData
