@@ -2,11 +2,12 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
 
--- | We define our own normalization instead of depending on
--- unicode-transforms, for two reasons:
--- (a) to reduce dependencies
--- (b) we need a lazy (streaming) normalization function for maximum
--- efficiency.
+-- | We define our own normalization function instead of depending on
+-- unicode-transforms, because we need a lazy (streaming) normalization
+-- function for maximum efficiency.  No point normalizing two whole 'Text's
+-- if we can see from the first few characters how they should be ordered.
+-- See <https://unicode.org/reports/tr15/> for a description of the algorithm
+-- implemented here.
 module Text.Collate.Normalize
   ( toNFD
   )
@@ -19,7 +20,7 @@ import Data.List (sortOn)
 canonicalDecompositionMap :: M.IntMap [Int]
 canonicalDecompositionMap = $(genCanonicalDecompositionMap)
 
--- | Normalize a list of code points to its canonical decomposition (NFD).
+-- | Lazily normalize a list of code points to its canonical decomposition (NFD).
 toNFD :: [Int] -> [Int]
 toNFD = rearrangeCombiningMarks . recursivelyDecompose
 

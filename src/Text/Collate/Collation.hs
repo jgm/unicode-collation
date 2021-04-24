@@ -1,7 +1,5 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveLift #-}
@@ -194,7 +192,8 @@ getCollationElements collation = go
                        -> (x : xs', rest)
                      | otherwise -> ([], x : xs)
              (unblockedNonStarters, is') = getUnblockedNonStarters 0 is
-             (elts', unblockedNonStarters') = extendMatch elts unblockedNonStarters subcollation
+             (elts', unblockedNonStarters') =
+               extendMatch elts unblockedNonStarters subcollation
              -- find the first unblocked non-starter that can extend
              -- the current match, also removing it from the code
              -- point list

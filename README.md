@@ -183,4 +183,7 @@ For usage instructions, `unicode-collate --help`.
 - Unicode Technical Standard #10:
   Unicode Collation Algorithm:
   <https://www.unicode.org/reports/tr10>
+- Unicode Technical Standard #215:
+  Unicode Normalization Forms:
+  <https://unicode.org/reports/tr15/>
 

@@ -20,7 +20,7 @@ main = do
   (randomSingletonTexts :: [Text]) <-
     generate (infiniteListOf (arbitrary `suchThat` (\t -> T.length t == 1)))
   (randomAsciiTexts :: [Text]) <-
-    generate (infiniteListOf (arbitrary `suchThat` (T.all isAscii)))
+    generate (infiniteListOf (arbitrary `suchThat` T.all isAscii))
   let tenThousand = take 10000 randomTexts
   let tenThousandSingletons = take 10000 randomSingletonTexts
   let tenThousandAscii = take 10000 randomAsciiTexts
