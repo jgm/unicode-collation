@@ -85,7 +85,6 @@ library
                      , binary
                      , text >= 1.2 && < 1.3
                      , parsec
-                     , filepath
 
   other-extensions:    TemplateHaskell
 
