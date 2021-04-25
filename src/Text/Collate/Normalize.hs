@@ -44,15 +44,14 @@ rearrangeCombiningMarks = go
       (xs, ys) -> (sortOn canonicalCombiningClass xs, ys)
 
 recursivelyDecompose :: [Int] -> [Int]
-recursivelyDecompose = go
-  where go [] = []
-        go (c:cs)
-          | c < 0xc0 = c : go cs
-          | isHangulSyllable c = decomposeHangulSyllable c (go cs)
+recursivelyDecompose = foldr go mempty
+  where go c
+          | c < 0xc0 = (c :)
+          | isHangulSyllable c = decomposeHangulSyllable c
           | otherwise =
               case M.lookup c canonicalDecompositionMap of
-                Nothing -> c : go cs
-                Just ds -> foldr (:) (go cs) (go ds)
+                Nothing -> (c :)
+                Just ds -> (\xs -> foldr go xs ds)
 
 -- | Hangul syllable range is AC00 - D7A3.
 isHangulSyllable :: Int -> Bool
