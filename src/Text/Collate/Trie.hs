@@ -14,6 +14,7 @@ module Text.Collate.Trie
   )
   where
 
+import Control.Monad (foldM)
 import qualified Data.IntMap as M
 import Data.Bifunctor (first)
 import Data.Binary (Binary(..))
@@ -24,7 +25,6 @@ import Data.Maybe (fromMaybe)
 #else
 import Data.Semigroup (Semigroup(..))
 #endif
--- import Debug.Trace
 
 data Trie a = Trie (Maybe a) (Maybe (M.IntMap (Trie a)))
   deriving (Show, Eq, Ord, Lift, Functor, Foldable, Traversable)
@@ -72,20 +72,27 @@ alter f (c:cs) (Trie mbv (Just m)) =
 alter f (c:cs) (Trie mbv Nothing) =
   Trie mbv (Just (M.insert c (alter f cs empty) mempty))
 
-matchLongestPrefix :: Trie a -> [Int] -> Maybe (a, [Int], Trie a)
-matchLongestPrefix = go Nothing
+type MatchState a = (Maybe (a, Int, Trie a), Int, Trie a)
+  -- best match so far, number of code points consumed, current subtrie
+
+-- returns Nothing for no match, or:
+-- Just (value, number of code points consumed, subtrie)
+matchLongestPrefix :: Trie a -> [Int] -> Maybe (a, Int, Trie a)
+matchLongestPrefix trie = either id getBest . foldM go (Nothing, 0, trie)
  where
-   go _ (Trie (Just x) mbm) [] = Just (x, [], Trie Nothing mbm)
-   go best (Trie Nothing  _) [] = best
-   go best (Trie mbv mbm) (c:cs) =
+   getBest (x,_,_) = x
+   -- Left means we've failed, Right means we're still pursuing a match
+   go :: MatchState a -> Int -> Either (Maybe (a, Int, Trie a)) (MatchState a)
+   go (best, consumed, Trie _ mbm) c =
      case mbm >>= M.lookup c of
-       Nothing ->
-         case mbv of
-           Nothing -> best
-           Just x  -> Just (x, c:cs, Trie Nothing mbm)
-       Just trie -> go (case mbv of
-                          Nothing -> best
-                          Just x  -> Just (x, c:cs, trie)) trie cs
+       -- char not matched: stop processing, return best so far:
+       Nothing -> Left best
+       -- char matched, with value: replace best, keep going:
+       Just subtrie@(Trie (Just x) _)
+               -> Right (Just (x, consumed + 1, subtrie), consumed + 1, subtrie)
+       -- char matched, but not value: keep best, keep going:
+       Just subtrie@(Trie Nothing _)
+               -> Right (best, consumed + 1, subtrie)
 
 -- | Return the sub-trie at the given branch if it exists and has a
 -- non-empty node

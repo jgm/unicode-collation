@@ -106,11 +106,11 @@ alterElements f codepoints (Collation trie) =
 -- see <http://www.unicode.org/reports/tr10/#Input_Matching>.)
 matchLongestPrefix :: Collation
                    -> [Int]
-                   -> Maybe ([CollationElement], [Int], Collation)
+                   -> Maybe ([CollationElement], Int, Collation)
 matchLongestPrefix (Collation trie) codepoints =
   case Trie.matchLongestPrefix trie codepoints of
     Nothing -> Nothing
-    Just (els, is, trie') -> Just (els, is, Collation trie')
+    Just (els, consumed, trie') -> Just (els, consumed, Collation trie')
 
 lookupNonEmptyChild :: Collation
                     -> Int
@@ -181,7 +181,8 @@ getCollationElements collation = go
   go (c:cs) =
     case matchLongestPrefix collation (c:cs) of
        Nothing -> calculateImplicitWeight c ++ go cs
-       Just (elts, is, subcollation) -> elts' ++ go (unblockedNonStarters' ++ is')
+       Just (elts, consumed, subcollation)
+               -> elts' ++ go (unblockedNonStarters' ++ is')
           where
              getUnblockedNonStarters _ [] = ([], [])
              getUnblockedNonStarters n (x:xs)
@@ -191,7 +192,8 @@ getCollationElements collation = go
                        (xs', rest) <- getUnblockedNonStarters ccc xs
                        -> (x : xs', rest)
                      | otherwise -> ([], x : xs)
-             (unblockedNonStarters, is') = getUnblockedNonStarters 0 is
+             (unblockedNonStarters, is') = getUnblockedNonStarters 0
+                                             (drop consumed (c:cs))
              (elts', unblockedNonStarters') =
                extendMatch elts unblockedNonStarters subcollation
              -- find the first unblocked non-starter that can extend
