@@ -97,6 +97,9 @@ alterElements :: (Maybe [CollationElement] -> Maybe [CollationElement])
 alterElements f codepoints (Collation trie) =
   Collation $ Trie.alter f codepoints trie
 
+{-# SPECIALIZE matchLongestPrefix
+  :: Collation -> [Int] -> Maybe ([CollationElement], Int, Collation) #-}
+
 -- | Find the longest matching prefix of a list of code points
 -- in the collation table. This may be a single code point or
 -- several (if contractions are defined).  Return the
@@ -104,8 +107,9 @@ alterElements f codepoints (Collation trie) =
 -- matched, and a "subcollation" which can be searched for further
 -- matches. (This is needed because of "discontiguous matches";
 -- see <http://www.unicode.org/reports/tr10/#Input_Matching>.)
-matchLongestPrefix :: Collation
-                   -> [Int]
+matchLongestPrefix :: Foldable t
+                   => Collation
+                   -> t Int
                    -> Maybe ([CollationElement], Int, Collation)
 matchLongestPrefix (Collation trie) codepoints =
   case Trie.matchLongestPrefix trie codepoints of

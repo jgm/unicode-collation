@@ -75,9 +75,10 @@ alter f (c:cs) (Trie mbv Nothing) =
 type MatchState a = (Maybe (a, Int, Trie a), Int, Trie a)
   -- best match so far, number of code points consumed, current subtrie
 
+{-# SPECIALIZE matchLongestPrefix :: Trie a -> [Int] -> Maybe (a, Int, Trie a) #-}
 -- returns Nothing for no match, or:
 -- Just (value, number of code points consumed, subtrie)
-matchLongestPrefix :: Trie a -> [Int] -> Maybe (a, Int, Trie a)
+matchLongestPrefix :: Foldable t => Trie a -> t Int -> Maybe (a, Int, Trie a)
 matchLongestPrefix trie = either id getBest . foldM go (Nothing, 0, trie)
  where
    getBest (x,_,_) = x
