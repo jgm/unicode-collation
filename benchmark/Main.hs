@@ -12,7 +12,6 @@ import Text.Collate
 import Test.QuickCheck.Instances.Text ()
 import Data.List (sortBy)
 import Data.Char (isAscii)
--- import Debug.Trace
 
 main :: IO ()
 main = do
@@ -22,11 +21,13 @@ main = do
   (randomAsciiTexts :: [Text]) <-
     generate (infiniteListOf (arbitrary `suchThat` T.all isAscii))
   let tenThousand = take 10000 randomTexts
+  let tenThousandString = map T.unpack tenThousand
   let tenThousandSingletons = take 10000 randomSingletonTexts
   let tenThousandAscii = take 10000 randomAsciiTexts
   let tenThousandLong = map ("A bcd efgh ijklmnop qrs tuv WxyZ" <>) tenThousand
   let icuCollator lang = ICU.collatorWith (ICU.Locale lang)
                           [NormalizationMode True, Strength Quaternary]
+  let collateString = collateWithUnpacker (collatorFor "en") id
   defaultMain
     [ bench "sort a list of 10000 random Texts (en)"
         (whnf (sortBy (collate (collatorFor "en"))) tenThousand)
@@ -36,6 +37,8 @@ main = do
         (whnf (sortBy (collate (collatorFor "zh"))) tenThousand)
     , bench "sort same list with text-icu (zh)"
         (whnf (sortBy (ICU.collate (icuCollator "zh"))) tenThousand)
+    , bench "sort a list of 10000 random Strings (en)"
+        (whnf (sortBy collateString) tenThousandString)
     , bench "sort a list of 10000 ASCII Texts (en)"
         (whnf (sortBy (collate (collatorFor "en"))) tenThousandAscii)
     , bench "sort same list with text-icu (en)"
@@ -51,4 +54,3 @@ main = do
     , bench "sort same list with text-icu (en)"
         (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLong)
     ]
-

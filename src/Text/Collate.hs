@@ -52,11 +52,8 @@ To sort a string type other than 'Text', the function 'collateWithUnpacker'
 may be used. It takes as a parameter a function that lazily unpacks the string
 type into a list of 'Char'.
 
->>> collateWithUnpacker "se" id ("ö" :: String) ("z" :: String)
-GT
->>> import qualified Data.ByteString.UTF8 as UTF8 -- from utf8-string
->>> let seCollate = collateWithUnpacker "se" UTF8.toString
->>> seCollate ("\195\182" :: UTF8.ByteString) ("z" :: UTF8.ByteString)
+>>> let seCollateString = collateWithUnpacker "se" id
+>>> seCollateString ("ö" :: String) ("z" :: String)
 GT
 
 Because 'Collator' and 'Lang' have 'IsString' instances, you can just specify
