@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 module Text.Collate.Collator
@@ -101,10 +102,11 @@ data Collator =
   Collator
   { -- | Compare two 'Text's
     collate               :: Text -> Text -> Ordering
+    -- | Compare two strings of any type that can be unpacked
+    -- lazily into a list of 'Char's.
+  , collateWithUnpacker   :: forall a. Eq a => (a -> [Char]) -> a -> a -> Ordering
     -- | The sort key used to compare a 'Text'
   , sortKey               :: Text -> SortKey
-    -- | The sort key used to compare a list of code points.
-  , sortKeyFromCodePoints :: [Int] -> SortKey
     -- | The options used for this 'Collator'
   , collatorOptions       :: CollatorOptions
     -- | The collation table used for this 'Collator'
@@ -253,8 +255,13 @@ mkCollator opts collation =
   Collator { collate = \x y -> if x == y  -- optimization
                                   then EQ
                                   else comparing sortKey' x y
+           , collateWithUnpacker
+                     = \unpack x y
+                            -> if x == y
+                                  then EQ
+                                  else comparing (sortKeyFromCodePoints' . map ord . unpack)
+                                         x y
            , sortKey = sortKey'
-           , sortKeyFromCodePoints = sortKeyFromCodePoints'
            , collatorOptions = opts
            , collatorCollation = collation
            }

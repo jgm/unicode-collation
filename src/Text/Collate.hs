@@ -48,13 +48,16 @@ SortKey [0x213C,0x0000,0x0020,0x002B,0x0000,0x0002,0x0002]
 >>> sortKey se "ö"
 SortKey [0x22FD,0x0000,0x0020,0x0000,0x0002]
 
-There is a also a function 'sortKeyFromCodePoints', which
-takes as input a list of (Int) code points rather than a 'Text'.
-These are assumed to be in NFD form already.  This may be useful
-for users who are sorting a type other than 'Text'.
+To sort a string type other than 'Text', the function 'collateWithUnpacker'
+may be used. It takes as a parameter a function that lazily unpacks the string
+type into a list of 'Char'.
 
->>> sortKeyFromCodePoints de [0x006F, 0x0308]
-SortKey [0x213C,0x0000,0x0020,0x002B,0x0000,0x0002,0x0002]
+>>> collateWithUnpacker "se" id ("ö" :: String) ("z" :: String)
+GT
+>>> import qualified Data.ByteString.UTF8 as UTF8 -- from utf8-string
+>>> let seCollate = collateWithUnpacker "se" UTF8.toString
+>>> seCollate ("\195\182" :: UTF8.ByteString) ("z" :: UTF8.ByteString)
+GT
 
 Because 'Collator' and 'Lang' have 'IsString' instances, you can just specify
 them using string literals, as in the above examples.  Note, however,
@@ -136,12 +139,12 @@ LT
 module Text.Collate
        ( Collator
        , collate
+       , collateWithUnpacker
        , collatorFor
        , collator
        , rootCollator
        , SortKey(..)
        , sortKey
-       , sortKeyFromCodePoints
        , renderSortKey
        , VariableWeighting(..)
        , CollatorOptions(..)
@@ -165,7 +168,7 @@ import Text.Collate.Collator
       setFrenchAccents,
       setVariableWeighting,
       rootCollator,
-      Collator(collate, sortKey, sortKeyFromCodePoints, collatorOptions),
+      Collator(collate, sortKey, collateWithUnpacker, collatorOptions),
       SortKey(..),
       CollatorOptions(..),
       collatorLang,
