@@ -39,9 +39,8 @@ factor of about 3:
 ```
 
 Performance is worse on a sample drawn from a smaller character
-set (so that there are more overlapping prefixes) and including
-predominantly composed accented letters, which mut be decomposed
-as part of the algorithm:
+set including predominantly composed accented letters, which mut
+be decomposed as part of the algorithm:
 
 ```
   sort a list of 10000 Texts (composed latin) (en):
