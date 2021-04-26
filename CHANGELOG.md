@@ -2,6 +2,56 @@
 
 `unicode-collation` uses [PVP Versioning](https://pvp.haskell.org).
 
+## 0.1.3
+
+* Add `collateWithUnpacker` (#4).  This allows the library to be
+  used with types other than Text.  Alternatively we could use a
+  typeclass such as mono-traversable, but this seems a lighter-weight
+  solution and keeps dependencies down.
+
+* Add Text.Collate.Normalize, exporting `toNFD`.  By doing our
+  own normalization, we avoid a dependency on unicode-transforms,
+  and we gain the ability to do normalization incrementally (lazily).
+  This is useful because in practice, the ordering of two
+  strings is very often decided on the basis of one or two
+  initial characters; normalizing the whole string is thus a
+  waste of time.
+
+* Improve benchmark suite, with more varied samples.
+
+* Remove dependency on bytestring-lexing; use Data.Text.Read
+  instead.
+
+* Add internal module Text.Collate.UnicodeData.
+  This generates unicode data from `data/UnicodeData.txt`.
+  Remove `data/DerivedCombiningClass.txt`, which is no longer
+  needed. to get canonical combining class data.
+
+* Remove dependency on filepath.
+
+* Fix getCollationElements behaviour with discontiguous matches
+  (Christian Despres, #5).  The getCollationElements function
+  now implements a more or less exact translation of section
+  S2.1 of the main UCA algorithm. Since DUCET does not satisfy
+  well-formedness condition 5, that function cannot rearrange
+  the unblocked non-starters as it was doing previously.  We now
+  pass all conformance tests.
+
+* Unit test: skip conformance tests that yield invalid code
+  points, as allowed by the spec (#6).  "Implementations that do
+  not weight surrogate code points the same way as reserved code
+  points may filter out such lines lines in the test cases,
+  before testing for conformance." Uncomment the commented-out
+  lines in the collation tests.
+
+* Rename internal CombiningClass module -> CanonicalCombiningClass.
+
+* Generalize matchLongestPrefix to Foldable.
+  Rewrite matchLongestPrefix using foldM for clarity.
+
+* Rewrite recursivelyDecompose using a fold.
+
+
 ## 0.1.2
 
 * API change: Expose `collatorOptions` and `CollatorOptions`.
