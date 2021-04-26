@@ -40,8 +40,12 @@ rearrangeCombiningMarks = go
                (marks, rest) -> foldr (:) (go rest) marks
   reorderMarks zs =
     case break (\z -> canonicalCombiningClass z == 0) zs of
-      ([], ys) -> ([], ys)
-      (xs, ys) -> (sortOn canonicalCombiningClass xs, ys)
+      ([], ys)  -> ([], ys)
+      ([x], ys) -> ([x], ys)
+      ([x1,x2], ys)
+        | x1 <= x2  -> ([x1,x2], ys)
+        | otherwise -> ([x2,x1], ys)
+      (xs, ys)  -> (sortOn canonicalCombiningClass xs, ys)
 
 recursivelyDecompose :: [Int] -> [Int]
 recursivelyDecompose = foldr go mempty

@@ -33,9 +33,9 @@ factor of about 3:
 
 ```
   sort a list of 10000 random Texts (en):
-    6.0 ms ± 580 μs,  22 MB allocated, 911 KB copied
+    5.9 ms ± 487 μs,  22 MB allocated, 899 KB copied
   sort same list with text-icu (en):
-    2.1 ms ± 122 μs, 7.1 MB allocated, 149 KB copied
+    2.1 ms ±  87 μs, 7.1 MB allocated, 148 KB copied
 ```
 
 Performance is worse on a sample drawn from a smaller character
@@ -44,9 +44,9 @@ be decomposed as part of the algorithm:
 
 ```
   sort a list of 10000 Texts (composed latin) (en):
-     15 ms ± 1.1 ms,  40 MB allocated, 921 KB copied
+     12 ms ± 1.1 ms,  34 MB allocated, 910 KB copied
   sort same list with text-icu (en):
-    2.3 ms ± 212 μs, 6.9 MB allocated, 140 KB copied
+    2.3 ms ±  56 μs, 7.0 MB allocated, 146 KB copied
 ```
 
 Much of the impact here comes from normalization (decomposition).
@@ -55,16 +55,16 @@ in the collator, it's much faster:
 
 ```
   sort same list but pre-normalized (en-u-kk-false):
-    5.7 ms ± 508 μs,  19 MB allocated, 887 KB copied
+    5.4 ms ± 168 μs,  19 MB allocated, 909 KB copied
 ```
 
 On plain ASCII, we get a factor of 3 again:
 
 ```
   sort a list of 10000 ASCII Texts (en):
-    4.3 ms ±  66 μs,  16 MB allocated, 892 KB copied
+    4.6 ms ± 405 μs,  17 MB allocated, 880 KB copied
   sort same list with text-icu (en):
-    1.4 ms ± 107 μs, 6.2 MB allocated, 140 KB copied
+    1.6 ms ± 114 μs, 6.2 MB allocated, 130 KB copied
 ```
 
 Note that this library does incremental normalization,
@@ -76,9 +76,9 @@ the first 32 characters:
 
 ```
   sort a list of 10000 random Texts that agree in first 32 chars:
-    118 ms ± 8.2 ms, 430 MB allocated, 713 KB copied
+    116 ms ± 8.6 ms, 430 MB allocated, 710 KB copied
   sort same list with text-icu (en):
-    3.0 ms ± 226 μs, 8.8 MB allocated, 222 KB copied
+    3.2 ms ± 251 μs, 8.8 MB allocated, 222 KB copied
 ```
 
 However, in the special case where the texts are identical,
@@ -87,7 +87,7 @@ is very fast:
 
 ```
   sort a list of 10000 identical Texts (en):
-    911 μs ±  34 μs, 468 KB allocated,  10 KB copied
+    877 μs ±  54 μs, 462 KB allocated, 9.7 KB copied
 ```
 
 ## Localized collations
