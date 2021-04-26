@@ -46,10 +46,10 @@
 
 * Rename internal CombiningClass module -> CanonicalCombiningClass.
 
-* Generalize matchLongestPrefix to Foldable.
-  Rewrite matchLongestPrefix using foldM for clarity.
+* Generalize `matchLongestPrefix` to `Foldable`.
+  Rewrite using `foldM` for clarity.
 
-* Rewrite recursivelyDecompose using a fold.
+* Rewrite `recursivelyDecompose` using a fold.
 
 
 ## 0.1.2
