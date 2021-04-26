@@ -273,10 +273,9 @@ mkCollator opts collation =
       mkSortKey opts
     . handleVariable (optVariableWeighting opts)
     . getCollationElements collation
-    . \cps ->
-        if optNormalize opts -- && not (isNFD cps)
-           then toNFD cps
-           else cps
+    . if optNormalize opts
+         then toNFD
+         else id
 
 handleVariable :: VariableWeighting -> [CollationElement] -> [CollationElement]
 handleVariable NonIgnorable = id
