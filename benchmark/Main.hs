@@ -40,7 +40,7 @@ main = do
         (whnf (sortBy (collate (collatorFor "en"))) tenThousandLatin)
     , bench "sort same list with text-icu (en)"
         (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLatin)
-    , bench "sort a list of 10000 Texts (normalized latin) (en-u-kk-false)"
+    , bench "sort same list but pre-normalized (en-u-kk-false)"
         (whnf (sortBy (collate (collatorFor "en-u-kk-false"))) tenThousandLatinNFD)
     , bench "sort a list of 10000 ASCII Texts (en)"
         (whnf (sortBy (collate (collatorFor "en"))) tenThousandAscii)
