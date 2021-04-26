@@ -24,40 +24,71 @@ Localized collations have not been tested as extensively.
 
 ## Performance
 
-Performance is generally about 2.8 times slower than `text-icu`:
+As might be expected, this library is slower than `text-icu`,
+which wraps a heavily optimized C library.  How much slower
+depends quite a bit on the input.
+
+On a sample of ten thousand random Unicode strings, we get a
+factor of about 3:
 
 ```
   sort a list of 10000 random Texts (en):
-    5.8 ms ± 540 μs,  21 MB allocated, 899 KB copied
+    6.0 ms ± 580 μs,  22 MB allocated, 911 KB copied
   sort same list with text-icu (en):
-    2.1 ms ± 124 μs, 7.1 MB allocated, 149 KB copied
+    2.1 ms ± 122 μs, 7.1 MB allocated, 149 KB copied
 ```
 
-It doesn't seem to matter much what collation is used:
+Performance is worse on a sample drawn from a smaller character
+set (so that there are more overlapping prefixes) and including
+predominantly composed accented letters, which mut be decomposed
+as part of the algorithm:
 
 ```
-  sort a list of 10000 random Texts (zh):
-    5.9 ms ± 436 μs,  21 MB allocated, 900 KB copied
-  sort same list with text-icu (zh):
-    2.3 ms ± 214 μs, 7.1 MB allocated, 147 KB copied
-```
-
-Normalization accounts for about 15% of the run time,
-as we can see by turning it off:
-
-```
-  sort a list of 10000 random Texts (en-u-kk-false = no normalize):
-    4.9 ms ± 226 μs,  17 MB allocated, 883 KB copied
-```
-
-Performance is much worse in relation to `text-icu` when we
-need to sort strings that have a long common initial segment:
-
-```
-  sort a list of 10000 random Texts that agree in first 32 chars (en):
-    102 ms ± 7.1 ms, 402 MB allocated, 703 KB copied
+  sort a list of 10000 Texts (composed latin) (en):
+     15 ms ± 1.1 ms,  40 MB allocated, 921 KB copied
   sort same list with text-icu (en):
-    3.0 ms ± 240 μs, 8.8 MB allocated, 251 KB copied
+    2.3 ms ± 212 μs, 6.9 MB allocated, 140 KB copied
+```
+
+Much of the impact here comes from normalization (decomposition).
+If we use a pre-normalized sample and disable normalization
+in the collator, it's much faster:
+
+```
+  sort same list but pre-normalized (en-u-kk-false):
+    5.7 ms ± 508 μs,  19 MB allocated, 887 KB copied
+```
+
+On plain ASCII, we get a factor of 3 again:
+
+```
+  sort a list of 10000 ASCII Texts (en):
+    4.3 ms ±  66 μs,  16 MB allocated, 892 KB copied
+  sort same list with text-icu (en):
+    1.4 ms ± 107 μs, 6.2 MB allocated, 140 KB copied
+```
+
+Note that this library does incremental normalization,
+so when strings can mostly be distinguished on the basis
+of the first two characters, as in the first sample, the
+impact is much less.  On the other hand, performance is
+much slower on a sample of texts which differ only after
+the first 32 characters:
+
+```
+  sort a list of 10000 random Texts that agree in first 32 chars:
+    118 ms ± 8.2 ms, 430 MB allocated, 713 KB copied
+  sort same list with text-icu (en):
+    3.0 ms ± 226 μs, 8.8 MB allocated, 222 KB copied
+```
+
+However, in the special case where the texts are identical,
+the algorithm can be short-circuited entirely and sorting
+is very fast:
+
+```
+  sort a list of 10000 identical Texts (en):
+    911 μs ±  34 μs, 468 KB allocated,  10 KB copied
 ```
 
 ## Localized collations

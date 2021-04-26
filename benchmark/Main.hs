@@ -50,6 +50,8 @@ main = do
         (whnf (sortBy (collate (collatorFor "en"))) tenThousandLong)
     , bench "sort same list with text-icu (en)"
         (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLong)
+    , bench "sort a list of 10000 identical Texts (en)"
+        (whnf (sortBy collateString) (replicate 10000 "ḀḁḂḃḄḅḆḇḈḉḊḋḌḍḎḏḐḑḒḓḔ"))
     , bench "sort a list of 10000 random Strings (en)"
         (whnf (sortBy collateString) tenThousandString)
     ]
