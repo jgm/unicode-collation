@@ -2,6 +2,12 @@
 
 `unicode-collation` uses [PVP Versioning](https://pvp.haskell.org).
 
+## 0.1.3.1
+
+  * Allow base 4.16 (so the library can compile with ghc 9.2).
+
+  * Micro-optimization in normalize; update benchmarks.
+
 ## 0.1.3
 
 * Add `collateWithUnpacker` (#4).  This allows the library to be
