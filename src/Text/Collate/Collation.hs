@@ -266,8 +266,7 @@ calculateImplicitWeight cp =
       | otherwise
         -> (0xFBC0 + (cp `shiftR` 15), (cp .&. 0x7FFFF) .|. 0x8000)
 
--- | Parse a 'Collation' from a 'ByteString' in the format of
--- @allkeys.txt@.
+-- | Parse a 'Collation' from a Text in the format of @allkeys.txt@.
 parseCollation :: Text -> Collation
 parseCollation = foldl' processLine mempty . T.lines
  where
