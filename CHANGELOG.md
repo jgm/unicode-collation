@@ -2,6 +2,10 @@
 
 `unicode-collation` uses [PVP Versioning](https://pvp.haskell.org).
 
+## 0.1.3.2
+
+  * Allow text 2.0.
+
 ## 0.1.3.1
 
   * Allow base 4.16 (so the library can compile with ghc 9.2).
