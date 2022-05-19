@@ -84,7 +84,7 @@ library
                      , th-lift-instances
                      , containers
                      , binary
-                     , text >= 1.2 && < 1.3
+                     , text >= 1.2 && < 2.1
                      , parsec
 
   other-extensions:    TemplateHaskell
