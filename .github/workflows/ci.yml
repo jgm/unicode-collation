@@ -15,7 +15,7 @@ jobs:
 
     runs-on: ubuntu-18.04
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         versions:
           - ghc: '8.0.2'
@@ -43,13 +43,18 @@ jobs:
             prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
-          - ghc: '8.10.2'
+          - ghc: '8.10.7'
             cabal: '3.2'
             prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '9.0.1'
             cabal: '3.4'
+            prefix: ''
+            cabalopts: '-fdoctests --write-ghc-environment-files=always'
+            testopts: '--test-option=--hide-successes'
+          - ghc: '9.2.2'
+            cabal: '3.6'
             prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
@@ -60,12 +65,10 @@ jobs:
     - name: Install numa
       run: sudo apt-get install libnuma-dev
 
-    # need to install older cabal/ghc versions from ppa repository
-    - name: Install recent cabal/ghc
-      uses: haskell/actions/setup@v1
-      with:
-        ghc-version: ${{ matrix.versions.ghc }}
-        cabal-version: ${{ matrix.versions.cabal }}
+    - name: Install ghc/cabal
+      run: |
+        ghcup install ghc --set ${{ matrix.versions.ghc }}
+        ghcup install cabal ${{ matrix.versions.cabal }}
 
     # declare/restore cached things
     # caching doesn't work for scheduled runs yet
@@ -129,7 +132,7 @@ jobs:
 
     runs-on: macOS-10.15
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         versions:
           - ghc: '8.8.4'
@@ -168,7 +171,7 @@ jobs:
 
     runs-on: ubuntu-18.04
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         versions:
           - ghc: '8.10.2'
