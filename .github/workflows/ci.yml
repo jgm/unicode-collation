@@ -18,16 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         versions:
-          - ghc: '8.0.2'
-            cabal: '3.2'
-            prefix: ''
-            cabalopts: ''
-            testopts: '--test-option=--hide-successes'
-          - ghc: '8.2.2'
-            cabal: '3.2'
-            prefix: ''
-            cabalopts: ''
-            testopts: '--test-option=--hide-successes'
           - ghc: '8.4.4'
             cabal: '3.2'
             prefix: ''
