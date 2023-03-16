@@ -2,6 +2,10 @@
 
 `unicode-collation` uses [PVP Versioning](https://pvp.haskell.org).
 
+## 0.1.3.4
+
+  + Allow base 4.18.
+
 ## 0.1.3.3
 
   + Allow base 4.17.  Closes #12.
