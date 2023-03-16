@@ -135,8 +135,8 @@ jobs:
       fail-fast: false
       matrix:
         versions:
-          - ghc: '8.8.4'
-            cabal: '3.2'
+          - ghc: '9.6'
+            cabal: '3.10'
 
     steps:
     - uses: actions/checkout@v2
@@ -174,12 +174,8 @@ jobs:
       fail-fast: false
       matrix:
         versions:
-          - ghc: '8.10'
-            cabal: '3.8'
-          - ghc: '9.4'
-            cabal: '3.8'
           - ghc: '9.6'
-            cabal: '3.8'
+            cabal: '3.10'
     steps:
     - uses: actions/checkout@v2
 
