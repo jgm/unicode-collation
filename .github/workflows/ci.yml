@@ -101,16 +101,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    # We should have ghc 8.10, cabal, stack pre-installed
-    # - uses: haskell/actions/setup@v1
-    #   with:
-    #     enable-stack: true
-    #     stack-version: 'latest'
-
-    # declare/restore cached things
-    # caching doesn't work for scheduled runs yet
-    # https://github.com/actions/cache/issues/63
-
     - name: Cache stack global package db
       id:   stack-global-package-db
       uses: actions/cache@v2
@@ -141,11 +131,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install recent cabal/ghc
-      uses: haskell/actions/setup@v1
-      with:
-        ghc-version: ${{ matrix.versions.ghc }}
-        cabal-version: ${{ matrix.versions.cabal }}
+    - name: Install ghc/cabal
+      run: |
+        ghcup install ghc --set ${{ matrix.versions.ghc }}
+        ghcup install cabal ${{ matrix.versions.cabal }}
 
     - name: Cache cabal global package db
       id:   cabal-global
@@ -182,11 +171,10 @@ jobs:
     - name: Install icu
       run: sudo apt-get install libicu-dev
 
-    - name: Install recent cabal/ghc
-      uses: haskell/actions/setup@v1
-      with:
-        ghc-version: ${{ matrix.versions.ghc }}
-        cabal-version: ${{ matrix.versions.cabal }}
+    - name: Install ghc/cabal
+      run: |
+        ghcup install ghc --set ${{ matrix.versions.ghc }}
+        ghcup install cabal ${{ matrix.versions.cabal }}
 
     - name: Cache cabal global package db
       id:   cabal-global
