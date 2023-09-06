@@ -120,7 +120,7 @@ jobs:
 
   macos:
 
-    runs-on: macOS-latest
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
