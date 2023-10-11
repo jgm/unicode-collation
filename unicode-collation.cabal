@@ -48,7 +48,7 @@ flag executable
   Default:             False
 
 common common-options
-  build-depends:       base >= 4.11 && < 4.19
+  build-depends:       base >= 4.11 && < 4.20
 
   ghc-options:         -Wall
                        -Wcompat
