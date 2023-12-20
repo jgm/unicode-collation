@@ -2,17 +2,21 @@
 
 `unicode-collation` uses [PVP Versioning](https://pvp.haskell.org).
 
+## 0.1.3.6
+
+  * Update to build with GHC 9.8 (Laurent P. René de Cotret).
+
 ## 0.1.3.5
 
-  + Allow text 2.1.
+  * Allow text 2.1.
 
 ## 0.1.3.4
 
-  + Allow base 4.18.
+  * Allow base 4.18.
 
 ## 0.1.3.3
 
-  + Allow base 4.17.  Closes #12.
+  * Allow base 4.17.  Closes #12.
 
 ## 0.1.3.2
 
