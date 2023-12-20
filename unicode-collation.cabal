@@ -144,7 +144,7 @@ benchmark benchmark
   build-depends:       tasty-bench
                      , unicode-collation
                      , text
-                     , text-icu
+                     , text-icu >= 0.8
                      , quickcheck-instances
                      , QuickCheck
   ghc-options:         -rtsopts -with-rtsopts=-A8m
