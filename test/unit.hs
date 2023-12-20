@@ -171,7 +171,7 @@ conformanceTestsFor weighting fp = do
                      [] -> return ()
                      es -> assertFailure (unlines es))
          $ map (conformanceTestWith coll)
-              (zip3 (map fst xs) (map snd xs) (tail (map snd xs)))
+              (zip3 (map fst xs) (map snd xs) (drop 1 (map snd xs)))
 
 conformanceTestWith :: Collator -> (Int, Text, Text) -> Either String ()
 conformanceTestWith coll (lineNo, txt1, txt2) =
