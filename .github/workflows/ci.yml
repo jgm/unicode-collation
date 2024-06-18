@@ -143,6 +143,7 @@ jobs:
 
     - name: Install ghc/cabal
       run: |
+        brew install ghcup
         ghcup install ghc --set ${{ matrix.versions.ghc }}
         ghcup install cabal ${{ matrix.versions.cabal }}
 
