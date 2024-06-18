@@ -141,9 +141,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install ghc/cabal
+    - name: Install ghcup
       run: |
         brew install ghcup
+        echo "$HOME/.ghcup/bin" >> $GITHUB_PATH
+
+    - name: Install ghc/cabal
+      run: |
         ghcup install ghc --set ${{ matrix.versions.ghc }}
         ghcup install cabal ${{ matrix.versions.cabal }}
 
