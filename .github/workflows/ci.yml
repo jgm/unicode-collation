@@ -20,57 +20,46 @@ jobs:
         versions:
           - ghc: '8.4'
             cabal: '3.2'
-            prefix: ''
             cabalopts: ''
             testopts: '--test-option=--hide-successes'
           - ghc: '8.6'
             cabal: '3.2'
-            prefix: ''
             cabalopts: ''
             testopts: '--test-option=--hide-successes'
           - ghc: '8.8'
             cabal: '3.2'
-            prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '8.10'
             cabal: '3.2'
-            prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '9.0'
             cabal: '3.4'
-            prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '9.2'
             cabal: '3.6'
-            prefix: ''
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '9.4'
             cabal: '3.8'
-            prefix: ''
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '9.6'
             cabal: '3.10'
-            prefix: ''
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '9.8'
             cabal: '3.10'
-            prefix: ''
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '9.10'
             cabal: '3.10'
-            prefix: ''
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
           - ghc: '9.12'
             cabal: '3.14'
-            prefix: ''
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
     steps:
@@ -99,15 +88,15 @@ jobs:
 
     - name: Install dependencies
       run: |
-          cabal ${{ matrix.versions.prefix }}update
-          cabal ${{ matrix.versions.prefix }}build ${{ matrix.versions.cabalopts }} --dependencies-only --enable-tests --disable-optimization
+          cabal update
+          cabal build ${{ matrix.versions.cabalopts }} --dependencies-only --enable-tests --disable-optimization
 
     - name: Build and test
       run: |
-          cabal ${{ matrix.versions.prefix }}build ${{ matrix.versions.cabalopts }} --enable-tests --disable-optimization 2>&1 | tee build.log
+          cabal build ${{ matrix.versions.cabalopts }} --enable-tests --disable-optimization 2>&1 | tee build.log
           # fail if warnings in local build
           ! grep -q ": *[Ww]arning:" build.log || exit 1
-          cabal ${{ matrix.versions.prefix }}test ${{ matrix.versions.cabalopts }} --disable-optimization ${{ matrix.versions.testopts }}
+          cabal test ${{ matrix.versions.cabalopts }} --disable-optimization ${{ matrix.versions.testopts }}
 
   windows:
 
