@@ -68,6 +68,11 @@ jobs:
             prefix: ''
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+          - ghc: '9.12'
+            cabal: '3.14'
+            prefix: ''
+            cabalopts: '-f-doctests --write-ghc-environment-files=always'
+            testopts: '--test-option=--hide-successes'
     steps:
     - uses: actions/checkout@v4
 
