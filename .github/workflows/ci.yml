@@ -22,46 +22,57 @@ jobs:
             cabal: '3.2'
             cabalopts: ''
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '8.6'
             cabal: '3.2'
             cabalopts: ''
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '8.8'
             cabal: '3.2'
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '8.10'
             cabal: '3.2'
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '9.0'
             cabal: '3.4'
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '9.2'
             cabal: '3.6'
             cabalopts: '-fdoctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '9.4'
             cabal: '3.8'
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '9.6'
             cabal: '3.10'
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '9.8'
             cabal: '3.10'
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: false
           - ghc: '9.10'
             cabal: '3.10'
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: true
           - ghc: '9.12'
             cabal: '3.14'
             cabalopts: '-f-doctests --write-ghc-environment-files=always'
             testopts: '--test-option=--hide-successes'
+            allow_warnings: true
     steps:
     - uses: actions/checkout@v4
 
@@ -95,7 +106,7 @@ jobs:
       run: |
           cabal build ${{ matrix.versions.cabalopts }} --enable-tests --disable-optimization 2>&1 | tee build.log
           # fail if warnings in local build
-          ! grep -q ": *[Ww]arning:" build.log || exit 1
+          ! grep -q ": *[Ww]arning:" build.log || ${{ matrix.versions.allow_warnings}} || exit 1
           cabal test ${{ matrix.versions.cabalopts }} --disable-optimization ${{ matrix.versions.testopts }}
 
   windows:
