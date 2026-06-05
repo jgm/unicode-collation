@@ -36,31 +36,31 @@ main = do
   let collateString = collateWithUnpacker (collatorFor "en") id
   defaultMain
     [ bench "sort a list of 10000 random Texts (en)"
-        (whnf (sortBy (collate (collatorFor "en"))) tenThousand)
+        (nf (sortBy (collate (collatorFor "en"))) tenThousand)
     , bench "sort same list with text-icu (en)"
-        (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousand)
+        (nf (sortBy (ICU.collate (icuCollator "en"))) tenThousand)
     , bench "sort a list of 10000 Texts (composed latin) (en)"
-        (whnf (sortBy (collate (collatorFor "en"))) tenThousandLatin)
+        (nf (sortBy (collate (collatorFor "en"))) tenThousandLatin)
     , bench "sort same list with text-icu (en)"
-        (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLatin)
+        (nf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLatin)
     , bench "sort same list but pre-normalized (en-u-kk-false)"
-        (whnf (sortBy (collate (collatorFor "en-u-kk-false"))) tenThousandLatinNFD)
+        (nf (sortBy (collate (collatorFor "en-u-kk-false"))) tenThousandLatinNFD)
     , bench "sort a list of 10000 CJK Texts (en, implicit weights)"
-        (whnf (sortBy (collate (collatorFor "en"))) tenThousandCJK)
+        (nf (sortBy (collate (collatorFor "en"))) tenThousandCJK)
     , bench "sort same CJK list with text-icu (en)"
-        (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandCJK)
+        (nf (sortBy (ICU.collate (icuCollator "en"))) tenThousandCJK)
     , bench "sort a list of 10000 ASCII Texts (en)"
-        (whnf (sortBy (collate (collatorFor "en"))) tenThousandAscii)
+        (nf (sortBy (collate (collatorFor "en"))) tenThousandAscii)
     , bench "sort same list with text-icu (en)"
-        (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandAscii)
+        (nf (sortBy (ICU.collate (icuCollator "en"))) tenThousandAscii)
     , bench "sort a list of 10000 random Texts that agree in first 32 chars"
-        (whnf (sortBy (collate (collatorFor "en"))) tenThousandLong)
+        (nf (sortBy (collate (collatorFor "en"))) tenThousandLong)
     , bench "sort same list with text-icu (en)"
-        (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLong)
+        (nf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLong)
     , bench "sort a list of 10000 identical Texts (en)"
-        (whnf (sortBy collateString) (replicate 10000 "ḀḁḂḃḄḅḆḇḈḉḊḋḌḍḎḏḐḑḒḓḔ"))
+        (nf (sortBy collateString) (replicate 10000 "ḀḁḂḃḄḅḆḇḈḉḊḋḌḍḎḏḐḑḒḓḔ"))
     , bench "sort a list of 10000 random Strings (en)"
-        (whnf (sortBy collateString) tenThousandString)
+        (nf (sortBy collateString) tenThousandString)
     ]
 
 -- A mix of CJK ideographs, all of which are assigned implicit weights
