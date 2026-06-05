@@ -21,11 +21,13 @@ import qualified Data.ByteString.Char8 as B8
 main :: IO ()
 main = do
   conformanceTree <- conformanceTests
-  defaultMain (tests conformanceTree)
+  coverageTree <- implicitWeightCoverageTests
+  defaultMain (tests conformanceTree coverageTree)
 
-tests :: TestTree -> TestTree
-tests conformanceTree = testGroup "Tests"
+tests :: TestTree -> TestTree -> TestTree
+tests conformanceTree coverageTree = testGroup "Tests"
   [ conformanceTree
+  , coverageTree
   , testCase "Sorting test 1" $
     sortBy (collate ourCollator) ["hi", "hit", "hít", "hat", "hot",
                        "naïve", "nag", "name"] @?=
@@ -172,6 +174,87 @@ conformanceTestsFor weighting fp = do
                      es -> assertFailure (unlines es))
          $ map (conformanceTestWith coll)
               (zip3 (map fst xs) (map snd xs) (drop 1 (map snd xs)))
+
+-- | Guard against the hand-coded ideograph ranges in
+-- 'Text.Collate.Collation' (used by 'calculateImplicitWeight') drifting
+-- out of sync with the shipped Unicode data.  Every code point that the
+-- data marks as an ideograph must receive an /ideographic/ implicit
+-- primary weight; anything not covered by the hand-coded ranges falls to
+-- the generic unassigned bucket at @0xFBC0@ and beyond.  We enumerate the
+-- full set (not just range endpoints) so that adding a new ideograph block
+-- to the data without updating the ranges is caught.
+--
+-- Sources of truth, both in the shipped data:
+--
+--   * @\@implicitweights@ directives in @data\/allkeys.txt@
+--     (Tangut, Nushu, Khitan -> 0xFB00..0xFB02)
+--   * @\<... Ideograph ..., First\/Last\>@ markers in
+--     @data\/UnicodeData.txt@ (CJK Unified + extensions -> 0xFB40\/0xFB80)
+implicitWeightCoverageTests :: IO TestTree
+implicitWeightCoverageTests = do
+  putStrLn "Loading implicit-weight coverage data..."
+  allkeys <- B8.readFile "data/allkeys.txt"
+  ucd     <- B8.readFile "data/UnicodeData.txt"
+  let ranges = implicitWeightDirectives allkeys ++ ideographRanges ucd
+      cps    = concatMap (\(lo, hi) -> [lo .. hi]) ranges
+  return $ testCase "Implicit weights cover all ideographs in shipped data" $
+    case [ (cp, w) | cp <- cps, let w = implicitPrimary cp, w >= 0xFBC0 ] of
+      []  -> return ()
+      bad -> assertFailure $
+               "Code points marked as ideographs in the data receive the "
+            ++ "generic\n(>= 0xFBC0) implicit weight; the hand-coded ranges "
+            ++ "in\nText.Collate.Collation are stale (" ++ show (length bad)
+            ++ " affected):\n"
+            ++ unlines [ printf "  U+%05X -> primary %04X" cp w
+                       | (cp, w) <- take 40 bad ]
+
+-- | Primary weight assigned to a single code point (head of its sort key).
+implicitPrimary :: Int -> Int
+implicitPrimary cp =
+  case sortKey rootCollator (T.singleton (chr cp)) of
+    SortKey (w : _) -> fromIntegral w
+    SortKey []      -> 0
+
+-- | Parse the @\@implicitweights LO..HI; WEIGHT@ directives from
+-- @allkeys.txt@ into inclusive code-point ranges.
+implicitWeightDirectives :: B8.ByteString -> [(Int, Int)]
+implicitWeightDirectives = mapMaybe parseLine . B8.lines
+ where
+  parseLine ln =
+    let t = TE.decodeLatin1 ln
+     in if "@implicitweights" `T.isPrefixOf` t
+           then dotRange (T.takeWhile (/= ';') (T.drop 16 t))
+           else Nothing
+  dotRange t =
+    case T.splitOn ".." (T.strip t) of
+      [a, b] -> (,) <$> hexInt a <*> hexInt b
+      _      -> Nothing
+
+-- | Parse the @\<... Ideograph ..., First\/Last\>@ range markers from
+-- @UnicodeData.txt@ into inclusive code-point ranges.
+ideographRanges :: B8.ByteString -> [(Int, Int)]
+ideographRanges = pairUp . mapMaybe marker . B8.lines
+ where
+  marker ln =
+    case T.splitOn ";" (TE.decodeLatin1 ln) of
+      (cpF : nameF : _)
+        | "Ideograph" `T.isInfixOf` nameF
+        , Just cp <- hexInt cpF
+        -> if      ", First>" `T.isSuffixOf` nameF then Just (cp, False)
+           else if ", Last>"  `T.isSuffixOf` nameF then Just (cp, True)
+           else Nothing
+      _ -> Nothing
+  pairUp ((lo, False) : (hi, True) : rest) = (lo, hi) : pairUp rest
+  pairUp (_ : rest)                        = pairUp rest
+  pairUp []                                = []
+
+-- | Parse a (possibly space-padded) hexadecimal integer, requiring that it
+-- consume the whole input.
+hexInt :: Text -> Maybe Int
+hexInt t =
+  case TR.hexadecimal (T.strip t) of
+    Right (n, rest) | T.null (T.strip rest) -> Just n
+    _                                       -> Nothing
 
 conformanceTestWith :: Collator -> (Int, Text, Text) -> Either String ()
 conformanceTestWith coll (lineNo, txt1, txt2) =
