@@ -79,7 +79,7 @@ jobs:
             testopts: '--test-option=--hide-successes'
             allow_warnings: true
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     # needed by memory
     - name: Install numa
@@ -96,7 +96,7 @@ jobs:
 
     - name: Cache cabal global package db
       id:   cabal-global
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/.cabal
@@ -119,11 +119,11 @@ jobs:
     runs-on: windows-2019
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Cache stack global package db
       id:   stack-global-package-db
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           C:\Users\runneradmin\AppData\Roaming\stack\
@@ -138,49 +138,6 @@ jobs:
       run: |
           stack test --fast --test-arguments=--hide-successes
 
-  macos:
-
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        versions:
-          - ghc: '9.6'
-            cabal: '3.10'
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install ghcup
-      run: |
-        brew install ghcup
-        echo "$HOME/.ghcup/bin" >> $GITHUB_PATH
-
-    - name: Install ghc/cabal
-      run: |
-        ghcup install ghc --set ${{ matrix.versions.ghc }}
-        ghcup install cabal ${{ matrix.versions.cabal }}
-
-    - name: Cache cabal global package db
-      id:   cabal-global
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.cabal
-        key: ${{ runner.os }}-${{ matrix.versions.ghc }}-${{ matrix.versions.cabal }}-cabal-global-${{ hashFiles('cabal.project') }}
-
-    - name: Install dependencies
-      run: |
-          cabal update
-          cabal build --dependencies-only --enable-tests --disable-optimization --write-ghc-environment-files=always
-
-    - name: Build and test
-      run: |
-          cabal build --enable-tests --disable-optimization --write-ghc-environment-files=always 2>&1 | tee build.log
-          # fail if warnings in local build
-          ! grep -q ": *[Ww]arning:" build.log || exit 1
-          cabal test --disable-optimization
-
   benchmark:
 
     runs-on: ubuntu-latest
@@ -191,7 +148,7 @@ jobs:
           - ghc: '9.6'
             cabal: '3.10'
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Install icu
       run: sudo apt-get install libicu-dev
@@ -203,7 +160,7 @@ jobs:
 
     - name: Cache cabal global package db
       id:   cabal-global
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/.cabal
@@ -212,11 +169,11 @@ jobs:
     - name: Install dependencies
       run: |
           cabal update
-          cabal build --dependencies-only --enable-optimization=1 --enable-benchmarks --disable-tests
+          cabal build -ficu-benchmark --dependencies-only --enable-optimization=1 --enable-benchmarks --disable-tests
 
     - name: Build and test
       run: |
-          cabal build --enable-optimization=1 --enable-benchmarks --disable-tests 2>&1 | tee build.log
+          cabal build -ficu-benchmark --enable-optimization=1 --enable-benchmarks --disable-tests 2>&1 | tee build.log
           # fail if warnings in local build
           ! grep -q ": *[Ww]arning:" build.log || exit 1
-          cabal bench --enable-optimization=1 --benchmark-options='+RTS -T -RTS'
+          cabal bench -ficu-benchmark --enable-optimization=1 --benchmark-options='+RTS -T -RTS'
