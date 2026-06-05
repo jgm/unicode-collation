@@ -50,6 +50,10 @@ flag executable
   Description:         Build the unicode-collate executable.
   Default:             False
 
+flag icu-benchmark
+  Description:         Build the text-icu comparison benchmark (needs ICU C lib).
+  Default:             False
+
 common common-options
   build-depends:       base >= 4.11 && < 4.23
 
@@ -150,4 +154,19 @@ benchmark benchmark
                      , text-icu >= 0.8
                      , quickcheck-instances
                      , QuickCheck
+  ghc-options:         -rtsopts -with-rtsopts=-A8m
+  if flag(icu-benchmark)
+     buildable:        True
+  else
+     buildable:        False
+
+benchmark bench-sortkey
+  import:              common-options
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      benchmark
+  main-is:             SortKey.hs
+  build-depends:       tasty-bench
+                     , unicode-collation
+                     , text
+                     , deepseq
   ghc-options:         -rtsopts -with-rtsopts=-A8m
