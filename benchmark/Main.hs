@@ -19,10 +19,13 @@ main = do
   (randomTexts :: [Text]) <- generate (infiniteListOf arbitrary)
   (randomLatinStrings :: [String]) <-
       generate (infiniteListOf (listOf (elements latinChars)))
+  (randomCJKStrings :: [String]) <-
+      generate (infiniteListOf (listOf (elements cjkChars)))
   (randomAsciiTexts :: [Text]) <-
     generate (infiniteListOf (arbitrary `suchThat` T.all isAscii))
   let tenThousand = take 10000 randomTexts
   let tenThousandLatin = map T.pack $ take 10000 randomLatinStrings
+  let tenThousandCJK = map T.pack $ take 10000 randomCJKStrings
   let tenThousandLatinNFD = map (T.pack . map chr . toNFD . map ord . T.unpack)
                               tenThousandLatin
   let tenThousandString = map T.unpack tenThousand
@@ -42,6 +45,10 @@ main = do
         (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandLatin)
     , bench "sort same list but pre-normalized (en-u-kk-false)"
         (whnf (sortBy (collate (collatorFor "en-u-kk-false"))) tenThousandLatinNFD)
+    , bench "sort a list of 10000 CJK Texts (en, implicit weights)"
+        (whnf (sortBy (collate (collatorFor "en"))) tenThousandCJK)
+    , bench "sort same CJK list with text-icu (en)"
+        (whnf (sortBy (ICU.collate (icuCollator "en"))) tenThousandCJK)
     , bench "sort a list of 10000 ASCII Texts (en)"
         (whnf (sortBy (collate (collatorFor "en"))) tenThousandAscii)
     , bench "sort same list with text-icu (en)"
@@ -55,6 +62,17 @@ main = do
     , bench "sort a list of 10000 random Strings (en)"
         (whnf (sortBy collateString) tenThousandString)
     ]
+
+-- A mix of CJK ideographs, all of which are assigned implicit weights
+-- (they are not listed individually in the DUCET), so this exercises
+-- 'calculateImplicitWeight'.  Includes the "Core Han" path (CJK Unified
+-- Ideographs, BMP) as well as the "All Other Han Unified" path (Extension A
+-- and a sample of supplementary Extension B).
+cjkChars :: [Char]
+cjkChars = map chr $
+     [0x4E00..0x9FFF]    -- CJK Unified Ideographs (BMP, Core Han)
+  ++ [0x3400..0x4DBF]    -- CJK Extension A
+  ++ [0x20000..0x20FFF]  -- sample of CJK Extension B (supplementary)
 
 latinChars :: [Char]
 latinChars = "ḀḁḂḃḄḅḆḇḈḉḊḋḌḍḎḏḐḑḒḓḔḕḖḗḘḙḚḛḜḝḞḟḠḡḢḣḤḥḦḧḨḩḪḫḬḭḮḯḰḱḲḳḴḵḶḷḸḹḺḻḼḽḾḿṀṁṂṃṄṅṆṇṈṉṊṋṌṍṎṏṐṑṒṓṔṕṖṗṘṙṚṛṜṝṞṟṠṡṢṣṤṥṦṧṨṩṪṫṬṭṮṯṰṱṲṳṴṵṶṷṸṹṺṻṼṽṾṿ‐‑‒–—―‖‗‘’‚‛“”„‟†‡•‣․‥…"

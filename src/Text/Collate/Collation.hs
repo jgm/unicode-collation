@@ -19,7 +19,6 @@ module Text.Collate.Collation
  )
 where
 
-import qualified Data.IntSet as IntSet
 import qualified Data.Text as T
 import qualified Data.Text.Read as TR
 import Data.Text (Text)
@@ -219,34 +218,37 @@ getCollationElements collation = go
 -- @implicitweights 18D00..18D8F; FB00 # Tangut Supplement
 -- @implicitweights 1B170..1B2FF; FB01 # Nushu
 -- @implicitweights 18B00..18CFF; FB02 # Khitan Small Script
+-- from PropList.txt in unicode data:
+isUnifiedIdeograph :: Int -> Bool
+isUnifiedIdeograph cp =
+     (cp >= 0x3400  && cp <= 0x4DBF)
+  || (cp >= 0x4E00  && cp <= 0x9FFC)
+  || (cp >= 0xFA0E  && cp <= 0xFA0F)
+  || cp == 0xFA11
+  || (cp >= 0xFA13  && cp <= 0xFA14)
+  || cp == 0xFA1F
+  || cp == 0xFA21
+  || (cp >= 0xFA23  && cp <= 0xFA24)
+  || (cp >= 0xFA27  && cp <= 0xFA29)
+  || (cp >= 0x20000 && cp <= 0x2A6DD)
+  || (cp >= 0x2A700 && cp <= 0x2B734)
+  || (cp >= 0x2B740 && cp <= 0x2B81D)
+  || (cp >= 0x2B820 && cp <= 0x2CEA1)
+  || (cp >= 0x2CEB0 && cp <= 0x2EBE0)
+  || (cp >= 0x30000 && cp <= 0x3134A)
+
+-- from Blocks.txt in unicode data:
+isCjkCompatibilityIdeograph :: Int -> Bool
+isCjkCompatibilityIdeograph cp = cp >= 0xF900 && cp <= 0xFAFF
+
+isCjkUnifiedIdeograph :: Int -> Bool
+isCjkUnifiedIdeograph cp = cp >= 0x4E00 && cp <= 0x9FFF
+
 calculateImplicitWeight :: Int -> [CollationElement]
 calculateImplicitWeight cp =
   [CollationElement False (fromIntegral aaaa) 0x0020 0x0002 0xFFFF,
    CollationElement False (fromIntegral bbbb) 0 0 0xFFFF]
  where
-  range x y = IntSet.fromList [x..y]
-  singleton = IntSet.singleton
-  union = IntSet.union
-  -- from PropList.txt in unicode data:
-  unifiedIdeographs =    range 0x3400 0x4DBF `union`
-                         range 0x4E00 0x9FFC `union`
-                         range 0xFA0E 0xFA0F `union`
-                         singleton 0xFA11 `union`
-                         range 0xFA13 0xFA14 `union`
-                         singleton 0xFA1F `union`
-                         singleton 0xFA21 `union`
-                         range 0xFA23 0xFA24 `union`
-                         range 0xFA27 0xFA29 `union`
-                         range 0x20000 0x2A6DD `union`
-                         range 0x2A700 0x2B734 `union`
-                         range 0x2B740 0x2B81D `union`
-                         range 0x2B820 0x2CEA1 `union`
-                         range 0x2CEB0 0x2EBE0 `union`
-                         range 0x2CEB0 0x2EBE0 `union`
-                         range 0x30000 0x3134A
-  -- from Blocks.txt in unicode data:
-  cjkCompatibilityIdeographs = range 0xF900 0xFAFF
-  cjkUnifiedIdeographs = range 0x4E00 0x9FFF
   (aaaa, bbbb) =
     case cp of
     _ | cp >= 0x17000 , cp <= 0x18AFF -- Tangut and Tangut Components
@@ -257,14 +259,14 @@ calculateImplicitWeight cp =
         -> (0xFB01, (cp - 0x1B170) .|. 0x8000)
       | cp >= 0x18B00 , cp <= 0x18CFF -- Khitan Small Script
         -> (0xFB02, (cp - 0x18B00) .|. 0x8000)
-      | cp `IntSet.member` unifiedIdeographs &&
-        (cp `IntSet.member` cjkUnifiedIdeographs ||
-         cp `IntSet.member` cjkCompatibilityIdeographs)  -- Core Han
+      | isUnifiedIdeograph cp &&
+        (isCjkUnifiedIdeograph cp ||
+         isCjkCompatibilityIdeograph cp)  -- Core Han
         -> (0xFB40 + (cp `shiftR` 15), (cp .&. 0x7FFF) .|. 0x8000)
-      | cp `IntSet.member` unifiedIdeographs -- All Other Han Unified ?
+      | isUnifiedIdeograph cp -- All Other Han Unified ?
         -> (0xFB80 + (cp `shiftR` 15), (cp .&. 0x7FFF) .|. 0x8000)
       | otherwise
-        -> (0xFBC0 + (cp `shiftR` 15), (cp .&. 0x7FFFF) .|. 0x8000)
+        -> (0xFBC0 + (cp `shiftR` 15), (cp .&. 0x7FFF) .|. 0x8000)
 
 -- | Parse a 'Collation' from a Text in the format of @allkeys.txt@.
 parseCollation :: Text -> Collation
