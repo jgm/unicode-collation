@@ -1,7 +1,0 @@
-resolver: lts-18.10
-flags:
-  unicode-collation:
-    executable: true
-extra-deps:
-- git: https://github.com/WorldSEnder/text-icu
-  commit: 7657227a7ca8ad13be86db5c190b806774a5fd6b
