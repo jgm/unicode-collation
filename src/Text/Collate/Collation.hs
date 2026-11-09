@@ -23,7 +23,9 @@ import qualified Data.Text as T
 import qualified Data.Text.Read as TR
 import Data.Text (Text)
 import Data.Bits ( Bits((.|.), shiftR, (.&.)) )
+#if !MIN_VERSION_base(4,22,0)
 import Data.List (foldl')
+#endif
 import Text.Collate.UnicodeData (readCodePoints)
 import Data.Maybe
 import Data.Foldable (minimumBy, maximumBy)
